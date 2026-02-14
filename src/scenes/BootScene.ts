@@ -28,6 +28,9 @@ export class BootScene extends Scene {
         // Background
         this.load.image('bg_meadow', 'assets/bg_1.jpg');
 
+        // Music
+        this.load.audio('bgm', 'assets/audio/bgm.mp3');
+
         // Pet images
         for (const pet of PETS) {
             const filename = pet.imageKey.replace('pet_', '');

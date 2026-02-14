@@ -3,6 +3,12 @@ import { GAME_WIDTH, UI, ROLL_BTN } from '../core/config';
 import { Button } from './components/Button';
 import { t } from '../data/locales';
 
+const BUFF_COLORS = {
+    luck:     0xd4a017,
+    x2xp:     0x8e44ad,
+    autoroll: 0x2980b9,
+};
+
 export class RightPanel extends GameObjects.Container {
     private rollBtn: Button;
     private buffX2Btn: Button;
@@ -19,36 +25,36 @@ export class RightPanel extends GameObjects.Container {
         super(scene, 0, 0);
 
         // --- BUFF BUTTONS (right side, vertically stacked) ---
-        const buffX = GAME_WIDTH - 68;
-        const buffY = 160;
-        const buffW = 100;
-        const buffH = 36;
-        const buffGap = 52;
+        const buffX = GAME_WIDTH - 84;
+        const buffY = 155;
+        const buffW = 150;
+        const buffH = 40;
+        const buffGap = 56;
 
         this.buffLuckBtn = new Button(
             scene, buffX, buffY, buffW, buffH,
-            'x2 Luck Roll!!', 0x555566, () => onBuff('luck'),
+            'x2 Luck Roll!', BUFF_COLORS.luck, () => onBuff('luck'),
         );
         this.add(this.buffLuckBtn);
-        this.addAdsBadge(scene, buffX + buffW / 2 - 8, buffY - buffH / 2 - 4);
+        this.addAdsBadge(scene, buffX + buffW / 2 - 10, buffY - buffH / 2 - 5);
 
         this.buffX2Btn = new Button(
             scene, buffX, buffY + buffGap, buffW, buffH,
-            'SUPER Roll', 0x555566, () => onBuff('x2xp'),
+            'SUPER Roll', BUFF_COLORS.x2xp, () => onBuff('x2xp'),
         );
         this.add(this.buffX2Btn);
-        this.addAdsBadge(scene, buffX + buffW / 2 - 8, buffY + buffGap - buffH / 2 - 4);
+        this.addAdsBadge(scene, buffX + buffW / 2 - 10, buffY + buffGap - buffH / 2 - 5);
 
         this.buffAutoBtn = new Button(
             scene, buffX, buffY + buffGap * 2, buffW, buffH,
-            'Autoroll 1 min!', 0x555566, () => onBuff('autoroll'),
+            'Autoroll 1 min!', BUFF_COLORS.autoroll, () => onBuff('autoroll'),
         );
         this.add(this.buffAutoBtn);
-        this.addAdsBadge(scene, buffX + buffW / 2 - 8, buffY + buffGap * 2 - buffH / 2 - 4);
+        this.addAdsBadge(scene, buffX + buffW / 2 - 10, buffY + buffGap * 2 - buffH / 2 - 5);
 
         // Timer labels under each buff
         [buffY, buffY + buffGap, buffY + buffGap * 2].forEach((y) => {
-            const txt = scene.add.text(buffX, y + 24, '', {
+            const txt = scene.add.text(buffX, y + 27, '', {
                 fontFamily: UI.FONT_BODY,
                 fontSize: '10px',
                 color: '#66ffcc',
@@ -85,12 +91,12 @@ export class RightPanel extends GameObjects.Container {
     private addAdsBadge(scene: Scene, x: number, y: number): void {
         const badge = scene.add.graphics();
         badge.fillStyle(0xcc0000, 1);
-        badge.fillRoundedRect(x - 14, y - 7, 28, 14, 4);
+        badge.fillRoundedRect(x - 16, y - 8, 32, 16, 5);
         this.add(badge);
 
         const txt = scene.add.text(x, y, t('ads_badge'), {
             fontFamily: UI.FONT_MAIN,
-            fontSize: '8px',
+            fontSize: '9px',
             color: '#ffffff',
         }).setOrigin(0.5);
         this.add(txt);

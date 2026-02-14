@@ -51,10 +51,12 @@ export const ru: Record<string, string> = {
     'bg_cosmos': 'Космос',
 
     // Settings
-    'sound_on': 'Звук: ВКЛ',
-    'sound_off': 'Звук: ВЫКЛ',
+    'sound_on': 'ВКЛ',
+    'sound_off': 'ВЫКЛ',
     'fullscreen': 'Полный экран',
     'settings': 'Настройки',
+    'settings_music': 'Музыка',
+    'settings_volume': 'Громкость',
 
     // New UI
     'ads_badge': 'ADS',

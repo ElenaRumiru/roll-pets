@@ -7,9 +7,11 @@ import { CenterStage } from '../ui/CenterStage';
 import { RightPanel } from '../ui/RightPanel';
 import { CollectionButton } from '../ui/CollectionButton';
 import { SettingsButton } from '../ui/SettingsButton';
+import { SettingsPanel } from '../ui/SettingsPanel';
 import { showFloatingText } from '../ui/components/FloatingText';
 import { PETS } from '../data/pets';
 import { PetDef, Rarity, RollResult } from '../types';
+import { AudioSystem } from '../systems/AudioSystem';
 import { t } from '../data/locales';
 
 export class MainScene extends Scene {
@@ -18,6 +20,8 @@ export class MainScene extends Scene {
     private centerStage!: CenterStage;
     private rightPanel!: RightPanel;
     private collectionBtn!: CollectionButton;
+    private settingsPanel!: SettingsPanel;
+    private audio!: AudioSystem;
     private autorollTimer = 0;
 
     constructor() {
@@ -41,7 +45,15 @@ export class MainScene extends Scene {
             (type: string) => EventBus.emit('buff-requested', type),
         );
         this.collectionBtn = new CollectionButton(this, () => this.scene.start('CollectionScene'));
-        new SettingsButton(this, () => { /* no-op for now */ });
+
+        // Audio
+        const settings = this.manager.save.getData().settings;
+        this.audio = new AudioSystem(this, settings.music, settings.volume);
+        this.audio.startBGM();
+
+        // Settings panel + button
+        this.settingsPanel = new SettingsPanel(this, this.audio, this.manager.save);
+        new SettingsButton(this, () => this.settingsPanel.show());
 
         // Set initial egg tier
         this.centerStage.setEggTier(this.manager.getEggTier());
@@ -116,7 +128,7 @@ export class MainScene extends Scene {
         const p = this.manager.progression;
         const needed = xpForLevel(p.level);
         this.topBar.updateDisplay(p.level, p.getXpProgress(), p.xp, needed);
-        this.collectionBtn.updateCount(p.collection.size);
+        this.collectionBtn.updateCount(p.collection.size, p.collection);
 
         // Update pedestals with top pets by rarity
         const topPets = this.getTopPets();

@@ -51,10 +51,12 @@ export const en: Record<string, string> = {
     'bg_cosmos': 'Cosmos',
 
     // Settings
-    'sound_on': 'Sound: ON',
-    'sound_off': 'Sound: OFF',
+    'sound_on': 'ON',
+    'sound_off': 'OFF',
     'fullscreen': 'Fullscreen',
     'settings': 'Settings',
+    'settings_music': 'Music',
+    'settings_volume': 'Volume',
 
     // New UI
     'ads_badge': 'ADS',

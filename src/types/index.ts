@@ -59,7 +59,7 @@ export interface SaveData {
     xp: number;
     collection: string[];
     totalRolls: number;
-    settings: { music: boolean; sfx: boolean };
+    settings: { music: boolean; sfx: boolean; volume: number };
     buffs: { x2xp: number; autoroll: number; luck: number };
     rollLog: RollLogEntry[];
 }
