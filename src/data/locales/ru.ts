@@ -56,6 +56,7 @@ export const ru: Record<string, string> = {
     'fullscreen': 'Полный экран',
     'settings': 'Настройки',
     'settings_music': 'Музыка',
+    'settings_sfx': 'Эффекты',
     'settings_volume': 'Громкость',
 
     // New UI

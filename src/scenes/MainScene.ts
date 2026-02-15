@@ -48,8 +48,9 @@ export class MainScene extends Scene {
 
         // Audio
         const settings = this.manager.save.getData().settings;
-        this.audio = new AudioSystem(this, settings.music, settings.volume);
+        this.audio = new AudioSystem(this, settings.music, settings.volume, settings.sfx, settings.sfxVolume);
         this.audio.startBGM();
+        this.centerStage.setAudio(this.audio);
 
         // Settings panel + button
         this.settingsPanel = new SettingsPanel(this, this.audio, this.manager.save);
@@ -59,6 +60,7 @@ export class MainScene extends Scene {
         this.centerStage.setEggTier(this.manager.getEggTier());
 
         // Listen for events
+        EventBus.on('roll-requested', this.onRollRequested, this);
         EventBus.on('roll-complete', this.onRollComplete, this);
         EventBus.on('level-up', this.onLevelUp, this);
         EventBus.on('buff-activated', this.onBuffActivated, this);
@@ -92,6 +94,10 @@ export class MainScene extends Scene {
             this.manager.buffs.getRemaining('autoroll'),
             this.manager.buffs.getRemaining('luck'),
         );
+    }
+
+    private onRollRequested(): void {
+        this.audio.playSfx('sfx_click');
     }
 
     private onRollComplete(result: RollResult): void {
@@ -140,6 +146,7 @@ export class MainScene extends Scene {
     }
 
     shutdown(): void {
+        EventBus.off('roll-requested', this.onRollRequested, this);
         EventBus.off('roll-complete', this.onRollComplete, this);
         EventBus.off('level-up', this.onLevelUp, this);
         EventBus.off('buff-activated', this.onBuffActivated, this);

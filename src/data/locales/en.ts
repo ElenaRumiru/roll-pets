@@ -56,6 +56,7 @@ export const en: Record<string, string> = {
     'fullscreen': 'Fullscreen',
     'settings': 'Settings',
     'settings_music': 'Music',
+    'settings_sfx': 'Effects',
     'settings_volume': 'Volume',
 
     // New UI

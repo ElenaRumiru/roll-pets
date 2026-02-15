@@ -10,7 +10,7 @@ function getDefaults(): SaveData {
         xp: 0,
         collection: [],
         totalRolls: 0,
-        settings: { music: true, sfx: true, volume: 0.3 },
+        settings: { music: true, sfx: true, volume: 0.3, sfxVolume: 0.2 },
         buffs: { x2xp: 0, autoroll: 0, luck: 0 },
         rollLog: [],
     };
@@ -19,6 +19,7 @@ function getDefaults(): SaveData {
 function migrate(data: SaveData): SaveData {
     if (data.version === 2) {
         if (data.settings.volume === undefined) data.settings.volume = 0.3;
+        if (data.settings.sfxVolume === undefined) data.settings.sfxVolume = 0.2;
         data.version = 3;
     }
     return data;
@@ -36,11 +37,19 @@ export class SaveSystem {
             const raw = localStorage.getItem(SAVE_KEY);
             if (raw) {
                 const parsed = JSON.parse(raw) as SaveData;
-                if (parsed.version === CURRENT_VERSION) return parsed;
-                if (parsed.version < CURRENT_VERSION) return migrate(parsed);
+                if (parsed.version < CURRENT_VERSION) migrate(parsed);
+                return this.patchDefaults(parsed);
             }
         } catch { /* localStorage unavailable */ }
         return getDefaults();
+    }
+
+    /** Fill in any missing settings fields with defaults */
+    private patchDefaults(data: SaveData): SaveData {
+        const defaults = getDefaults();
+        data.version = CURRENT_VERSION;
+        data.settings = { ...defaults.settings, ...data.settings };
+        return data;
     }
 
     save(): void {

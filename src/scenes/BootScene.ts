@@ -28,8 +28,12 @@ export class BootScene extends Scene {
         // Background
         this.load.image('bg_meadow', 'assets/bg_1.jpg');
 
-        // Music
+        // Audio
         this.load.audio('bgm', 'assets/audio/bgm.mp3');
+        this.load.audio('sfx_click', 'assets/audio/sfx_click.mp3');
+        this.load.audio('sfx_wobble', 'assets/audio/sfx_wobble.mp3');
+        this.load.audio('sfx_reveal', 'assets/audio/sfx_reveal.mp3');
+        this.load.audio('sfx_new_pet', 'assets/audio/sfx_new_pet.mp3');
 
         // Pet images
         for (const pet of PETS) {

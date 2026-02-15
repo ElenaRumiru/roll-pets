@@ -1,6 +1,7 @@
 import { GameObjects, Scene } from 'phaser';
 import { GAME_WIDTH, GAME_HEIGHT, RARITY, UI, PEDESTAL, PET_OFFSET_Y, getOddsString } from '../core/config';
 import { EggTier, PetDef, RollResult } from '../types';
+import { AudioSystem } from '../systems/AudioSystem';
 import { t } from '../data/locales';
 
 const CX = GAME_WIDTH / 2;
@@ -14,6 +15,7 @@ interface PedestalSlot {
 
 export class CenterStage extends GameObjects.Container {
     private slots: PedestalSlot[] = [];
+    private audio: AudioSystem | null = null;
 
     // Roll overlay elements
     private overlay: GameObjects.Rectangle;
@@ -113,6 +115,10 @@ export class CenterStage extends GameObjects.Container {
         scene.add.existing(this);
     }
 
+    setAudio(audio: AudioSystem): void {
+        this.audio = audio;
+    }
+
     setEggTier(tier: EggTier): void {
         this.egg.setFillStyle(tier.color);
         this.egg.setStrokeStyle(3, tier.accentColor);
@@ -174,6 +180,9 @@ export class CenterStage extends GameObjects.Container {
             alpha: 1,
             duration: 200,
             onComplete: () => {
+                // Wobble SFX
+                this.audio?.playSfx('sfx_wobble');
+
                 // Shake
                 scene.tweens.add({
                     targets: this.eggContainer,
@@ -206,6 +215,13 @@ export class CenterStage extends GameObjects.Container {
 
     private showReveal(result: RollResult, cfg: { colorHex: string; outlineHex: string; label: string }, onComplete: () => void): void {
         const scene = this.scene;
+
+        // Reveal SFX — loud for new pets, quiet for duplicates
+        if (result.isNew) {
+            this.audio?.playSfx('sfx_new_pet');
+        } else {
+            this.audio?.playSfx('sfx_reveal', 0.4);
+        }
 
         // Pet image
         if (this.revealImage) { this.revealImage.destroy(); this.revealImage = null; }

@@ -1,15 +1,21 @@
 import { Scene } from 'phaser';
 
+export type SfxKey = 'sfx_click' | 'sfx_wobble' | 'sfx_reveal' | 'sfx_new_pet';
+
 export class AudioSystem {
     private scene: Scene;
     private bgm: Phaser.Sound.BaseSound | null = null;
     private _musicOn: boolean;
     private _volume: number;
+    private _sfxOn: boolean;
+    private _sfxVolume: number;
 
-    constructor(scene: Scene, musicOn: boolean, volume: number) {
+    constructor(scene: Scene, musicOn: boolean, volume: number, sfxOn: boolean, sfxVolume: number) {
         this.scene = scene;
         this._musicOn = musicOn;
         this._volume = volume;
+        this._sfxOn = sfxOn;
+        this._sfxVolume = sfxVolume;
     }
 
     startBGM(): void {
@@ -21,6 +27,12 @@ export class AudioSystem {
         this.bgm.play();
     }
 
+    playSfx(key: SfxKey, volumeScale = 1): void {
+        if (!this._sfxOn || this._sfxVolume <= 0) return;
+        this.scene.sound.play(key, { volume: this._sfxVolume * volumeScale });
+    }
+
+    // --- Music ---
     get musicOn(): boolean { return this._musicOn; }
 
     setMusicOn(on: boolean): void {
@@ -37,5 +49,18 @@ export class AudioSystem {
         if (this.bgm && this._musicOn && 'setVolume' in this.bgm) {
             (this.bgm as Phaser.Sound.WebAudioSound).setVolume(this._volume);
         }
+    }
+
+    // --- SFX ---
+    get sfxOn(): boolean { return this._sfxOn; }
+
+    setSfxOn(on: boolean): void {
+        this._sfxOn = on;
+    }
+
+    get sfxVolume(): number { return this._sfxVolume; }
+
+    setSfxVolume(vol: number): void {
+        this._sfxVolume = Math.max(0, Math.min(1, vol));
     }
 }
