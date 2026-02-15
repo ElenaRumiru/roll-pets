@@ -27,10 +27,22 @@ export const ru: Record<string, string> = {
     'pet_unknown': '???',
 
     // Buffs
-    'buff_x2xp': 'x2 ОПЫТ',
-    'buff_autoroll': 'Авто',
-    'buff_luck': 'Удача',
+    'buff_lucky': 'Удачный',
+    'buff_super': 'Супер',
+    'buff_epic': 'Эпик',
+    'buff_autoroll': 'Авто Ролл',
     'buff_watch_ad': 'Смотреть',
+    'buff_epic_ready': 'ГОТОВ!',
+    'roll_auto': 'АВТО РОЛЛ',
+    'badge_lucky': 'Lucky',
+    'badge_super': 'Super',
+    'badge_epic': 'Epic',
+
+    // Buff tooltips
+    'tip_lucky': 'x2 удача на 3 ролла',
+    'tip_super': 'x3 удача на 1 ролл',
+    'tip_epic': 'x5 удача на 1 ролл',
+    'tip_autoroll': 'Авто-ролл 60 сек',
 
     // Left Panel
     'recent_rolls': 'Последние',
@@ -62,4 +74,8 @@ export const ru: Record<string, string> = {
     // New UI
     'ads_badge': 'ADS',
     'collection_button': 'Коллекция',
+
+    // Pause
+    'paused': 'ПАУЗА',
+    'press_esc': 'Нажмите ESC для продолжения',
 };

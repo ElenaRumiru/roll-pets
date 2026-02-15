@@ -1,10 +1,10 @@
 import { EventBus } from './EventBus';
+import { BUFF_CONFIG } from './config';
 import { RNGSystem } from '../systems/RNGSystem';
 import { ProgressionSystem } from '../systems/ProgressionSystem';
 import { SaveSystem } from '../systems/SaveSystem';
 import { BuffSystem } from '../systems/BuffSystem';
-import { PETS } from '../data/pets';
-import { getEggTierForLevel } from '../data/eggs';
+import { getEggTierForLevel, getEligiblePets } from '../data/eggs';
 import { getBackgroundForLevel } from '../data/backgrounds';
 import { RollResult } from '../types';
 
@@ -23,6 +23,7 @@ export class GameManager {
         this.progression = new ProgressionSystem(data.level, data.xp, data.collection);
         this.buffs = new BuffSystem();
         this.buffs.loadFromSave(data.buffs);
+        this.buffs.startSuperCooldown();
 
         this.setupListeners();
     }
@@ -36,17 +37,14 @@ export class GameManager {
         if (this.isRolling) return;
         this.isRolling = true;
 
-        const rarity = this.rng.rollRarity(
-            this.progression.level,
-            this.buffs.isActive('luck'),
-        );
-
-        const petsOfRarity = PETS.filter(p => p.rarity === rarity);
-        const pet = petsOfRarity[this.rng.nextInt(0, petsOfRarity.length - 1)];
-
-        const result = this.progression.processRoll(pet, this.buffs.isActive('x2xp'));
+        const eggTier = getEggTierForLevel(this.progression.level);
+        const eligible = getEligiblePets(eggTier);
+        const luckMultiplier = this.buffs.consumeForRoll();
+        const pet = this.rng.rollPet(eligible, luckMultiplier);
+        const result = this.progression.processRoll(pet);
 
         EventBus.emit('roll-complete', result);
+        EventBus.emit('buffs-changed');
 
         const leveledUp = this.progression.checkLevelUp();
         if (leveledUp) {
@@ -62,11 +60,26 @@ export class GameManager {
     }
 
     private activateBuff(buff: string): void {
-        if (buff === 'x2xp' || buff === 'autoroll' || buff === 'luck') {
-            this.buffs.activate(buff);
-            EventBus.emit('buff-activated', buff);
-            this.persistSave();
+        switch (buff) {
+            case 'lucky':
+                this.buffs.addLucky(BUFF_CONFIG.lucky.rollsPerAd);
+                break;
+            case 'super':
+                this.buffs.addSuper(BUFF_CONFIG.super.rollsPerAd);
+                this.buffs.consumeSuperOffer();
+                break;
+            case 'epic':
+                if (!this.buffs.claimEpic()) return;
+                break;
+            case 'autoroll':
+                this.buffs.activateAutoroll();
+                break;
+            default:
+                return;
         }
+        EventBus.emit('buff-activated', buff);
+        EventBus.emit('buffs-changed');
+        this.persistSave();
     }
 
     private persistSave(result?: RollResult): void {

@@ -1,4 +1,5 @@
-import { EggTier } from '../types';
+import { EggTier, PetDef } from '../types';
+import { PETS } from './pets';
 
 export const EGG_TIERS: EggTier[] = [
     {
@@ -9,6 +10,7 @@ export const EGG_TIERS: EggTier[] = [
         color: 0xf5f5f5,
         accentColor: 0x81c784,
         particleColor: 0xffffff,
+        filter: 0,
     },
     {
         id: 2,
@@ -18,6 +20,7 @@ export const EGG_TIERS: EggTier[] = [
         color: 0xffd54f,
         accentColor: 0xffb300,
         particleColor: 0xffd700,
+        filter: 2,
     },
     {
         id: 3,
@@ -27,6 +30,7 @@ export const EGG_TIERS: EggTier[] = [
         color: 0x81d4fa,
         accentColor: 0x4fc3f7,
         particleColor: 0x00bcd4,
+        filter: 5,
     },
     {
         id: 4,
@@ -36,6 +40,7 @@ export const EGG_TIERS: EggTier[] = [
         color: 0xff7043,
         accentColor: 0xff5722,
         particleColor: 0xff9800,
+        filter: 10,
     },
     {
         id: 5,
@@ -45,6 +50,7 @@ export const EGG_TIERS: EggTier[] = [
         color: 0x311b92,
         accentColor: 0x7c4dff,
         particleColor: 0xb388ff,
+        filter: 18,
     },
 ];
 
@@ -53,4 +59,8 @@ export function getEggTierForLevel(level: number): EggTier {
         if (level >= EGG_TIERS[i].levelMin) return EGG_TIERS[i];
     }
     return EGG_TIERS[0];
+}
+
+export function getEligiblePets(eggTier: EggTier): PetDef[] {
+    return PETS.filter(p => p.chance > eggTier.filter);
 }

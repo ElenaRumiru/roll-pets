@@ -125,7 +125,7 @@ export class CenterStage extends GameObjects.Container {
         this.eggSpots.forEach(s => s.setFillStyle(tier.accentColor, 0.6));
     }
 
-    updatePedestals(topPets: PetDef[], level: number, luckBuff: boolean): void {
+    updatePedestals(topPets: PetDef[]): void {
         const positions = [PEDESTAL.first, PEDESTAL.second, PEDESTAL.third];
 
         for (let i = 0; i < 3; i++) {
@@ -151,7 +151,7 @@ export class CenterStage extends GameObjects.Container {
                     .setStroke('#000000', UI.STROKE_THICK)
                     .setAlpha(1);
 
-                slot.oddsText.setText(getOddsString(pet.rarity, level, luckBuff))
+                slot.oddsText.setText(getOddsString(pet.chance))
                     .setColor(cfg.colorHex)
                     .setStroke(cfg.outlineHex, UI.STROKE_MEDIUM)
                     .setAlpha(1);

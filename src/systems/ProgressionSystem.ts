@@ -12,14 +12,13 @@ export class ProgressionSystem {
         this.collection = new Set(collection);
     }
 
-    processRoll(pet: PetDef, x2xpActive: boolean): RollResult {
+    processRoll(pet: PetDef): RollResult {
         const isNew = !this.collection.has(pet.id);
         const cfg = RARITY[pet.rarity];
         const xpNeeded = xpForLevel(this.level);
 
-        let xpPercent = isNew ? cfg.xpNewPercent : cfg.xpDupPercent;
-        let xpGained = Math.floor((xpPercent / 100) * xpNeeded);
-        if (x2xpActive) xpGained *= 2;
+        const xpPercent = isNew ? cfg.xpNewPercent : cfg.xpDupPercent;
+        const xpGained = Math.floor((xpPercent / 100) * xpNeeded);
 
         if (isNew) this.collection.add(pet.id);
         this.xp += xpGained;

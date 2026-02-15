@@ -6,6 +6,7 @@ export interface PetDef {
     emoji: string;
     imageKey: string;
     rarity: Rarity;
+    chance: number; // X from "1 in X" — individual pet drop chance
 }
 
 export interface EggTier {
@@ -16,6 +17,7 @@ export interface EggTier {
     color: number;
     accentColor: number;
     particleColor: number;
+    filter: number; // pets with chance <= filter are excluded from this egg
 }
 
 export interface BackgroundTheme {
@@ -60,6 +62,13 @@ export interface SaveData {
     collection: string[];
     totalRolls: number;
     settings: { music: boolean; sfx: boolean; volume: number; sfxVolume: number };
-    buffs: { x2xp: number; autoroll: number; luck: number };
+    buffs: BuffState;
     rollLog: RollLogEntry[];
+}
+
+export interface BuffState {
+    lucky: number;    // count of Lucky Rolls remaining
+    super: number;    // count of Super Rolls remaining
+    epic: number;     // count of Epic Rolls remaining
+    autoroll: number; // ms remaining for autoroll timer
 }

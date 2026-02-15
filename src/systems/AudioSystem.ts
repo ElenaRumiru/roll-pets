@@ -51,6 +51,14 @@ export class AudioSystem {
         }
     }
 
+    pauseAll(): void {
+        if (this.bgm && this.bgm.isPlaying) this.bgm.pause();
+    }
+
+    resumeAll(): void {
+        if (this.bgm && this.bgm.isPaused && this._musicOn) this.bgm.resume();
+    }
+
     // --- SFX ---
     get sfxOn(): boolean { return this._sfxOn; }
 

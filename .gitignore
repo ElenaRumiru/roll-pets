@@ -24,3 +24,9 @@ dist-ssr
 *.sw?
 .playwright-mcp/*
 nul
+
+# Claude Code local settings
+.claude/settings.local.json
+
+# Screenshots
+screenshot-*.png

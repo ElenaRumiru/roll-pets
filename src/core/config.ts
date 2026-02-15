@@ -95,11 +95,12 @@ export const PET_OFFSET_Y = -55;
 
 export const ROLL_BTN = { x: 418, y: 435, width: 340, height: 55 };
 
-export const BUFF_DURATIONS = {
-    x2xp: 180_000,
-    autoroll: 60_000,
-    luck: 120_000,
-};
+export const BUFF_CONFIG = {
+    lucky:    { multiplier: 2, rollsPerAd: 3, color: 0x27ae60, colorHex: '#27ae60' },
+    super:    { multiplier: 3, rollsPerAd: 1, offerCooldown: 15_000, offerDuration: 15_000, color: 0xff9d43, colorHex: '#ff9d43' },
+    epic:     { multiplier: 5, timer: 30_000, maxStack: 10, color: 0xe74c3c, colorHex: '#e74c3c' },
+    autoroll: { duration: 60_000, color: 0x1abc9c, colorHex: '#1abc9c' },
+} as const;
 
 export const AUTOROLL_INTERVAL = 1500;
 
@@ -107,20 +108,9 @@ export function xpForLevel(level: number): number {
     return Math.floor(XP_BASE * Math.pow(XP_MULTIPLIER, level - 1));
 }
 
-/** Convert rarity weight to "1kX" odds string at given level */
-export function getOddsString(rarity: Rarity, level: number, luckBuff: boolean): string {
-    const weights: Record<Rarity, number> = {} as any;
-    let total = 0;
-    for (const r of RARITY_ORDER) {
-        const cfg = RARITY[r];
-        const bonus = luckBuff ? 5 : 0;
-        weights[r] = cfg.baseWeight + (level * cfg.luckBonus) + (r !== 'common' ? bonus : 0);
-        total += weights[r];
-    }
-    const prob = weights[rarity] / total;
-    if (prob >= 1) return '1k1';
-    const oneIn = Math.round(1 / prob);
-    if (oneIn >= 1_000_000) return `1k${(oneIn / 1_000_000).toFixed(1)}M`;
-    if (oneIn >= 1_000) return `1k${(oneIn / 1_000).toFixed(1)}K`;
-    return `1k${oneIn}`;
+/** Convert pet chance (X from "1 in X") to display string */
+export function getOddsString(chance: number): string {
+    if (chance >= 1_000_000) return `1/${(chance / 1_000_000).toFixed(1)}M`;
+    if (chance >= 1_000) return `1/${(chance / 1_000).toFixed(1)}K`;
+    return `1/${chance}`;
 }

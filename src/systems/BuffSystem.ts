@@ -1,39 +1,122 @@
-import { BUFF_DURATIONS } from '../core/config';
+import { BUFF_CONFIG } from '../core/config';
+import { BuffState } from '../types';
 
-export type BuffType = 'x2xp' | 'autoroll' | 'luck';
+export type CountBuff = 'lucky' | 'super' | 'epic';
 
 export class BuffSystem {
-    private timers: Record<BuffType, number> = {
-        x2xp: 0,
-        autoroll: 0,
-        luck: 0,
-    };
+    private counts: Record<CountBuff, number> = { lucky: 0, super: 0, epic: 0 };
+    private autorollMs = 0;
+    private epicTimer = 0;
+    private superCooldown = 0;
+    private _superOffered = false;
+    private superOfferTimer = 0;
 
-    activate(buff: BuffType): void {
-        this.timers[buff] = BUFF_DURATIONS[buff];
+    addLucky(n: number): void {
+        this.counts.lucky += n;
+    }
+
+    addSuper(n: number): void {
+        this.counts.super += n;
+        this._superOffered = false;
+        this.superOfferTimer = 0;
+        this.superCooldown = BUFF_CONFIG.super.offerCooldown;
+    }
+
+    addEpic(n: number): void {
+        this.counts.epic = Math.min(this.counts.epic + n, BUFF_CONFIG.epic.maxStack);
+    }
+
+    activateAutoroll(): void {
+        this.autorollMs += BUFF_CONFIG.autoroll.duration;
     }
 
     update(deltaMs: number): void {
-        for (const key of Object.keys(this.timers) as BuffType[]) {
-            if (this.timers[key] > 0) {
-                this.timers[key] = Math.max(0, this.timers[key] - deltaMs);
+        if (this.autorollMs > 0) {
+            this.autorollMs = Math.max(0, this.autorollMs - deltaMs);
+        }
+
+        if (this.epicTimer < BUFF_CONFIG.epic.timer) {
+            this.epicTimer = Math.min(this.epicTimer + deltaMs, BUFF_CONFIG.epic.timer);
+        }
+
+        if (this._superOffered) {
+            this.superOfferTimer = Math.max(0, this.superOfferTimer - deltaMs);
+            if (this.superOfferTimer <= 0) {
+                this._superOffered = false;
+                this.superCooldown = BUFF_CONFIG.super.offerCooldown;
+            }
+        } else if (this.superCooldown > 0) {
+            this.superCooldown = Math.max(0, this.superCooldown - deltaMs);
+            if (this.superCooldown <= 0) {
+                this._superOffered = true;
+                this.superOfferTimer = BUFF_CONFIG.super.offerDuration;
             }
         }
     }
 
-    isActive(buff: BuffType): boolean {
-        return this.timers[buff] > 0;
+    /** Consume one charge of each active count buff. Returns combined luck multiplier. */
+    consumeForRoll(): number {
+        let mult = 1;
+        if (this.counts.lucky > 0) { this.counts.lucky--; mult *= BUFF_CONFIG.lucky.multiplier; }
+        if (this.counts.super > 0) { this.counts.super--; mult *= BUFF_CONFIG.super.multiplier; }
+        if (this.counts.epic > 0)  { this.counts.epic--;  mult *= BUFF_CONFIG.epic.multiplier; }
+        return mult;
     }
 
-    getRemaining(buff: BuffType): number {
-        return this.timers[buff];
+    /** Preview multiplier without consuming */
+    peekMultiplier(): number {
+        let mult = 1;
+        if (this.counts.lucky > 0) mult *= BUFF_CONFIG.lucky.multiplier;
+        if (this.counts.super > 0) mult *= BUFF_CONFIG.super.multiplier;
+        if (this.counts.epic > 0)  mult *= BUFF_CONFIG.epic.multiplier;
+        return mult;
     }
 
-    loadFromSave(buffs: Record<BuffType, number>): void {
-        this.timers = { ...buffs };
+    getCount(buff: CountBuff): number { return this.counts[buff]; }
+    isAutorollActive(): boolean { return this.autorollMs > 0; }
+    getAutorollRemaining(): number { return this.autorollMs; }
+    isSuperOffered(): boolean { return this._superOffered; }
+    getSuperOfferRemaining(): number { return this.superOfferTimer; }
+    getSuperCooldown(): number { return this.superCooldown; }
+    getEpicTimerRemaining(): number { return Math.max(0, BUFF_CONFIG.epic.timer - this.epicTimer); }
+
+    /** Claim epic charge (player clicked the button). Returns true if granted. */
+    claimEpic(): boolean {
+        if (this.epicTimer < BUFF_CONFIG.epic.timer) return false;
+        this.addEpic(1);
+        this.epicTimer = 0;
+        return true;
     }
 
-    toSave(): Record<BuffType, number> {
-        return { ...this.timers };
+    isEpicReady(): boolean {
+        return this.epicTimer >= BUFF_CONFIG.epic.timer;
+    }
+
+    /** Mark super offer as consumed (button slides out) */
+    consumeSuperOffer(): void {
+        this._superOffered = false;
+    }
+
+    /** Start the super cooldown (e.g., on first load) */
+    startSuperCooldown(): void {
+        if (this.superCooldown <= 0 && !this._superOffered) {
+            this.superCooldown = BUFF_CONFIG.super.offerCooldown;
+        }
+    }
+
+    loadFromSave(buffs: BuffState): void {
+        this.counts.lucky = buffs.lucky;
+        this.counts.super = buffs.super;
+        this.counts.epic = buffs.epic;
+        this.autorollMs = buffs.autoroll;
+    }
+
+    toSave(): BuffState {
+        return {
+            lucky: this.counts.lucky,
+            super: this.counts.super,
+            epic: this.counts.epic,
+            autoroll: this.autorollMs,
+        };
     }
 }

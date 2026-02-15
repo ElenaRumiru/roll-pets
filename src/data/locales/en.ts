@@ -27,10 +27,22 @@ export const en: Record<string, string> = {
     'pet_unknown': '???',
 
     // Buffs
-    'buff_x2xp': 'x2 XP',
-    'buff_autoroll': 'Auto',
-    'buff_luck': 'Luck',
+    'buff_lucky': 'Lucky Roll',
+    'buff_super': 'Super Roll',
+    'buff_epic': 'Epic Roll',
+    'buff_autoroll': 'Auto Roll',
     'buff_watch_ad': 'Watch Ad',
+    'buff_epic_ready': 'READY!',
+    'roll_auto': 'AUTO ROLL',
+    'badge_lucky': 'Lucky',
+    'badge_super': 'Super',
+    'badge_epic': 'Epic',
+
+    // Buff tooltips
+    'tip_lucky': 'x2 luck for 3 rolls',
+    'tip_super': 'x3 luck for 1 roll',
+    'tip_epic': 'x5 luck for 1 roll',
+    'tip_autoroll': 'Auto-rolls for 60s',
 
     // Left Panel
     'recent_rolls': 'Recent',
@@ -62,4 +74,8 @@ export const en: Record<string, string> = {
     // New UI
     'ads_badge': 'ADS',
     'collection_button': 'Collection',
+
+    // Pause
+    'paused': 'PAUSED',
+    'press_esc': 'Press ESC to resume',
 };

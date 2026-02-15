@@ -1,7 +1,7 @@
 import { SaveData } from '../types';
 
 const SAVE_KEY = 'pets_go_lite_save';
-const CURRENT_VERSION = 3;
+const CURRENT_VERSION = 4;
 
 function getDefaults(): SaveData {
     return {
@@ -11,7 +11,7 @@ function getDefaults(): SaveData {
         collection: [],
         totalRolls: 0,
         settings: { music: true, sfx: true, volume: 0.3, sfxVolume: 0.2 },
-        buffs: { x2xp: 0, autoroll: 0, luck: 0 },
+        buffs: { lucky: 0, super: 0, epic: 0, autoroll: 0 },
         rollLog: [],
     };
 }
@@ -21,6 +21,16 @@ function migrate(data: SaveData): SaveData {
         if (data.settings.volume === undefined) data.settings.volume = 0.3;
         if (data.settings.sfxVolume === undefined) data.settings.sfxVolume = 0.2;
         data.version = 3;
+    }
+    if (data.version === 3) {
+        const old = data.buffs as unknown as { x2xp: number; autoroll: number; luck: number };
+        data.buffs = {
+            lucky: 0,
+            super: 0,
+            epic: 0,
+            autoroll: old?.autoroll ?? 0,
+        };
+        data.version = 4;
     }
     return data;
 }
@@ -49,6 +59,7 @@ export class SaveSystem {
         const defaults = getDefaults();
         data.version = CURRENT_VERSION;
         data.settings = { ...defaults.settings, ...data.settings };
+        data.buffs = { ...defaults.buffs, ...data.buffs };
         return data;
     }
 

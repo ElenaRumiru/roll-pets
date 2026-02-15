@@ -1,5 +1,4 @@
-import { Rarity } from '../types';
-import { RARITY, RARITY_ORDER } from '../core/config';
+import { PetDef } from '../types';
 
 function splitmix32(a: number): () => number {
     return () => {
@@ -42,23 +41,21 @@ export class RNGSystem {
         return min + Math.floor(this.next() * (max - min + 1));
     }
 
-    weightedRandom<T>(items: { value: T; weight: number }[]): T {
-        const total = items.reduce((sum, item) => sum + item.weight, 0);
-        let roll = this.next() * total;
-        for (const item of items) {
-            roll -= item.weight;
-            if (roll <= 0) return item.value;
-        }
-        return items[items.length - 1].value;
-    }
+    /**
+     * Sequential check from rarest to most common.
+     * checkChance = min(1.0, luckMultiplier / pet.chance)
+     * First pet to pass = result. Fallback = most common pet.
+     */
+    rollPet(eligiblePets: PetDef[], luckMultiplier: number): PetDef {
+        const sorted = [...eligiblePets].sort((a, b) => b.chance - a.chance);
 
-    rollRarity(level: number, luckBuff: boolean): Rarity {
-        const weights = RARITY_ORDER.map(r => {
-            const cfg = RARITY[r];
-            let w = cfg.baseWeight + level * cfg.luckBonus;
-            if (luckBuff && r !== 'common') w *= 1.05;
-            return { value: r, weight: Math.max(0, w) };
-        });
-        return this.weightedRandom(weights);
+        for (const pet of sorted) {
+            const checkChance = Math.min(1.0, luckMultiplier / pet.chance);
+            if (this.next() < checkChance) {
+                return pet;
+            }
+        }
+
+        return sorted[sorted.length - 1];
     }
 }

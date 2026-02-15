@@ -1,5 +1,5 @@
 import { Scene } from 'phaser';
-import { GAME_WIDTH, GAME_HEIGHT, AUTOROLL_INTERVAL, xpForLevel } from '../core/config';
+import { GAME_WIDTH, GAME_HEIGHT, AUTOROLL_INTERVAL, xpForLevel, UI } from '../core/config';
 import { EventBus } from '../core/EventBus';
 import { GameManager } from '../core/GameManager';
 import { TopBar } from '../ui/TopBar';
@@ -23,6 +23,9 @@ export class MainScene extends Scene {
     private settingsPanel!: SettingsPanel;
     private audio!: AudioSystem;
     private autorollTimer = 0;
+    private pulseTimer = 0;
+    private isPaused = false;
+    private pauseOverlay!: Phaser.GameObjects.Container;
 
     constructor() {
         super('MainScene');
@@ -42,7 +45,7 @@ export class MainScene extends Scene {
         this.rightPanel = new RightPanel(
             this,
             () => EventBus.emit('roll-requested'),
-            (type: string) => EventBus.emit('buff-requested', type),
+            (type: string) => this.handleBuffRequest(type),
         );
         this.collectionBtn = new CollectionButton(this, () => this.scene.start('CollectionScene'));
 
@@ -64,36 +67,65 @@ export class MainScene extends Scene {
         EventBus.on('roll-complete', this.onRollComplete, this);
         EventBus.on('level-up', this.onLevelUp, this);
         EventBus.on('buff-activated', this.onBuffActivated, this);
+        EventBus.on('buffs-changed', this.onBuffsChanged, this);
+
+        // Pause overlay
+        this.pauseOverlay = this.createPauseOverlay();
 
         // Keyboard
         this.input.keyboard?.on('keydown-SPACE', () => {
-            EventBus.emit('roll-requested');
+            if (!this.isPaused) EventBus.emit('roll-requested');
         });
+        this.input.keyboard?.on('keydown-ESC', () => this.togglePause());
 
         // Initial UI update
         this.refreshUI();
     }
 
     update(_time: number, delta: number): void {
+        if (this.isPaused) return;
         this.manager.update(delta);
 
         // Autoroll
-        if (this.manager.buffs.isActive('autoroll') && !this.manager.isRolling) {
+        if (this.manager.buffs.isAutorollActive() && !this.manager.isRolling) {
             this.autorollTimer += delta;
             if (this.autorollTimer >= AUTOROLL_INTERVAL) {
                 this.autorollTimer = 0;
                 EventBus.emit('roll-requested');
             }
-        } else {
+        } else if (!this.manager.buffs.isAutorollActive()) {
             this.autorollTimer = 0;
         }
 
-        // Update buff timers display
-        this.rightPanel.updateBuffTimers(
-            this.manager.buffs.getRemaining('x2xp'),
-            this.manager.buffs.getRemaining('autoroll'),
-            this.manager.buffs.getRemaining('luck'),
-        );
+        // Update buff display
+        this.rightPanel.updateBuffDisplay(this.manager.buffs);
+
+        // Roll button pulse every 5s
+        this.pulseTimer += delta;
+        if (this.pulseTimer >= 5_000) {
+            this.pulseTimer = 0;
+            this.rightPanel.pulseRollButton();
+        }
+    }
+
+    private handleBuffRequest(type: string): void {
+        // Epic is free (timer-based), grant directly
+        if (type === 'epic') {
+            EventBus.emit('buff-requested', type);
+            return;
+        }
+        // Lucky, Super, Autoroll require ads
+        if (type === 'lucky' || type === 'super' || type === 'autoroll') {
+            const sdk = this.registry.get('platformSDK');
+            if (sdk) {
+                sdk.showRewardedBreak().then((success: boolean) => {
+                    if (success) EventBus.emit('buff-requested', type);
+                });
+            } else {
+                // Dev mode: grant immediately
+                EventBus.emit('buff-requested', type);
+            }
+        }
     }
 
     private onRollRequested(): void {
@@ -120,6 +152,44 @@ export class MainScene extends Scene {
         this.refreshUI();
     }
 
+    private onBuffsChanged(): void {
+        this.refreshUI();
+    }
+
+    private createPauseOverlay(): Phaser.GameObjects.Container {
+        const container = this.add.container(0, 0);
+        container.setDepth(1001);
+
+        const bg = this.add.rectangle(
+            GAME_WIDTH / 2, GAME_HEIGHT / 2,
+            GAME_WIDTH, GAME_HEIGHT, 0x000000, 0.7,
+        );
+        bg.setInteractive();
+        container.add(bg);
+
+        const title = this.add.text(GAME_WIDTH / 2, GAME_HEIGHT / 2 - 20, t('paused'), {
+            fontFamily: UI.FONT_MAIN, fontSize: '48px', color: '#ffffff',
+            stroke: '#000000', strokeThickness: UI.STROKE_THICK,
+        }).setOrigin(0.5);
+        container.add(title);
+
+        const hint = this.add.text(GAME_WIDTH / 2, GAME_HEIGHT / 2 + 30, t('press_esc'), {
+            fontFamily: UI.FONT_BODY, fontSize: '16px', color: '#aaaaaa',
+        }).setOrigin(0.5);
+        container.add(hint);
+
+        container.setVisible(false);
+        return container;
+    }
+
+    private togglePause(): void {
+        if (this.settingsPanel.isVisible) return;
+        this.isPaused = !this.isPaused;
+        this.pauseOverlay.setVisible(this.isPaused);
+        if (this.isPaused) this.audio.pauseAll();
+        else this.audio.resumeAll();
+    }
+
     private getTopPets(): PetDef[] {
         const rarityValue: Record<Rarity, number> = {
             legendary: 5, epic: 4, rare: 3, uncommon: 2, common: 1,
@@ -136,13 +206,8 @@ export class MainScene extends Scene {
         this.topBar.updateDisplay(p.level, p.getXpProgress(), p.xp, needed);
         this.collectionBtn.updateCount(p.collection.size, p.collection);
 
-        // Update pedestals with top pets by rarity
         const topPets = this.getTopPets();
-        this.centerStage.updatePedestals(
-            topPets,
-            p.level,
-            this.manager.buffs.isActive('luck'),
-        );
+        this.centerStage.updatePedestals(topPets);
     }
 
     shutdown(): void {
@@ -150,5 +215,6 @@ export class MainScene extends Scene {
         EventBus.off('roll-complete', this.onRollComplete, this);
         EventBus.off('level-up', this.onLevelUp, this);
         EventBus.off('buff-activated', this.onBuffActivated, this);
+        EventBus.off('buffs-changed', this.onBuffsChanged, this);
     }
 }
