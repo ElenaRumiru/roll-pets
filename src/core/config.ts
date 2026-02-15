@@ -102,7 +102,7 @@ export const BUFF_CONFIG = {
     autoroll: { duration: 60_000, color: 0x1abc9c, colorHex: '#1abc9c' },
 } as const;
 
-export const AUTOROLL_INTERVAL = 1500;
+export const AUTOROLL_INTERVAL = 500;
 
 export function xpForLevel(level: number): number {
     return Math.floor(XP_BASE * Math.pow(XP_MULTIPLIER, level - 1));

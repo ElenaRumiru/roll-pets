@@ -31,6 +31,21 @@ export class GameManager {
     private setupListeners(): void {
         EventBus.on('roll-requested', () => this.roll());
         EventBus.on('buff-requested', (buff: string) => this.activateBuff(buff));
+        EventBus.on('autoroll-stop', () => this.stopAutoroll());
+        EventBus.on('autoroll-resume', () => this.resumeAutoroll());
+    }
+
+    stopAutoroll(): void {
+        this.buffs.stopAutoroll();
+        EventBus.emit('buffs-changed');
+        this.persistSave();
+    }
+
+    resumeAutoroll(): void {
+        this.buffs.resumeAutoroll();
+        EventBus.emit('buff-activated', 'autoroll');
+        EventBus.emit('buffs-changed');
+        this.persistSave();
     }
 
     roll(): void {
@@ -56,6 +71,10 @@ export class GameManager {
         }
 
         this.persistSave(result);
+        // isRolling stays true until animation completes (finishRoll called)
+    }
+
+    finishRoll(): void {
         this.isRolling = false;
     }
 

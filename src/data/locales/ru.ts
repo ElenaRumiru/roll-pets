@@ -34,6 +34,7 @@ export const ru: Record<string, string> = {
     'buff_watch_ad': 'Смотреть',
     'buff_epic_ready': 'ГОТОВ!',
     'roll_auto': 'АВТО РОЛЛ',
+    'roll_stop': 'СТОП',
     'badge_lucky': 'Lucky',
     'badge_super': 'Super',
     'badge_epic': 'Epic',

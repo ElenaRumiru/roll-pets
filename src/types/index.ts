@@ -71,4 +71,5 @@ export interface BuffState {
     super: number;    // count of Super Rolls remaining
     epic: number;     // count of Epic Rolls remaining
     autoroll: number; // ms remaining for autoroll timer
+    autorollPaused: boolean; // true when user stopped autoroll (time preserved)
 }

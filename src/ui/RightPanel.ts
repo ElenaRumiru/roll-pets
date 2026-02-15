@@ -21,13 +21,20 @@ export class RightPanel extends GameObjects.Container {
     private tooltipText: GameObjects.Text;
     private superVisible = false;
     private autorollActive = false;
+    private autorollPaused = false;
     private epicPulseTimer = 0;
     private superPulseTimer = 0;
+
+    private onRoll: () => void;
+    private onStopAutoroll: () => void;
+    private onResumeAutoroll: () => void;
 
     constructor(
         scene: Scene,
         onRoll: () => void,
         onBuff: (type: string) => void,
+        onStopAutoroll: () => void,
+        onResumeAutoroll: () => void,
     ) {
         super(scene, 0, 0);
 
@@ -94,10 +101,23 @@ export class RightPanel extends GameObjects.Container {
         }).setOrigin(0.5);
         this.superBtn.add(this.superTimerText);
 
-        // Roll button
+        // Store callbacks
+        this.onRoll = onRoll;
+        this.onStopAutoroll = onStopAutoroll;
+        this.onResumeAutoroll = onResumeAutoroll;
+
+        // Roll button — 3 states: ROLL / STOP / AUTO ROLL (resume)
         this.rollBtn = new Button(
             scene, ROLL_BTN.x, ROLL_BTN.y, ROLL_BTN.width, ROLL_BTN.height,
-            t('roll_button'), UI.PRIMARY_GREEN, onRoll,
+            t('roll_button'), UI.PRIMARY_GREEN, () => {
+                if (this.autorollActive) {
+                    this.onStopAutoroll();
+                } else if (this.autorollPaused) {
+                    this.onResumeAutoroll();
+                } else {
+                    this.onRoll();
+                }
+            },
         );
         this.add(this.rollBtn);
 
@@ -155,13 +175,21 @@ export class RightPanel extends GameObjects.Container {
     }
 
     setRolling(rolling: boolean): void {
-        this.rollBtn.setEnabled(!rolling);
-        if (rolling) {
-            this.rollBtn.setText(t('rolling'));
-        } else if (this.autorollActive) {
+        if (this.autorollActive) {
+            this.rollBtn.setEnabled(true);
+            this.rollBtn.setText(t('roll_stop'));
+            this.rollBtn.setColor(0xe74c3c);
+        } else if (this.autorollPaused) {
+            this.rollBtn.setEnabled(true);
             this.rollBtn.setText(t('roll_auto'));
+            this.rollBtn.setColor(BUFF_CONFIG.autoroll.color);
+        } else if (rolling) {
+            this.rollBtn.setEnabled(false);
+            this.rollBtn.setText(t('rolling'));
         } else {
+            this.rollBtn.setEnabled(true);
             this.rollBtn.setText(t('roll_button'));
+            this.rollBtn.setColor(UI.PRIMARY_GREEN);
         }
     }
 
@@ -218,12 +246,32 @@ export class RightPanel extends GameObjects.Container {
 
         // Autoroll state on Roll button
         const wasAuto = this.autorollActive;
+        const wasPaused = this.autorollPaused;
         this.autorollActive = buffs.isAutorollActive();
+        this.autorollPaused = buffs.isAutorollPaused();
+
         if (this.autorollActive && !wasAuto) {
-            this.rollBtn.setText(t('roll_auto'));
+            this.rollBtn.setText(t('roll_stop'));
+            this.rollBtn.setColor(0xe74c3c);
+            this.rollBtn.setEnabled(true);
         } else if (!this.autorollActive && wasAuto) {
+            if (this.autorollPaused) {
+                this.rollBtn.setText(t('roll_auto'));
+                this.rollBtn.setColor(BUFF_CONFIG.autoroll.color);
+                this.rollBtn.setEnabled(true);
+            } else {
+                this.rollBtn.setText(t('roll_button'));
+                this.rollBtn.setColor(UI.PRIMARY_GREEN);
+            }
+        } else if (this.autorollPaused && !wasPaused) {
+            this.rollBtn.setText(t('roll_auto'));
+            this.rollBtn.setColor(BUFF_CONFIG.autoroll.color);
+            this.rollBtn.setEnabled(true);
+        } else if (!this.autorollPaused && wasPaused && !this.autorollActive) {
             this.rollBtn.setText(t('roll_button'));
+            this.rollBtn.setColor(UI.PRIMARY_GREEN);
         }
+
     }
 
     pulseRollButton(): void {

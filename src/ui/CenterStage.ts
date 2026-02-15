@@ -11,6 +11,7 @@ interface PedestalSlot {
     image: GameObjects.Image | null;
     nameText: GameObjects.Text;
     oddsText: GameObjects.Text;
+    baseX: number;
     baseY: number;
     baseScale: number;
     idleTimer: { destroy(): void } | null;
@@ -19,6 +20,7 @@ interface PedestalSlot {
 export class CenterStage extends GameObjects.Container {
     private slots: PedestalSlot[] = [];
     private audio: AudioSystem | null = null;
+    private autorollOverlayActive = false;
 
     // Roll overlay elements
     private overlay: GameObjects.Rectangle;
@@ -58,7 +60,7 @@ export class CenterStage extends GameObjects.Container {
             }).setOrigin(0.5).setAlpha(0);
             this.add(oddsText);
 
-            this.slots.push({ image: null, nameText, oddsText, baseY: 0, baseScale: 0, idleTimer: null });
+            this.slots.push({ image: null, nameText, oddsText, baseX: 0, baseY: 0, baseScale: 0, idleTimer: null });
         }
 
         // --- ROLL OVERLAY (all hidden initially, rendered on top) ---
@@ -151,6 +153,7 @@ export class CenterStage extends GameObjects.Container {
                 this.add(slot.image);
                 this.sendToBack(slot.image);
 
+                slot.baseX = pos.x;
                 slot.baseY = pos.y + PET_OFFSET_Y;
                 slot.baseScale = pos.scale;
                 this.startIdleAnim(i);
@@ -175,12 +178,14 @@ export class CenterStage extends GameObjects.Container {
         const scene = this.scene;
         const cfg = RARITY[result.rarity];
 
-        // 1) Fade in dark overlay
-        scene.tweens.add({
-            targets: this.overlay,
-            fillAlpha: 0.75,
-            duration: 200,
-        });
+        // 1) Fade in dark overlay (skip if autoroll keeps it persistent)
+        if (!this.autorollOverlayActive) {
+            scene.tweens.add({
+                targets: this.overlay,
+                fillAlpha: 0.75,
+                duration: 200,
+            });
+        }
 
         // 2) Show egg in center + shake
         this.eggContainer.setPosition(CX, CY).setAlpha(0).setScale(1);
@@ -273,14 +278,17 @@ export class CenterStage extends GameObjects.Container {
             });
         }
 
-        // 5) Hold, then fade out everything
-        scene.time.delayedCall(900, () => {
-            // Fade out overlay + reveal
-            scene.tweens.add({
-                targets: this.overlay,
-                fillAlpha: 0,
-                duration: 250,
-            });
+        // 5) Hold, then fade out reveal elements (shorter hold during autoroll)
+        const holdTime = this.autorollOverlayActive ? 400 : 900;
+        scene.time.delayedCall(holdTime, () => {
+            // Only fade overlay if autoroll is NOT keeping it persistent
+            if (!this.autorollOverlayActive) {
+                scene.tweens.add({
+                    targets: this.overlay,
+                    fillAlpha: 0,
+                    duration: 250,
+                });
+            }
 
             const fadeTargets = [this.revealName, this.revealRarity, this.newBadge, this.xpText];
             if (this.revealImage) fadeTargets.push(this.revealImage as any);
@@ -307,63 +315,52 @@ export class CenterStage extends GameObjects.Container {
     private startIdleAnim(i: number): void {
         const slot = this.slots[i];
         if (!slot.image) return;
-        // Stagger initial delay so pets don't sync
         const delay = 1000 + Math.random() * 3000;
-        slot.idleTimer = this.scene.time.delayedCall(delay, () => this.playIdleAction(i));
+        slot.idleTimer = this.scene.time.delayedCall(delay, () => this.playHop(i));
     }
 
-    private scheduleNextAction(i: number): void {
-        const slot = this.slots[i];
-        if (!slot.image) return;
-        const delay = 2500 + Math.random() * 4000;
-        slot.idleTimer = this.scene.time.delayedCall(delay, () => this.playIdleAction(i));
-    }
-
-    private playIdleAction(i: number): void {
+    private playHop(i: number): void {
         const slot = this.slots[i];
         if (!slot.image) return;
         const img = slot.image;
         const s = slot.baseScale;
-        const roll = Math.random();
 
-        if (roll < 0.4) {
-            // Hop with squash & stretch
-            this.scene.tweens.add({
-                targets: img,
-                scaleX: s * 0.92, scaleY: s * 1.08,
-                duration: 100, ease: 'Quad.easeOut',
-                onComplete: () => {
-                    this.scene.tweens.add({
-                        targets: img,
-                        y: slot.baseY - 12, scaleX: s, scaleY: s,
-                        duration: 200, yoyo: true, ease: 'Quad.easeOut',
-                        onComplete: () => {
-                            this.scene.tweens.add({
-                                targets: img,
-                                scaleX: s * 1.14, scaleY: s * 0.88,
-                                duration: 80, yoyo: true, ease: 'Quad.easeOut',
-                                onComplete: () => this.scheduleNextAction(i),
-                            });
-                        },
-                    });
-                },
-            });
-        } else if (roll < 0.7) {
-            // Wobble side to side
-            this.scene.tweens.add({
-                targets: img, angle: 8,
-                duration: 80, yoyo: true, repeat: 2, ease: 'Sine.easeInOut',
-                onComplete: () => { img.setAngle(0); this.scheduleNextAction(i); },
-            });
-        } else {
-            // Squish in place
-            this.scene.tweens.add({
-                targets: img,
-                scaleX: s * 1.12, scaleY: s * 0.9,
-                duration: 100, yoyo: true, repeat: 1, ease: 'Quad.easeOut',
-                onComplete: () => { img.setScale(s); this.scheduleNextAction(i); },
-            });
-        }
+        // Squash down before jump
+        this.scene.tweens.add({
+            targets: img,
+            scaleX: s * 0.92, scaleY: s * 1.08,
+            duration: 100, ease: 'Quad.easeOut',
+            onComplete: () => {
+                // Jump up
+                this.scene.tweens.add({
+                    targets: img,
+                    y: slot.baseY - 12, scaleX: s, scaleY: s,
+                    duration: 200, yoyo: true, ease: 'Quad.easeOut',
+                    onComplete: () => {
+                        // Landing squash
+                        this.scene.tweens.add({
+                            targets: img,
+                            scaleX: s * 1.14, scaleY: s * 0.88,
+                            duration: 80, yoyo: true, ease: 'Quad.easeOut',
+                            onComplete: () => {
+                                const next = 2500 + Math.random() * 4000;
+                                slot.idleTimer = this.scene.time.delayedCall(next, () => this.playHop(i));
+                            },
+                        });
+                    },
+                });
+            },
+        });
+    }
+
+    setAutorollOverlay(active: boolean): void {
+        this.autorollOverlayActive = active;
+        this.scene.tweens.killTweensOf(this.overlay);
+        this.scene.tweens.add({
+            targets: this.overlay,
+            fillAlpha: active ? 0.6 : 0,
+            duration: 300,
+        });
     }
 
     resetToEgg(): void {

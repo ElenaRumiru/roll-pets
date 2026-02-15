@@ -112,6 +112,12 @@ export class Button extends GameObjects.Container {
         this.label.setText(text);
     }
 
+    setColor(color: number): void {
+        this.btnColor = color;
+        this.btnColorDark = this.darkenColor(color, 0.55);
+        this.drawButton(this.pressed);
+    }
+
     setEnabled(value: boolean): void {
         this.enabled = value;
         this.setAlpha(value ? 1 : 0.5);

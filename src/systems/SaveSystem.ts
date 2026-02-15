@@ -11,7 +11,7 @@ function getDefaults(): SaveData {
         collection: [],
         totalRolls: 0,
         settings: { music: true, sfx: true, volume: 0.3, sfxVolume: 0.2 },
-        buffs: { lucky: 0, super: 0, epic: 0, autoroll: 0 },
+        buffs: { lucky: 0, super: 0, epic: 0, autoroll: 0, autorollPaused: false },
         rollLog: [],
     };
 }
@@ -29,6 +29,7 @@ function migrate(data: SaveData): SaveData {
             super: 0,
             epic: 0,
             autoroll: old?.autoroll ?? 0,
+            autorollPaused: false,
         };
         data.version = 4;
     }

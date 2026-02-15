@@ -25,6 +25,7 @@ export class MainScene extends Scene {
     private autorollTimer = 0;
     private pulseTimer = 0;
     private isPaused = false;
+    private wasAutorollActive = false;
     private pauseOverlay!: Phaser.GameObjects.Container;
 
     constructor() {
@@ -46,6 +47,8 @@ export class MainScene extends Scene {
             this,
             () => EventBus.emit('roll-requested'),
             (type: string) => this.handleBuffRequest(type),
+            () => EventBus.emit('autoroll-stop'),
+            () => EventBus.emit('autoroll-resume'),
         );
         this.collectionBtn = new CollectionButton(this, () => this.scene.start('CollectionScene'));
 
@@ -68,15 +71,31 @@ export class MainScene extends Scene {
         EventBus.on('level-up', this.onLevelUp, this);
         EventBus.on('buff-activated', this.onBuffActivated, this);
         EventBus.on('buffs-changed', this.onBuffsChanged, this);
+        EventBus.on('autoroll-stop', this.onAutorollStop, this);
 
         // Pause overlay
         this.pauseOverlay = this.createPauseOverlay();
 
         // Keyboard
         this.input.keyboard?.on('keydown-SPACE', () => {
-            if (!this.isPaused) EventBus.emit('roll-requested');
+            if (this.isPaused) return;
+            if (this.manager.buffs.isAutorollActive()) {
+                EventBus.emit('autoroll-stop');
+            } else if (this.manager.buffs.isAutorollPaused()) {
+                EventBus.emit('autoroll-resume');
+            } else {
+                EventBus.emit('roll-requested');
+            }
         });
         this.input.keyboard?.on('keydown-ESC', () => this.togglePause());
+
+        // Restore autoroll overlay if saved
+        if (this.manager.buffs.isAutorollActive()) {
+            this.wasAutorollActive = true;
+            this.centerStage.setAutorollOverlay(true);
+            this.rightPanel.setDepth(105);
+            this.topBar.setDepth(105);
+        }
 
         // Initial UI update
         this.refreshUI();
@@ -97,14 +116,29 @@ export class MainScene extends Scene {
             this.autorollTimer = 0;
         }
 
+        // Track autoroll overlay state
+        const autoActive = this.manager.buffs.isAutorollActive();
+        if (autoActive && !this.wasAutorollActive) {
+            this.centerStage.setAutorollOverlay(true);
+            this.rightPanel.setDepth(105);
+            this.topBar.setDepth(105);
+        } else if (!autoActive && this.wasAutorollActive) {
+            this.centerStage.setAutorollOverlay(false);
+            this.rightPanel.setDepth(0);
+            this.topBar.setDepth(0);
+        }
+        this.wasAutorollActive = autoActive;
+
         // Update buff display
         this.rightPanel.updateBuffDisplay(this.manager.buffs);
 
-        // Roll button pulse every 5s
-        this.pulseTimer += delta;
-        if (this.pulseTimer >= 5_000) {
-            this.pulseTimer = 0;
-            this.rightPanel.pulseRollButton();
+        // Roll button pulse every 5s (skip during autoroll)
+        if (!autoActive) {
+            this.pulseTimer += delta;
+            if (this.pulseTimer >= 5_000) {
+                this.pulseTimer = 0;
+                this.rightPanel.pulseRollButton();
+            }
         }
     }
 
@@ -135,6 +169,7 @@ export class MainScene extends Scene {
     private onRollComplete(result: RollResult): void {
         this.rightPanel.setRolling(true);
         this.centerStage.playHatch(result, () => {
+            this.manager.finishRoll();
             this.rightPanel.setRolling(false);
             this.refreshUI();
         });
@@ -154,6 +189,16 @@ export class MainScene extends Scene {
 
     private onBuffsChanged(): void {
         this.refreshUI();
+    }
+
+    private onAutorollStop(): void {
+        this.centerStage.setAutorollOverlay(false);
+        this.wasAutorollActive = false;
+        this.rightPanel.setDepth(0);
+        this.topBar.setDepth(0);
+        // Sync autorollActive flag BEFORE setRolling so button shows "ROLL!" not "STOP"
+        this.rightPanel.updateBuffDisplay(this.manager.buffs);
+        this.rightPanel.setRolling(this.manager.isRolling);
     }
 
     private createPauseOverlay(): Phaser.GameObjects.Container {
@@ -216,5 +261,6 @@ export class MainScene extends Scene {
         EventBus.off('level-up', this.onLevelUp, this);
         EventBus.off('buff-activated', this.onBuffActivated, this);
         EventBus.off('buffs-changed', this.onBuffsChanged, this);
+        EventBus.off('autoroll-stop', this.onAutorollStop, this);
     }
 }

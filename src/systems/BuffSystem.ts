@@ -6,6 +6,7 @@ export type CountBuff = 'lucky' | 'super' | 'epic';
 export class BuffSystem {
     private counts: Record<CountBuff, number> = { lucky: 0, super: 0, epic: 0 };
     private autorollMs = 0;
+    private autorollPaused = false;
     private epicTimer = 0;
     private superCooldown = 0;
     private _superOffered = false;
@@ -28,10 +29,19 @@ export class BuffSystem {
 
     activateAutoroll(): void {
         this.autorollMs += BUFF_CONFIG.autoroll.duration;
+        this.autorollPaused = false;
+    }
+
+    stopAutoroll(): void {
+        this.autorollPaused = true;
+    }
+
+    resumeAutoroll(): void {
+        this.autorollPaused = false;
     }
 
     update(deltaMs: number): void {
-        if (this.autorollMs > 0) {
+        if (this.autorollMs > 0 && !this.autorollPaused) {
             this.autorollMs = Math.max(0, this.autorollMs - deltaMs);
         }
 
@@ -73,7 +83,8 @@ export class BuffSystem {
     }
 
     getCount(buff: CountBuff): number { return this.counts[buff]; }
-    isAutorollActive(): boolean { return this.autorollMs > 0; }
+    isAutorollActive(): boolean { return this.autorollMs > 0 && !this.autorollPaused; }
+    isAutorollPaused(): boolean { return this.autorollMs > 0 && this.autorollPaused; }
     getAutorollRemaining(): number { return this.autorollMs; }
     isSuperOffered(): boolean { return this._superOffered; }
     getSuperOfferRemaining(): number { return this.superOfferTimer; }
@@ -109,6 +120,7 @@ export class BuffSystem {
         this.counts.super = buffs.super;
         this.counts.epic = buffs.epic;
         this.autorollMs = buffs.autoroll;
+        this.autorollPaused = buffs.autorollPaused ?? false;
     }
 
     toSave(): BuffState {
@@ -117,6 +129,7 @@ export class BuffSystem {
             super: this.counts.super,
             epic: this.counts.epic,
             autoroll: this.autorollMs,
+            autorollPaused: this.autorollPaused,
         };
     }
 }

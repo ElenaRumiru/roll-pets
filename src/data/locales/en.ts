@@ -34,6 +34,7 @@ export const en: Record<string, string> = {
     'buff_watch_ad': 'Watch Ad',
     'buff_epic_ready': 'READY!',
     'roll_auto': 'AUTO ROLL',
+    'roll_stop': 'STOP',
     'badge_lucky': 'Lucky',
     'badge_super': 'Super',
     'badge_epic': 'Epic',
