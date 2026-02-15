@@ -11,6 +11,9 @@ interface PedestalSlot {
     image: GameObjects.Image | null;
     nameText: GameObjects.Text;
     oddsText: GameObjects.Text;
+    baseY: number;
+    baseScale: number;
+    idleTimer: { destroy(): void } | null;
 }
 
 export class CenterStage extends GameObjects.Container {
@@ -55,7 +58,7 @@ export class CenterStage extends GameObjects.Container {
             }).setOrigin(0.5).setAlpha(0);
             this.add(oddsText);
 
-            this.slots.push({ image: null, nameText, oddsText });
+            this.slots.push({ image: null, nameText, oddsText, baseY: 0, baseScale: 0, idleTimer: null });
         }
 
         // --- ROLL OVERLAY (all hidden initially, rendered on top) ---
@@ -133,6 +136,8 @@ export class CenterStage extends GameObjects.Container {
             const pos = positions[i];
             const pet = topPets[i];
 
+            this.stopIdleAnim(i);
+
             if (slot.image) {
                 slot.image.destroy();
                 slot.image = null;
@@ -145,6 +150,10 @@ export class CenterStage extends GameObjects.Container {
                     .setScale(pos.scale);
                 this.add(slot.image);
                 this.sendToBack(slot.image);
+
+                slot.baseY = pos.y + PET_OFFSET_Y;
+                slot.baseScale = pos.scale;
+                this.startIdleAnim(i);
 
                 slot.nameText.setText(pet.name)
                     .setColor('#ffffff')
@@ -287,6 +296,74 @@ export class CenterStage extends GameObjects.Container {
                 },
             });
         });
+    }
+
+    private stopIdleAnim(i: number): void {
+        const slot = this.slots[i];
+        if (slot.image) this.scene.tweens.killTweensOf(slot.image);
+        if (slot.idleTimer) { slot.idleTimer.destroy(); slot.idleTimer = null; }
+    }
+
+    private startIdleAnim(i: number): void {
+        const slot = this.slots[i];
+        if (!slot.image) return;
+        // Stagger initial delay so pets don't sync
+        const delay = 1000 + Math.random() * 3000;
+        slot.idleTimer = this.scene.time.delayedCall(delay, () => this.playIdleAction(i));
+    }
+
+    private scheduleNextAction(i: number): void {
+        const slot = this.slots[i];
+        if (!slot.image) return;
+        const delay = 2500 + Math.random() * 4000;
+        slot.idleTimer = this.scene.time.delayedCall(delay, () => this.playIdleAction(i));
+    }
+
+    private playIdleAction(i: number): void {
+        const slot = this.slots[i];
+        if (!slot.image) return;
+        const img = slot.image;
+        const s = slot.baseScale;
+        const roll = Math.random();
+
+        if (roll < 0.4) {
+            // Hop with squash & stretch
+            this.scene.tweens.add({
+                targets: img,
+                scaleX: s * 0.92, scaleY: s * 1.08,
+                duration: 100, ease: 'Quad.easeOut',
+                onComplete: () => {
+                    this.scene.tweens.add({
+                        targets: img,
+                        y: slot.baseY - 12, scaleX: s, scaleY: s,
+                        duration: 200, yoyo: true, ease: 'Quad.easeOut',
+                        onComplete: () => {
+                            this.scene.tweens.add({
+                                targets: img,
+                                scaleX: s * 1.14, scaleY: s * 0.88,
+                                duration: 80, yoyo: true, ease: 'Quad.easeOut',
+                                onComplete: () => this.scheduleNextAction(i),
+                            });
+                        },
+                    });
+                },
+            });
+        } else if (roll < 0.7) {
+            // Wobble side to side
+            this.scene.tweens.add({
+                targets: img, angle: 8,
+                duration: 80, yoyo: true, repeat: 2, ease: 'Sine.easeInOut',
+                onComplete: () => { img.setAngle(0); this.scheduleNextAction(i); },
+            });
+        } else {
+            // Squish in place
+            this.scene.tweens.add({
+                targets: img,
+                scaleX: s * 1.12, scaleY: s * 0.9,
+                duration: 100, yoyo: true, repeat: 1, ease: 'Quad.easeOut',
+                onComplete: () => { img.setScale(s); this.scheduleNextAction(i); },
+            });
+        }
     }
 
     resetToEgg(): void {
