@@ -51,6 +51,7 @@ export interface SaveData {
     settings: { music: boolean; sfx: boolean; volume: number; sfxVolume: number };
     buffs: BuffState;
     rollLog: RollLogEntry[];
+    nickname: string;
 }
 
 export interface BuffState {

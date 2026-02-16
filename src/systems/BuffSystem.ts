@@ -27,9 +27,11 @@ export class BuffSystem {
         this.counts.epic = Math.min(this.counts.epic + n, BUFF_CONFIG.epic.maxStack);
     }
 
+    /** Add 30s to autoroll bank. If not currently running, bank it (paused). */
     activateAutoroll(): void {
+        const wasRunning = this.autorollMs > 0 && !this.autorollPaused;
         this.autorollMs += BUFF_CONFIG.autoroll.duration;
-        this.autorollPaused = false;
+        if (!wasRunning) this.autorollPaused = true;
     }
 
     stopAutoroll(): void {

@@ -96,11 +96,19 @@ export const PET_OFFSET_Y = 0;
 export const ROLL_BTN = { x: 418, y: 435, width: 340, height: 55 };
 
 export const BUFF_CONFIG = {
-    lucky:    { multiplier: 2, rollsPerAd: 3, color: 0x27ae60, colorHex: '#27ae60' },
-    super:    { multiplier: 3, rollsPerAd: 1, offerCooldown: 15_000, offerDuration: 15_000, color: 0xff9d43, colorHex: '#ff9d43' },
-    epic:     { multiplier: 5, timer: 30_000, maxStack: 10, color: 0xe74c3c, colorHex: '#e74c3c' },
-    autoroll: { duration: 60_000, color: 0x1abc9c, colorHex: '#1abc9c' },
+    lucky:    { multiplier: 2, rollsPerAd: 1, color: 0x27ae60, colorHex: '#27ae60' },
+    super:    { multiplier: 3, rollsPerAd: 1, offerCooldown: 15_000, offerDuration: 15_000, color: 0x3498db, colorHex: '#3498db' },
+    epic:     { multiplier: 5, timer: 30_000, maxStack: 10, color: 0xffc107, colorHex: '#ffc107' },
+    autoroll: { duration: 30_000, color: 0xff9d43, colorHex: '#ff9d43' },
 } as const;
+
+export const LEFT_PANEL = { x: 12, w: 155 };
+
+export const BONUS_PANEL = {
+    x: GAME_WIDTH - 143 - 12, y: 0,
+    w: 143, iconSize: 56, padding: 5,
+    gap: 7,
+};
 
 export const AUTOROLL_INTERVAL = 500;
 

@@ -4,7 +4,7 @@ export const en: Record<string, string> = {
     'xp': 'XP',
 
     // Roll
-    'roll_button': 'ROLL!',
+    'roll_button': 'ROLL',
     'rolling': 'Hatching...',
 
     // Results
@@ -43,7 +43,7 @@ export const en: Record<string, string> = {
     'tip_lucky': 'x2 luck for 3 rolls',
     'tip_super': 'x3 luck for 1 roll',
     'tip_epic': 'x5 luck for 1 roll',
-    'tip_autoroll': 'Auto-rolls for 60s',
+    'tip_autoroll': 'Auto-rolls for 30s',
 
     // Left Panel
     'recent_rolls': 'Recent',
@@ -73,8 +73,18 @@ export const en: Record<string, string> = {
     'settings_volume': 'Volume',
 
     // New UI
-    'ads_badge': 'ADS',
-    'collection_button': 'Collection',
+    'ads_badge': 'ADs',
+    'collection_button': 'Collections',
+
+    // Leaderboard & Nickname
+    'leaderboard_title': 'TOP Players',
+    'nickname_prompt': 'Enter your name',
+    'nickname_ok': 'OK',
+    'bonus_get': 'GET',
+    'buff_get': 'GET',
+    'default_nickname': 'Player',
+    'leaderboard_player': 'PLAYER',
+    'leaderboard_rarity': 'RARITY',
 
     // Pause
     'paused': 'PAUSED',

@@ -1,7 +1,7 @@
 import { SaveData } from '../types';
 
 const SAVE_KEY = 'pets_go_lite_save';
-const CURRENT_VERSION = 4;
+const CURRENT_VERSION = 5;
 
 function getDefaults(): SaveData {
     return {
@@ -13,6 +13,7 @@ function getDefaults(): SaveData {
         settings: { music: true, sfx: true, volume: 0.3, sfxVolume: 0.2 },
         buffs: { lucky: 0, super: 0, epic: 0, autoroll: 0, autorollPaused: false },
         rollLog: [],
+        nickname: '',
     };
 }
 
@@ -32,6 +33,10 @@ function migrate(data: SaveData): SaveData {
             autorollPaused: false,
         };
         data.version = 4;
+    }
+    if (data.version === 4) {
+        data.nickname = data.nickname ?? '';
+        data.version = 5;
     }
     return data;
 }
@@ -72,6 +77,15 @@ export class SaveSystem {
 
     getData(): SaveData {
         return this.data;
+    }
+
+    getNickname(): string {
+        return this.data.nickname;
+    }
+
+    setNickname(name: string): void {
+        this.data.nickname = name;
+        this.save();
     }
 
     reset(): void {

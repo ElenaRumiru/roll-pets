@@ -4,7 +4,7 @@ export const ru: Record<string, string> = {
     'xp': 'ОПЫТ',
 
     // Roll
-    'roll_button': 'РОЛЛ!',
+    'roll_button': 'РОЛЛ',
     'rolling': 'Вылупляется...',
 
     // Results
@@ -43,7 +43,7 @@ export const ru: Record<string, string> = {
     'tip_lucky': 'x2 удача на 3 ролла',
     'tip_super': 'x3 удача на 1 ролл',
     'tip_epic': 'x5 удача на 1 ролл',
-    'tip_autoroll': 'Авто-ролл 60 сек',
+    'tip_autoroll': 'Авто-ролл 30 сек',
 
     // Left Panel
     'recent_rolls': 'Последние',
@@ -73,8 +73,18 @@ export const ru: Record<string, string> = {
     'settings_volume': 'Громкость',
 
     // New UI
-    'ads_badge': 'ADS',
+    'ads_badge': 'ADs',
     'collection_button': 'Коллекция',
+
+    // Leaderboard & Nickname
+    'leaderboard_title': 'ТОП РЕЙТИНГ',
+    'nickname_prompt': 'Введите имя',
+    'nickname_ok': 'OK',
+    'bonus_get': 'ВЗЯТЬ',
+    'buff_get': 'ВЗЯТЬ',
+    'default_nickname': 'Игрок',
+    'leaderboard_player': 'ИГРОК',
+    'leaderboard_rarity': 'РЕДКОСТЬ',
 
     // Pause
     'paused': 'ПАУЗА',

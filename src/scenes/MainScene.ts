@@ -1,5 +1,5 @@
 import { Scene } from 'phaser';
-import { GAME_WIDTH, GAME_HEIGHT, AUTOROLL_INTERVAL, xpForLevel, UI } from '../core/config';
+import { GAME_WIDTH, GAME_HEIGHT, AUTOROLL_INTERVAL, xpForLevel, UI, getOddsString } from '../core/config';
 import { EventBus } from '../core/EventBus';
 import { GameManager } from '../core/GameManager';
 import { TopBar } from '../ui/TopBar';
@@ -8,6 +8,9 @@ import { RightPanel } from '../ui/RightPanel';
 import { CollectionButton } from '../ui/CollectionButton';
 import { SettingsButton } from '../ui/SettingsButton';
 import { SettingsPanel } from '../ui/SettingsPanel';
+import { BonusPanel } from '../ui/BonusPanel';
+import { Leaderboard } from '../ui/Leaderboard';
+import { NicknamePrompt } from '../ui/NicknamePrompt';
 import { showFloatingText } from '../ui/components/FloatingText';
 import { PETS } from '../data/pets';
 import { PetDef, Rarity, RollResult } from '../types';
@@ -21,10 +24,11 @@ export class MainScene extends Scene {
     private rightPanel!: RightPanel;
     private collectionBtn!: CollectionButton;
     private settingsPanel!: SettingsPanel;
+    private bonusPanel!: BonusPanel;
+    private leaderboard!: Leaderboard;
     private audio!: AudioSystem;
     private bgImage!: Phaser.GameObjects.Image;
     private autorollTimer = 0;
-    private pulseTimer = 0;
     private isPaused = false;
     private wasAutorollActive = false;
     private pauseOverlay!: Phaser.GameObjects.Container;
@@ -35,7 +39,20 @@ export class MainScene extends Scene {
 
     create(): void {
         this.manager = new GameManager();
+        this.buildUI();
 
+        // Show nickname prompt if needed (non-blocking, overlay on top of game)
+        const nickname = this.manager.save.getNickname();
+        if (!nickname) {
+            new NicknamePrompt((name: string) => {
+                this.manager.save.setNickname(name);
+                this.topBar.setNickname(name);
+                this.leaderboard.updatePlayerEntry(name, this.getPlayerBestOdds(), 30);
+            });
+        }
+    }
+
+    private buildUI(): void {
         // Background image
         this.bgImage = this.add.image(GAME_WIDTH / 2, GAME_HEIGHT / 2, this.manager.getBgImageKey())
             .setDisplaySize(GAME_WIDTH, GAME_HEIGHT)
@@ -43,15 +60,21 @@ export class MainScene extends Scene {
 
         // UI components
         this.topBar = new TopBar(this);
+        this.topBar.setNickname(this.manager.save.getNickname() || t('default_nickname'));
+
+        this.leaderboard = new Leaderboard(this);
         this.centerStage = new CenterStage(this);
+
         this.rightPanel = new RightPanel(
             this,
             () => EventBus.emit('roll-requested'),
-            (type: string) => this.handleBuffRequest(type),
             () => EventBus.emit('autoroll-stop'),
             () => EventBus.emit('autoroll-resume'),
         );
+
         this.collectionBtn = new CollectionButton(this, () => this.scene.start('CollectionScene'));
+
+        this.bonusPanel = new BonusPanel(this, (type: string) => this.handleBuffRequest(type));
 
         // Audio
         const settings = this.manager.save.getData().settings;
@@ -96,6 +119,9 @@ export class MainScene extends Scene {
             this.centerStage.setAutorollOverlay(true);
             this.rightPanel.setDepth(105);
             this.topBar.setDepth(105);
+            this.bonusPanel.setDepth(105);
+            this.leaderboard.setDepth(105);
+            this.collectionBtn.setDepth(105);
         }
 
         // Initial UI update
@@ -103,7 +129,7 @@ export class MainScene extends Scene {
     }
 
     update(_time: number, delta: number): void {
-        if (this.isPaused) return;
+        if (this.isPaused || !this.manager) return;
         this.manager.update(delta);
 
         // Autoroll
@@ -123,33 +149,30 @@ export class MainScene extends Scene {
             this.centerStage.setAutorollOverlay(true);
             this.rightPanel.setDepth(105);
             this.topBar.setDepth(105);
+            this.bonusPanel.setDepth(105);
+            this.leaderboard.setDepth(105);
+            this.collectionBtn.setDepth(105);
         } else if (!autoActive && this.wasAutorollActive) {
             this.centerStage.setAutorollOverlay(false);
             this.rightPanel.setDepth(0);
             this.topBar.setDepth(0);
+            this.bonusPanel.setDepth(0);
+            this.leaderboard.setDepth(0);
+            this.collectionBtn.setDepth(0);
         }
         this.wasAutorollActive = autoActive;
 
-        // Update buff display
+        // Update buff displays
         this.rightPanel.updateBuffDisplay(this.manager.buffs);
+        this.bonusPanel.updateBuffDisplay(this.manager.buffs);
 
-        // Roll button pulse every 5s (skip during autoroll)
-        if (!autoActive) {
-            this.pulseTimer += delta;
-            if (this.pulseTimer >= 5_000) {
-                this.pulseTimer = 0;
-                this.rightPanel.pulseRollButton();
-            }
-        }
     }
 
     private handleBuffRequest(type: string): void {
-        // Epic is free (timer-based), grant directly
         if (type === 'epic') {
             EventBus.emit('buff-requested', type);
             return;
         }
-        // Lucky, Super, Autoroll require ads
         if (type === 'lucky' || type === 'super' || type === 'autoroll') {
             const sdk = this.registry.get('platformSDK');
             if (sdk) {
@@ -157,7 +180,6 @@ export class MainScene extends Scene {
                     if (success) EventBus.emit('buff-requested', type);
                 });
             } else {
-                // Dev mode: grant immediately
                 EventBus.emit('buff-requested', type);
             }
         }
@@ -185,8 +207,9 @@ export class MainScene extends Scene {
         this.bgImage.setTexture(data.bgKey);
     }
 
-    private onBuffActivated(_buff: string): void {
+    private onBuffActivated(buff: string): void {
         this.refreshUI();
+        this.bonusPanel.onBuffClaimed(buff);
     }
 
     private onBuffsChanged(): void {
@@ -198,7 +221,9 @@ export class MainScene extends Scene {
         this.wasAutorollActive = false;
         this.rightPanel.setDepth(0);
         this.topBar.setDepth(0);
-        // Sync autorollActive flag BEFORE setRolling so button shows "ROLL!" not "STOP"
+        this.bonusPanel.setDepth(0);
+        this.leaderboard.setDepth(0);
+        this.collectionBtn.setDepth(0);
         this.rightPanel.updateBuffDisplay(this.manager.buffs);
         this.rightPanel.setRolling(this.manager.isRolling);
     }
@@ -247,11 +272,21 @@ export class MainScene extends Scene {
             .slice(0, 3);
     }
 
+    private getPlayerBestOdds(): string {
+        const collected = PETS.filter(p => this.manager.progression.collection.has(p.id));
+        if (collected.length === 0) return '1/2';
+        const best = collected.reduce((a, b) => a.chance > b.chance ? a : b);
+        return getOddsString(best.chance);
+    }
+
     private refreshUI(): void {
         const p = this.manager.progression;
         const needed = xpForLevel(p.level);
         this.topBar.updateDisplay(p.level, p.getXpProgress(), p.xp, needed);
-        this.collectionBtn.updateCount(p.collection.size, p.collection);
+        this.collectionBtn.updateCount(p.collection.size);
+
+        const nickname = this.manager.save.getNickname() || t('default_nickname');
+        this.leaderboard.updatePlayerEntry(nickname, this.getPlayerBestOdds(), 30);
 
         const topPets = this.getTopPets();
         this.centerStage.updatePedestals(topPets);
