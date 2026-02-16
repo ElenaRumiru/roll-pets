@@ -22,6 +22,7 @@ export class MainScene extends Scene {
     private collectionBtn!: CollectionButton;
     private settingsPanel!: SettingsPanel;
     private audio!: AudioSystem;
+    private bgImage!: Phaser.GameObjects.Image;
     private autorollTimer = 0;
     private pulseTimer = 0;
     private isPaused = false;
@@ -36,7 +37,7 @@ export class MainScene extends Scene {
         this.manager = new GameManager();
 
         // Background image
-        this.add.image(GAME_WIDTH / 2, GAME_HEIGHT / 2, 'bg_meadow')
+        this.bgImage = this.add.image(GAME_WIDTH / 2, GAME_HEIGHT / 2, this.manager.getBgImageKey())
             .setDisplaySize(GAME_WIDTH, GAME_HEIGHT)
             .setDepth(-1);
 
@@ -62,8 +63,8 @@ export class MainScene extends Scene {
         this.settingsPanel = new SettingsPanel(this, this.audio, this.manager.save);
         new SettingsButton(this, () => this.settingsPanel.show());
 
-        // Set initial egg tier
-        this.centerStage.setEggTier(this.manager.getEggTier());
+        // Set initial egg image
+        this.centerStage.setEggImage(this.manager.getEggImageKey());
 
         // Listen for events
         EventBus.on('roll-requested', this.onRollRequested, this);
@@ -175,12 +176,13 @@ export class MainScene extends Scene {
         });
     }
 
-    private onLevelUp(data: { level: number }): void {
+    private onLevelUp(data: { level: number; eggKey: string; bgKey: string }): void {
         showFloatingText(
             this, GAME_WIDTH / 2, GAME_HEIGHT / 2 - 100,
             `${t('level_up')} ${data.level}`, '#ffc107', 24,
         );
-        this.centerStage.setEggTier(this.manager.getEggTier());
+        this.centerStage.setEggImage(data.eggKey);
+        this.bgImage.setTexture(data.bgKey);
     }
 
     private onBuffActivated(_buff: string): void {

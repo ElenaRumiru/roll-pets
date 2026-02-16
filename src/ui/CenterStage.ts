@@ -1,7 +1,8 @@
 import { GameObjects, Scene } from 'phaser';
 import { GAME_WIDTH, GAME_HEIGHT, RARITY, UI, PEDESTAL, PET_OFFSET_Y, getOddsString } from '../core/config';
-import { EggTier, PetDef, RollResult } from '../types';
+import { PetDef, RollResult } from '../types';
 import { AudioSystem } from '../systems/AudioSystem';
+import { IdleWobbleFX } from './IdleWobbleFX';
 import { t } from '../data/locales';
 
 const CX = GAME_WIDTH / 2;
@@ -11,10 +12,6 @@ interface PedestalSlot {
     image: GameObjects.Image | null;
     nameText: GameObjects.Text;
     oddsText: GameObjects.Text;
-    baseX: number;
-    baseY: number;
-    baseScale: number;
-    idleTimer: { destroy(): void } | null;
 }
 
 export class CenterStage extends GameObjects.Container {
@@ -25,8 +22,7 @@ export class CenterStage extends GameObjects.Container {
     // Roll overlay elements
     private overlay: GameObjects.Rectangle;
     private eggContainer: GameObjects.Container;
-    private egg: GameObjects.Ellipse;
-    private eggSpots: GameObjects.Ellipse[] = [];
+    private egg: GameObjects.Image;
     private revealImage: GameObjects.Image | null = null;
     private revealName: GameObjects.Text;
     private revealRarity: GameObjects.Text;
@@ -60,7 +56,7 @@ export class CenterStage extends GameObjects.Container {
             }).setOrigin(0.5).setAlpha(0);
             this.add(oddsText);
 
-            this.slots.push({ image: null, nameText, oddsText, baseX: 0, baseY: 0, baseScale: 0, idleTimer: null });
+            this.slots.push({ image: null, nameText, oddsText });
         }
 
         // --- ROLL OVERLAY (all hidden initially, rendered on top) ---
@@ -71,18 +67,8 @@ export class CenterStage extends GameObjects.Container {
 
         // Egg container
         this.eggContainer = scene.add.container(CX, CY).setAlpha(0).setDepth(101);
-        this.egg = scene.add.ellipse(0, 0, 76, 96, 0xf5f5f5)
-            .setStrokeStyle(3, 0xcccccc);
+        this.egg = scene.add.image(0, 0, 'egg_1').setDisplaySize(240, 240);
         this.eggContainer.add(this.egg);
-
-        for (let i = 0; i < 3; i++) {
-            const spot = scene.add.ellipse(
-                -15 + i * 15, -10 + (i % 2) * 20,
-                10, 10, 0x81c784, 0.6,
-            );
-            this.eggSpots.push(spot);
-            this.eggContainer.add(spot);
-        }
 
         // Reveal elements (on top of overlay)
         this.revealName = scene.add.text(CX, CY + 65, '', {
@@ -124,10 +110,8 @@ export class CenterStage extends GameObjects.Container {
         this.audio = audio;
     }
 
-    setEggTier(tier: EggTier): void {
-        this.egg.setFillStyle(tier.color);
-        this.egg.setStrokeStyle(3, tier.accentColor);
-        this.eggSpots.forEach(s => s.setFillStyle(tier.accentColor, 0.6));
+    setEggImage(key: string): void {
+        this.egg.setTexture(key);
     }
 
     updatePedestals(topPets: PetDef[]): void {
@@ -138,8 +122,6 @@ export class CenterStage extends GameObjects.Container {
             const pos = positions[i];
             const pet = topPets[i];
 
-            this.stopIdleAnim(i);
-
             if (slot.image) {
                 slot.image.destroy();
                 slot.image = null;
@@ -149,21 +131,24 @@ export class CenterStage extends GameObjects.Container {
                 const cfg = RARITY[pet.rarity];
 
                 slot.image = this.scene.add.image(pos.x, pos.y + PET_OFFSET_Y, pet.imageKey)
-                    .setScale(pos.scale);
+                    .setScale(pos.scale)
+                    .setOrigin(0.5, 1);
+                slot.image.setPostPipeline(IdleWobbleFX);
+                const fx = slot.image.getPostPipeline(IdleWobbleFX) as IdleWobbleFX;
+                if (fx) fx.setPhase(i * 1.5);
                 this.add(slot.image);
                 this.sendToBack(slot.image);
 
-                slot.baseX = pos.x;
-                slot.baseY = pos.y + PET_OFFSET_Y;
-                slot.baseScale = pos.scale;
-                this.startIdleAnim(i);
-
+                // Position text above the pet image top
+                const topY = slot.image.y - slot.image.displayHeight;
                 slot.nameText.setText(pet.name)
+                    .setPosition(pos.x, topY - 38)
                     .setColor('#ffffff')
                     .setStroke('#000000', UI.STROKE_THICK)
                     .setAlpha(1);
 
                 slot.oddsText.setText(getOddsString(pet.chance))
+                    .setPosition(pos.x, topY - 20)
                     .setColor(cfg.colorHex)
                     .setStroke(cfg.outlineHex, UI.STROKE_MEDIUM)
                     .setAlpha(1);
@@ -305,54 +290,6 @@ export class CenterStage extends GameObjects.Container {
             });
         });
     }
-
-    private stopIdleAnim(i: number): void {
-        const slot = this.slots[i];
-        if (slot.image) this.scene.tweens.killTweensOf(slot.image);
-        if (slot.idleTimer) { slot.idleTimer.destroy(); slot.idleTimer = null; }
-    }
-
-    private startIdleAnim(i: number): void {
-        const slot = this.slots[i];
-        if (!slot.image) return;
-        const delay = 1000 + Math.random() * 3000;
-        slot.idleTimer = this.scene.time.delayedCall(delay, () => this.playHop(i));
-    }
-
-    private playHop(i: number): void {
-        const slot = this.slots[i];
-        if (!slot.image) return;
-        const img = slot.image;
-        const s = slot.baseScale;
-
-        // Squash down before jump
-        this.scene.tweens.add({
-            targets: img,
-            scaleX: s * 0.92, scaleY: s * 1.08,
-            duration: 100, ease: 'Quad.easeOut',
-            onComplete: () => {
-                // Jump up
-                this.scene.tweens.add({
-                    targets: img,
-                    y: slot.baseY - 12, scaleX: s, scaleY: s,
-                    duration: 200, yoyo: true, ease: 'Quad.easeOut',
-                    onComplete: () => {
-                        // Landing squash
-                        this.scene.tweens.add({
-                            targets: img,
-                            scaleX: s * 1.14, scaleY: s * 0.88,
-                            duration: 80, yoyo: true, ease: 'Quad.easeOut',
-                            onComplete: () => {
-                                const next = 2500 + Math.random() * 4000;
-                                slot.idleTimer = this.scene.time.delayedCall(next, () => this.playHop(i));
-                            },
-                        });
-                    },
-                });
-            },
-        });
-    }
-
     setAutorollOverlay(active: boolean): void {
         this.autorollOverlayActive = active;
         this.scene.tweens.killTweensOf(this.overlay);

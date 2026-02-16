@@ -1,6 +1,9 @@
-import { Scene } from 'phaser';
+import { Scene, Renderer } from 'phaser';
 import { GAME_WIDTH, GAME_HEIGHT } from '../core/config';
+import { IdleWobbleFX } from '../ui/IdleWobbleFX';
 import { PETS } from '../data/pets';
+import { TOTAL_EGGS } from '../data/eggs';
+import { TOTAL_BACKGROUNDS } from '../data/backgrounds';
 
 export class BootScene extends Scene {
     constructor() {
@@ -25,8 +28,15 @@ export class BootScene extends Scene {
             bar.width = 4 + 292 * value;
         });
 
-        // Background
-        this.load.image('bg_meadow', 'assets/bg_1.jpg');
+        // Backgrounds (bg_1 .. bg_14)
+        for (let i = 1; i <= TOTAL_BACKGROUNDS; i++) {
+            this.load.image(`bg_${i}`, `assets/backgrounds/bg_${i}.jpg`);
+        }
+
+        // Eggs (egg_1 .. egg_15)
+        for (let i = 1; i <= TOTAL_EGGS; i++) {
+            this.load.image(`egg_${i}`, `assets/eggs/egg_${i}.png`);
+        }
 
         // Audio
         this.load.audio('bgm', 'assets/audio/bgm.mp3');
@@ -43,6 +53,10 @@ export class BootScene extends Scene {
     }
 
     create(): void {
+        const renderer = this.game.renderer;
+        if (renderer instanceof Renderer.WebGL.WebGLRenderer) {
+            renderer.pipelines.addPostPipeline('IdleWobbleFX', IdleWobbleFX);
+        }
         this.scene.start('MainScene');
     }
 }

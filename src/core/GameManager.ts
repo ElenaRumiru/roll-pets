@@ -4,8 +4,8 @@ import { RNGSystem } from '../systems/RNGSystem';
 import { ProgressionSystem } from '../systems/ProgressionSystem';
 import { SaveSystem } from '../systems/SaveSystem';
 import { BuffSystem } from '../systems/BuffSystem';
-import { getEggTierForLevel, getEligiblePets } from '../data/eggs';
-import { getBackgroundForLevel } from '../data/backgrounds';
+import { getEggTierForLevel, getEligiblePets, getEggImageKey } from '../data/eggs';
+import { getBgImageKey } from '../data/backgrounds';
 import { RollResult } from '../types';
 
 export class GameManager {
@@ -65,8 +65,8 @@ export class GameManager {
         if (leveledUp) {
             EventBus.emit('level-up', {
                 level: this.progression.level,
-                egg: getEggTierForLevel(this.progression.level),
-                background: getBackgroundForLevel(this.progression.level),
+                eggKey: getEggImageKey(this.progression.level),
+                bgKey: getBgImageKey(this.progression.level),
             });
         }
 
@@ -127,5 +127,6 @@ export class GameManager {
     }
 
     getEggTier() { return getEggTierForLevel(this.progression.level); }
-    getBackground() { return getBackgroundForLevel(this.progression.level); }
+    getEggImageKey() { return getEggImageKey(this.progression.level); }
+    getBgImageKey() { return getBgImageKey(this.progression.level); }
 }

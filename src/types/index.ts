@@ -11,22 +11,9 @@ export interface PetDef {
 
 export interface EggTier {
     id: number;
-    name: string;
     levelMin: number;
     levelMax: number;
-    color: number;
-    accentColor: number;
-    particleColor: number;
     filter: number; // pets with chance <= filter are excluded from this egg
-}
-
-export interface BackgroundTheme {
-    id: string;
-    name: string;
-    levelMin: number;
-    levelMax: number;
-    gradientTop: number;
-    gradientBottom: number;
 }
 
 export interface RarityConfig {

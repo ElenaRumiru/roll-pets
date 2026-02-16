@@ -86,12 +86,12 @@ export const UI = {
 
 // Pedestal positions (match bg_1.jpg layout)
 export const PEDESTAL = {
-    first:  { x: 425, y: 250, scale: 0.55 },  // center, tallest
-    second: { x: 262, y: 278, scale: 0.45 },  // left, medium
-    third:  { x: 570, y: 303, scale: 0.40 },  // right, shortest
+    first:  { x: 421, y: 238, scale: 0.55 },  // center, tallest
+    second: { x: 268, y: 270, scale: 0.45 },  // left, medium
+    third:  { x: 570, y: 291, scale: 0.40 },  // right, shortest
 };
 
-export const PET_OFFSET_Y = -55;
+export const PET_OFFSET_Y = 0;
 
 export const ROLL_BTN = { x: 418, y: 435, width: 340, height: 55 };
 
