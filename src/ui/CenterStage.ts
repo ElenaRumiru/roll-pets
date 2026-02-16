@@ -9,6 +9,7 @@ const CX = GAME_WIDTH / 2;
 const CY = GAME_HEIGHT / 2;
 
 interface PedestalSlot {
+    shadow: GameObjects.Graphics | null;
     image: GameObjects.Image | null;
     nameText: GameObjects.Text;
     oddsText: GameObjects.Text;
@@ -56,7 +57,7 @@ export class CenterStage extends GameObjects.Container {
             }).setOrigin(0.5).setAlpha(0);
             this.add(oddsText);
 
-            this.slots.push({ image: null, nameText, oddsText });
+            this.slots.push({ shadow: null, image: null, nameText, oddsText });
         }
 
         // --- ROLL OVERLAY (all hidden initially, rendered on top) ---
@@ -122,6 +123,10 @@ export class CenterStage extends GameObjects.Container {
             const pos = positions[i];
             const pet = topPets[i];
 
+            if (slot.shadow) {
+                slot.shadow.destroy();
+                slot.shadow = null;
+            }
             if (slot.image) {
                 slot.image.destroy();
                 slot.image = null;
@@ -138,6 +143,24 @@ export class CenterStage extends GameObjects.Container {
                 if (fx) fx.setPhase(i * 1.5);
                 this.add(slot.image);
                 this.sendToBack(slot.image);
+
+                // Rhombus shadow under pet (behind image)
+                const sw = 92 * pos.scale;
+                const sh = 20 * pos.scale;
+                const sx = pos.x;
+                const sy = pos.y + PET_OFFSET_Y + 3;
+                slot.shadow = this.scene.add.graphics({ x: sx, y: sy });
+                slot.shadow.fillStyle(0x000000, 0.15);
+                slot.shadow.beginPath();
+                slot.shadow.moveTo(0, -sh);
+                slot.shadow.lineTo(sw, 0);
+                slot.shadow.lineTo(0, sh);
+                slot.shadow.lineTo(-sw, 0);
+                slot.shadow.closePath();
+                slot.shadow.fillPath();
+                slot.shadow.setRotation(-0.05);
+                this.add(slot.shadow);
+                this.sendToBack(slot.shadow);
 
                 // Position text above the pet image top
                 const topY = slot.image.y - slot.image.displayHeight;

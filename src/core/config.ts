@@ -86,7 +86,7 @@ export const UI = {
 
 // Pedestal positions (match bg_1.jpg layout)
 export const PEDESTAL = {
-    first:  { x: 421, y: 238, scale: 0.55 },  // center, tallest
+    first:  { x: 421, y: 233, scale: 0.55 },  // center, tallest
     second: { x: 268, y: 270, scale: 0.45 },  // left, medium
     third:  { x: 570, y: 291, scale: 0.40 },  // right, shortest
 };

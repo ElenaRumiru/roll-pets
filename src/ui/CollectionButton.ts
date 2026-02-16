@@ -1,4 +1,4 @@
-import { GameObjects, Scene } from 'phaser';
+import { GameObjects, Geom, Scene } from 'phaser';
 import { UI, GAME_HEIGHT, LEFT_PANEL } from '../core/config';
 import { t } from '../data/locales';
 
@@ -54,8 +54,11 @@ export class CollectionButton extends GameObjects.Container {
         }).setOrigin(0.5);
         this.add(this.badgeText);
 
-        this.setSize(PANEL_W, TOTAL_H);
-        this.setInteractive({ useHandCursor: true });
+        this.setInteractive(
+            new Geom.Rectangle(-5, -25, PANEL_W + 10, TOTAL_H + 30),
+            Geom.Rectangle.Contains,
+        );
+        this.input!.cursor = 'pointer';
         this.on('pointerdown', onClick);
 
         scene.add.existing(this);

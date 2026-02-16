@@ -70,7 +70,7 @@ src/
 │   ├── TopBar.ts                   # Level badge + XP bar (top-left, floating)
 │   ├── SettingsButton.ts          # Gear icon (top-right)
 │   ├── CollectionButton.ts        # Collection count (left side)
-│   ├── CenterStage.ts             # 3 pedestal slots + dark overlay roll animation
+│   ├── CenterStage.ts             # 3 pedestal slots + rhombus shadows + dark overlay roll animation
 │   ├── RightPanel.ts              # Roll button (bottom-center) + buff buttons (right) with ADS badges
 │   ├── PetCard.ts                  # Single pet card with image sprite (for collection grid)
 │   └── components/

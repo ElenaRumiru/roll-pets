@@ -135,6 +135,8 @@ export class BonusPanel extends GameObjects.Container {
         const getBtnBg = scene.add.graphics();
         getBtnBg.fillStyle(BTN_COLOR, 1);
         getBtnBg.fillRoundedRect(-BTN_W / 2, -BTN_H / 2, BTN_W, BTN_H, BTN_H / 2);
+        getBtnBg.lineStyle(UI.STROKE_MEDIUM, 0x000000, 0.35);
+        getBtnBg.strokeRoundedRect(-BTN_W / 2, -BTN_H / 2, BTN_W, BTN_H, BTN_H / 2);
         btnWrap.add(getBtnBg);
 
         const getBtnText = scene.add.text(0, 0, t('buff_get'), {
@@ -324,6 +326,8 @@ export class BonusPanel extends GameObjects.Container {
         g.clear();
         g.fillStyle(color, 1);
         g.fillRoundedRect(-BTN_W / 2, -BTN_H / 2, BTN_W, BTN_H, BTN_H / 2);
+        g.lineStyle(UI.STROKE_MEDIUM, 0x000000, 0.35);
+        g.strokeRoundedRect(-BTN_W / 2, -BTN_H / 2, BTN_W, BTN_H, BTN_H / 2);
         g.setAlpha(alpha);
     }
 }
