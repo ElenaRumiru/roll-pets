@@ -1,41 +1,57 @@
 import { GameObjects, Scene } from 'phaser';
-import { UI } from '../core/config';
+import { UI, LEFT_PANEL } from '../core/config';
 import { ProgressBar } from './components/ProgressBar';
 import { t } from '../data/locales';
 
+const PANEL_W = LEFT_PANEL.w;
+const PANEL_H = 52;
+const RADIUS = 10;
+
 export class TopBar extends GameObjects.Container {
-    private levelBadge: GameObjects.Graphics;
+    private nicknameText: GameObjects.Text;
     private levelText: GameObjects.Text;
     private xpBar: ProgressBar;
     private xpLabel: GameObjects.Text;
 
     constructor(scene: Scene) {
-        super(scene, 0, 0);
+        super(scene, LEFT_PANEL.x, 8);
 
-        // Level badge (rounded rectangle) — top-left
-        this.levelBadge = scene.add.graphics();
-        this.drawLevelBadge();
-        this.add(this.levelBadge);
+        // Semi-transparent black panel
+        const bg = scene.add.graphics();
+        bg.fillStyle(0x000000, 0.75);
+        bg.fillRoundedRect(0, 0, PANEL_W, PANEL_H, RADIUS);
+        this.add(bg);
 
-        this.levelText = scene.add.text(42, 18, '', {
+        // Nickname (top row, prominent)
+        this.nicknameText = scene.add.text(10, 6, '', {
             fontFamily: UI.FONT_MAIN,
-            fontSize: '14px',
+            fontSize: '13px',
             color: '#ffffff',
             stroke: '#000000',
             strokeThickness: UI.STROKE_MEDIUM,
-        }).setOrigin(0.5);
-        this.add(this.levelText);
+        });
+        this.add(this.nicknameText);
 
-        // XP bar — next to level badge
-        const barX = 86;
-        const barW = 200;
-        this.xpBar = new ProgressBar(scene, barX, 18, barW, 18, 0x222244, 0x4caf50);
-        this.add(this.xpBar);
-
-        // XP text (on bar)
-        this.xpLabel = scene.add.text(barX + barW / 2, 18, '', {
+        // Level text (bottom-left)
+        this.levelText = scene.add.text(10, 28, '', {
             fontFamily: UI.FONT_MAIN,
             fontSize: '11px',
+            color: '#ffffff',
+            stroke: '#000000',
+            strokeThickness: UI.STROKE_THIN,
+        });
+        this.add(this.levelText);
+
+        // XP bar (bottom-right area)
+        const barX = 54;
+        const barW = 90;
+        this.xpBar = new ProgressBar(scene, barX, 36, barW, 14, 0x222244, 0x4caf50);
+        this.add(this.xpBar);
+
+        // XP numbers overlay on bar
+        this.xpLabel = scene.add.text(barX + barW / 2, 36, '', {
+            fontFamily: UI.FONT_MAIN,
+            fontSize: '9px',
             color: '#ffffff',
             stroke: '#000000',
             strokeThickness: UI.STROKE_THIN,
@@ -45,18 +61,13 @@ export class TopBar extends GameObjects.Container {
         scene.add.existing(this);
     }
 
-    private drawLevelBadge(): void {
-        const g = this.levelBadge;
-        g.clear();
-        g.fillStyle(UI.ACCENT_ORANGE, 1);
-        g.fillRoundedRect(8, 5, 68, 26, 8);
-        g.lineStyle(2, 0x000000, 0.3);
-        g.strokeRoundedRect(8, 5, 68, 26, 8);
+    setNickname(name: string): void {
+        this.nicknameText.setText(name);
     }
 
     updateDisplay(level: number, xpProgress: number, xp: number, xpNeeded: number): void {
         this.levelText.setText(`${t('level')} ${level}`);
         this.xpBar.setProgress(xpProgress);
-        this.xpLabel.setText(`${xp} / ${xpNeeded} ${t('xp')}`);
+        this.xpLabel.setText(`${xp}/${xpNeeded}`);
     }
 }

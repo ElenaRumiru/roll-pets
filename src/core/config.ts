@@ -114,7 +114,7 @@ export const AUTOROLL_INTERVAL = 500;
 
 /** Level thresholds where egg + background visuals change (17 tiers) */
 export const VISUAL_TIERS = [
-    1, 12, 22, 35, 50, 70, 100, 140, 200, 280, 400, 550, 750, 1000, 1400, 2000, 3000,
+    1, 6, 12, 18, 25, 36, 52, 72, 102, 144, 205, 282, 385, 513, 718, 1026, 1538,
 ];
 
 /** Get visual tier index (1-based) for a given player level */

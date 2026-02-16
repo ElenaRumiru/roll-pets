@@ -63,7 +63,16 @@
       "mcp__plugin_playwright_playwright__browser_close",
       "mcp__plugin_context7_context7__resolve-library-id",
       "mcp__plugin_context7_context7__query-docs",
-      "Bash(taskkill:*)"
+      "Bash(taskkill:*)",
+      "Bash(npm ls:*)",
+      "Bash(node scripts/resize-ui.mjs:*)",
+      "Bash(npm run build:*)",
+      "Bash(curl:*)",
+      "mcp__plugin_playwright_playwright__browser_press_key",
+      "Bash(node -e:*)",
+      "mcp__plugin_playwright_playwright__browser_evaluate",
+      "mcp__plugin_playwright_playwright__browser_click",
+      "Bash(python3:*)"
     ]
   }
 }

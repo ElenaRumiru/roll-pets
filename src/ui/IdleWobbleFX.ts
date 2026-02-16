@@ -20,7 +20,7 @@ void main() {
     float factor = f * f * uv.y;
 
     // Horizontal sway — head rocks, feet planted
-    uv.x += sin(uTime * 2.8) * 0.017 * factor;
+    uv.x += sin(uTime * 2.8) * 0.0085 * factor;
 
     gl_FragColor = texture2D(uMainSampler, uv);
 }

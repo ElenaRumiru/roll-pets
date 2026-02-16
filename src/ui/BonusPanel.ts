@@ -5,6 +5,7 @@ import { t } from '../data/locales';
 
 interface BonusRow {
     container: GameObjects.Container;
+    glowWrap: GameObjects.Container;
     glow: GameObjects.Graphics;
     bg: GameObjects.Graphics;
     icon: GameObjects.Image;
@@ -65,9 +66,6 @@ export class BonusPanel extends GameObjects.Container {
             if (def.type === 'epic') {
                 this.addEpicProgress(scene, row);
                 row.glow.setVisible(false);
-                row.container.setScale(0.93);
-                row.container.x = ROW_W * 0.07;
-                row.container.y = ROW_H * 0.07;
             }
             if (def.type === 'super') this.addSuperTimer(scene, row);
             this.rows.push(row);
@@ -87,6 +85,9 @@ export class BonusPanel extends GameObjects.Container {
         this.add(container);
 
         const isEpic = def.type === 'epic';
+        // Glow wrapped in a center-anchored container for scale pulse
+        const glowWrap = scene.add.container(ROW_W / 2, ROW_H / 2);
+        container.add(glowWrap);
         const glow = scene.add.graphics();
         for (const { spread: s, alpha: a } of [
             { spread: isEpic ? 8 : 6, alpha: isEpic ? 0.25 : 0.15 },
@@ -95,12 +96,15 @@ export class BonusPanel extends GameObjects.Container {
             glow.fillStyle(def.color, a);
             glow.fillRoundedRect(-s, -s, ROW_W + s * 2, ROW_H + s * 2, RADIUS + s);
         }
-        container.add(glow);
+        glow.setPosition(-ROW_W / 2, -ROW_H / 2);
+        glowWrap.add(glow);
 
+        const glowDur = isEpic ? 600 : 700;
         scene.tweens.add({
             targets: glow, alpha: { from: 0.15, to: 1 },
-            duration: isEpic ? 600 : 700, yoyo: true, repeat: -1, ease: 'Sine.easeInOut',
+            duration: glowDur, yoyo: true, repeat: -1, ease: 'Sine.easeInOut',
         });
+
 
         const bg = scene.add.graphics();
         bg.fillStyle(0x000000, 0.6);
@@ -140,7 +144,7 @@ export class BonusPanel extends GameObjects.Container {
         btnWrap.add(getBtnText);
 
         return {
-            container, glow, bg, icon, label, btnWrap, getBtnBg, getBtnText,
+            container, glowWrap, glow, bg, icon, label, btnWrap, getBtnBg, getBtnText,
             type: def.type, offscreen: false,
         };
     }
@@ -290,15 +294,6 @@ export class BonusPanel extends GameObjects.Container {
             row.progressText!.setAlpha(ready ? 0 : 1);
             row.icon.setTexture(ready ? 'ui_x5chance_ready' : 'ui_x5chance');
             row.glow.setVisible(ready);
-            this.scene.tweens.add({
-                targets: row.container,
-                scaleX: ready ? 1 : 0.93,
-                scaleY: ready ? 1 : 0.93,
-                x: ready ? 0 : ROW_W * 0.07,
-                y: ready ? 0 : ROW_H * 0.07,
-                duration: 250,
-                ease: ready ? 'Back.easeOut' : 'Sine.easeIn',
-            });
             if (ready) {
                 this.drawBtn(row.getBtnBg, BTN_COLOR, 1);
                 row.container.setInteractive(
