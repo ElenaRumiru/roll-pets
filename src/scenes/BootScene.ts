@@ -28,12 +28,12 @@ export class BootScene extends Scene {
             bar.width = 4 + 292 * value;
         });
 
-        // Backgrounds (bg_1 .. bg_14)
+        // Backgrounds (location_1 .. location_17)
         for (let i = 1; i <= TOTAL_BACKGROUNDS; i++) {
-            this.load.image(`bg_${i}`, `assets/backgrounds/bg_${i}.jpg`);
+            this.load.image(`bg_${i}`, `assets/backgrounds/location_${i}.webp`);
         }
 
-        // Eggs (egg_1 .. egg_15)
+        // Eggs (egg_1 .. egg_17)
         for (let i = 1; i <= TOTAL_EGGS; i++) {
             this.load.image(`egg_${i}`, `assets/eggs/egg_${i}.png`);
         }
@@ -44,6 +44,15 @@ export class BootScene extends Scene {
         this.load.audio('sfx_wobble', 'assets/audio/sfx_wobble.mp3');
         this.load.audio('sfx_reveal', 'assets/audio/sfx_reveal.mp3');
         this.load.audio('sfx_new_pet', 'assets/audio/sfx_new_pet.mp3');
+
+        // UI assets
+        this.load.image('ui_roll', 'assets/ui/roll.png');
+        this.load.image('ui_collections', 'assets/ui/collections.png');
+        this.load.image('ui_x2chance', 'assets/ui/x2chance.png');
+        this.load.image('ui_x3chance', 'assets/ui/x3chance.png');
+        this.load.image('ui_x5chance', 'assets/ui/x5chance.png');
+        this.load.image('ui_x5chance_ready', 'assets/ui/x5chance_ready.png');
+        this.load.image('ui_auto', 'assets/ui/auto.png');
 
         // Pet images
         for (const pet of PETS) {

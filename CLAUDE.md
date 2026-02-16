@@ -95,7 +95,7 @@ src/
 
 **Resolution:** 836x470 (Poki-recommended 16:9). Phaser Scale.FIT fills the canvas on all devices.
 
-**Testing:** Always use Playwright MCP to test the game. At the start of every session, navigate to `http://localhost:8081/` via Playwright to verify the dev server is running. If it fails, ask the user to start it. After every code change, reload the page in Playwright and take a screenshot to verify visuals. Use `browser_console_messages` to check for errors. Click UI elements (ROLL button, Collection, etc.) to test interactions.
+**Testing:** Always use Playwright MCP to test the game. At the start of every session, navigate to `http://localhost:8080/` via Playwright to verify the dev server is running. Before launching Chrome, check if it's already open (Playwright will fail with a resource access error if Chrome is running). If it fails, ask the user to close Chrome or start the dev server. After every code change, reload the page in Playwright and take a screenshot to verify visuals. Use `browser_console_messages` to check for errors. Click UI elements (ROLL button, Collection, etc.) to test interactions.
 
 ## Key Constraints
 

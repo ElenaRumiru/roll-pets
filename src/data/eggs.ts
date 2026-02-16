@@ -1,7 +1,8 @@
 import { EggTier, PetDef } from '../types';
 import { PETS } from './pets';
+import { getVisualTier, VISUAL_TIERS } from '../core/config';
 
-export const TOTAL_EGGS = 15;
+export const TOTAL_EGGS = VISUAL_TIERS.length;
 
 export const EGG_TIERS: EggTier[] = [
     { id: 1, levelMin: 1,  levelMax: 5,  filter: 0 },
@@ -18,10 +19,9 @@ export function getEggTierForLevel(level: number): EggTier {
     return EGG_TIERS[0];
 }
 
-/** Egg image key for a given level (alternates with background changes) */
+/** Egg image key for a given level (changes at VISUAL_TIERS thresholds) */
 export function getEggImageKey(level: number): string {
-    const idx = Math.min(1 + Math.ceil((level - 1) / 2), TOTAL_EGGS);
-    return `egg_${idx}`;
+    return `egg_${getVisualTier(level)}`;
 }
 
 export function getEligiblePets(eggTier: EggTier): PetDef[] {

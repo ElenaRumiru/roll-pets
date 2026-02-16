@@ -112,6 +112,19 @@ export const BONUS_PANEL = {
 
 export const AUTOROLL_INTERVAL = 500;
 
+/** Level thresholds where egg + background visuals change (17 tiers) */
+export const VISUAL_TIERS = [
+    1, 12, 22, 35, 50, 70, 100, 140, 200, 280, 400, 550, 750, 1000, 1400, 2000, 3000,
+];
+
+/** Get visual tier index (1-based) for a given player level */
+export function getVisualTier(level: number): number {
+    for (let i = VISUAL_TIERS.length - 1; i >= 0; i--) {
+        if (level >= VISUAL_TIERS[i]) return i + 1;
+    }
+    return 1;
+}
+
 export function xpForLevel(level: number): number {
     return Math.floor(XP_BASE * Math.pow(XP_MULTIPLIER, level - 1));
 }

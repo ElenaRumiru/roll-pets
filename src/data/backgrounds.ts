@@ -1,7 +1,8 @@
-export const TOTAL_BACKGROUNDS = 14;
+import { getVisualTier, VISUAL_TIERS } from '../core/config';
 
-/** Background image key for a given level (alternates with egg changes) */
+export const TOTAL_BACKGROUNDS = VISUAL_TIERS.length;
+
+/** Background image key for a given level (changes at VISUAL_TIERS thresholds) */
 export function getBgImageKey(level: number): string {
-    const idx = Math.min(1 + Math.floor((level - 1) / 2), TOTAL_BACKGROUNDS);
-    return `bg_${idx}`;
+    return `bg_${getVisualTier(level)}`;
 }
