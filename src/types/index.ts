@@ -48,6 +48,7 @@ export interface SaveData {
     buffs: BuffState;
     rollLog: RollLogEntry[];
     nickname: string;
+    newPets: string[];
 }
 
 export interface BuffState {

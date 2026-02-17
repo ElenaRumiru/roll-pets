@@ -57,6 +57,7 @@ export class GameManager {
         const luckMultiplier = this.buffs.consumeForRoll();
         const pet = this.rng.rollPet(eligible, luckMultiplier);
         const result = this.progression.processRoll(pet);
+        if (result.isNew) this.save.addNewPet(result.pet.id);
 
         EventBus.emit('roll-complete', result);
         EventBus.emit('buffs-changed');

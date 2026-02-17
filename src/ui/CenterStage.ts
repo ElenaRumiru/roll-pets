@@ -50,10 +50,10 @@ export class CenterStage extends GameObjects.Container {
 
             const oddsText = scene.add.text(pos.x, pos.y + PET_OFFSET_Y - 74, '', {
                 fontFamily: UI.FONT_MAIN,
-                fontSize: '13px',
+                fontSize: '20px',
                 color: '#cccccc',
                 stroke: '#000000',
-                strokeThickness: UI.STROKE_MEDIUM,
+                strokeThickness: UI.STROKE_THICK,
             }).setOrigin(0.5).setAlpha(0);
             this.add(oddsText);
 
@@ -165,15 +165,15 @@ export class CenterStage extends GameObjects.Container {
                 // Position text above the pet image top
                 const topY = slot.image.y - slot.image.displayHeight;
                 slot.nameText.setText(pet.name)
-                    .setPosition(pos.x, topY - 38)
+                    .setPosition(pos.x, topY - 46)
                     .setColor('#ffffff')
                     .setStroke('#000000', UI.STROKE_THICK)
                     .setAlpha(1);
 
                 slot.oddsText.setText(getOddsString(pet.chance))
-                    .setPosition(pos.x, topY - 20)
+                    .setPosition(pos.x, topY - 22)
                     .setColor(cfg.colorHex)
-                    .setStroke(cfg.outlineHex, cfg.strokeThickness || 0)
+                    .setStroke(cfg.outlineHex, cfg.strokeThickness || UI.STROKE_MEDIUM)
                     .setAlpha(1);
             } else {
                 slot.nameText.setAlpha(0);

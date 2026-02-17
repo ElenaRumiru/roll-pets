@@ -7,7 +7,7 @@ import { Button } from '../ui/components/Button';
 import { t } from '../data/locales';
 import { Grade } from '../types';
 
-const GRID_TOP = 152;
+const GRID_TOP = 134;
 const GRID_H = GAME_HEIGHT - GRID_TOP;
 const COLS = 8;
 const CARD_SX = 100;
@@ -18,14 +18,17 @@ export class CollectionScene extends Scene {
     private scrollOffset = 0;
     private maxScroll = 0;
     private collection!: Set<string>;
+    private newPetIds!: Set<string>;
+    private save!: SaveSystem;
 
     constructor() {
         super('CollectionScene');
     }
 
     create(): void {
-        const save = new SaveSystem();
-        this.collection = new Set(save.getData().collection);
+        this.save = new SaveSystem();
+        this.collection = new Set(this.save.getData().collection);
+        this.newPetIds = new Set(this.save.getNewPets());
         this.scrollOffset = 0;
 
         this.add.rectangle(GAME_WIDTH / 2, GAME_HEIGHT / 2, GAME_WIDTH, GAME_HEIGHT, 0x12121e);
@@ -49,6 +52,7 @@ export class CollectionScene extends Scene {
         hdr.lineBetween(0, GRID_TOP, GAME_WIDTH, GRID_TOP);
 
         new Button(this, 55, 25, 90, 32, `← ${t('collection_back')}`, 0x444455, () => {
+            this.save.clearNewPets();
             this.scene.start('MainScene');
         });
 
@@ -75,49 +79,53 @@ export class CollectionScene extends Scene {
         const btnW = 68;
         const gap = 4;
 
-        // Row 1: All + first 6 grades
+        // Row 1: All + first 6 grades (button + count under each)
         const row1 = filters.slice(0, 7);
         const row1W = row1.length * btnW + (row1.length - 1) * gap;
         const row1X = GAME_WIDTH / 2 - row1W / 2 + btnW / 2;
-        const y1 = 68;
+        const y1 = 64;
 
         row1.forEach((f, i) => {
+            const x = row1X + i * (btnW + gap);
             const { label, color } = this.getFilterStyle(f);
-            new Button(this, row1X + i * (btnW + gap), y1, btnW, 24, label, color, () => {
+            new Button(this, x, y1, btnW, 24, label, color, () => {
                 this.scrollOffset = 0;
                 this.buildGrid(f);
             });
+            this.addFilterCount(f, x, y1 + 12);
         });
 
-        // Row 2: remaining grades
+        // Row 2: remaining grades (button + count under each)
         const row2 = filters.slice(7);
         if (row2.length > 0) {
             const row2W = row2.length * btnW + (row2.length - 1) * gap;
             const row2X = GAME_WIDTH / 2 - row2W / 2 + btnW / 2;
-            const y2 = 96;
+            const y2 = 106;
 
             row2.forEach((f, i) => {
+                const x = row2X + i * (btnW + gap);
                 const { label, color } = this.getFilterStyle(f);
-                new Button(this, row2X + i * (btnW + gap), y2, btnW, 24, label, color, () => {
+                new Button(this, x, y2, btnW, 24, label, color, () => {
                     this.scrollOffset = 0;
                     this.buildGrid(f);
                 });
+                this.addFilterCount(f, x, y2 + 12);
             });
         }
+    }
 
-        // Compact grade counts row
-        const y3 = 122;
-        const countW = Math.floor(GAME_WIDTH / GRADE_ORDER.length);
-        const countStart = (GAME_WIDTH - countW * GRADE_ORDER.length) / 2 + countW / 2;
-        GRADE_ORDER.forEach((g, i) => {
-            const total = getPetsByGrade(g).length;
-            const have = getPetsByGrade(g).filter(p => this.collection.has(p.id)).length;
-            this.add.text(countStart + i * countW, y3, `${have}/${total}`, {
-                fontFamily: UI.FONT_MAIN,
-                fontSize: '9px',
-                color: GRADE[g].colorHex,
-            }).setOrigin(0.5);
-        });
+    private addFilterCount(f: Grade | 'all', x: number, y: number): void {
+        if (f === 'all') {
+            this.add.text(x, y, `${this.collection.size}/${TOTAL_PETS}`, {
+                fontFamily: UI.FONT_MAIN, fontSize: '9px', color: '#aaaaaa',
+            }).setOrigin(0.5, 0);
+        } else {
+            const total = getPetsByGrade(f).length;
+            const have = getPetsByGrade(f).filter(p => this.collection.has(p.id)).length;
+            this.add.text(x, y, `${have}/${total}`, {
+                fontFamily: UI.FONT_MAIN, fontSize: '9px', color: GRADE[f].colorHex,
+            }).setOrigin(0.5, 0);
+        }
     }
 
     private getFilterStyle(f: Grade | 'all'): { label: string; color: number } {
@@ -140,7 +148,8 @@ export class CollectionScene extends Scene {
             const row = Math.floor(i / COLS);
             const x = startX + col * CARD_SX;
             const y = GRID_TOP + 60 + row * CARD_SY;
-            const card = new PetCard(this, x, y, pet, this.collection.has(pet.id));
+            const found = this.collection.has(pet.id);
+            const card = new PetCard(this, x, y, pet, found, found && this.newPetIds.has(pet.id));
             this.gridContainer.add(card);
         });
 

@@ -8,6 +8,7 @@ const TOTAL_H = 112;
 const RADIUS = 14;
 
 export class CollectionButton extends GameObjects.Container {
+    private badgeGfx: GameObjects.Graphics;
     private badgeText: GameObjects.Text;
 
     constructor(scene: Scene, onClick: () => void) {
@@ -38,14 +39,14 @@ export class CollectionButton extends GameObjects.Container {
         const badgeX = PANEL_W - 2;
         const badgeY = TOTAL_H - BG_H + 6;
         const badgeR = 10;
-        const badge = scene.add.graphics();
-        badge.lineStyle(2, 0x000000, 1);
-        badge.fillStyle(0xcc0000, 1);
-        badge.fillCircle(badgeX, badgeY, badgeR);
-        badge.strokeCircle(badgeX, badgeY, badgeR);
-        this.add(badge);
+        this.badgeGfx = scene.add.graphics();
+        this.badgeGfx.lineStyle(2, 0x000000, 1);
+        this.badgeGfx.fillStyle(0xcc0000, 1);
+        this.badgeGfx.fillCircle(badgeX, badgeY, badgeR);
+        this.badgeGfx.strokeCircle(badgeX, badgeY, badgeR);
+        this.add(this.badgeGfx);
 
-        this.badgeText = scene.add.text(badgeX, badgeY - 1, '3', {
+        this.badgeText = scene.add.text(badgeX, badgeY - 1, '', {
             fontFamily: UI.FONT_MAIN,
             fontSize: '11px',
             color: '#ffffff',
@@ -53,6 +54,9 @@ export class CollectionButton extends GameObjects.Container {
             strokeThickness: 1,
         }).setOrigin(0.5);
         this.add(this.badgeText);
+
+        this.badgeGfx.setVisible(false);
+        this.badgeText.setVisible(false);
 
         this.setInteractive(
             new Geom.Rectangle(-5, -25, PANEL_W + 10, TOTAL_H + 30),
@@ -64,7 +68,14 @@ export class CollectionButton extends GameObjects.Container {
         scene.add.existing(this);
     }
 
-    updateCount(_n: number): void {
-        // Counter removed by design — badge is a stub
+    updateCount(newCount: number): void {
+        if (newCount > 0) {
+            this.badgeText.setText(String(newCount));
+            this.badgeGfx.setVisible(true);
+            this.badgeText.setVisible(true);
+        } else {
+            this.badgeGfx.setVisible(false);
+            this.badgeText.setVisible(false);
+        }
     }
 }

@@ -3,7 +3,7 @@ import { PETS } from '../data/pets';
 import { getGradeForChance } from '../core/config';
 
 const SAVE_KEY = 'pets_go_lite_save';
-const CURRENT_VERSION = 6;
+const CURRENT_VERSION = 7;
 
 function getDefaults(): SaveData {
     return {
@@ -16,6 +16,7 @@ function getDefaults(): SaveData {
         buffs: { lucky: 0, super: 0, epic: 0, autoroll: 0, autorollPaused: false },
         rollLog: [],
         nickname: '',
+        newPets: [],
     };
 }
 
@@ -51,6 +52,10 @@ function migrate(data: SaveData): SaveData {
             }
         }
         data.version = 6;
+    }
+    if (data.version === 6) {
+        data.newPets = data.newPets ?? [];
+        data.version = 7;
     }
     return data;
 }
@@ -99,6 +104,20 @@ export class SaveSystem {
 
     setNickname(name: string): void {
         this.data.nickname = name;
+        this.save();
+    }
+
+    addNewPet(id: string): void {
+        this.data.newPets.push(id);
+        this.save();
+    }
+
+    getNewPets(): string[] {
+        return this.data.newPets;
+    }
+
+    clearNewPets(): void {
+        this.data.newPets = [];
         this.save();
     }
 

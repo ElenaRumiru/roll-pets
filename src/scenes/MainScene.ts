@@ -282,7 +282,7 @@ export class MainScene extends Scene {
         const p = this.manager.progression;
         const needed = xpForLevel(p.level);
         this.topBar.updateDisplay(p.level, p.getXpProgress(), p.xp, needed);
-        this.collectionBtn.updateCount(p.collection.size);
+        this.collectionBtn.updateCount(this.manager.save.getNewPets().length);
 
         const nickname = this.manager.save.getNickname() || t('default_nickname');
         this.leaderboard.updatePlayerEntry(nickname, this.getPlayerBestOdds(), 30);
