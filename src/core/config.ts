@@ -144,6 +144,14 @@ export const BONUS_PANEL = {
 
 export const AUTOROLL_INTERVAL = 500;
 
+export const ONBOARDING = {
+    arrowY: ROLL_BTN.y - 75,
+    arrowScale: 0.12,
+    bobDistance: 18,
+    bobDuration: 600,
+    idleTimeout: 10_000,
+};
+
 /** Level thresholds where egg + background visuals change (17 tiers) */
 export const VISUAL_TIERS = [
     1, 6, 12, 18, 25, 36, 52, 72, 102, 144, 205, 282, 385, 513, 718, 1026, 1538,

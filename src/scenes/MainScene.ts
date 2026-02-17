@@ -1,5 +1,5 @@
 import { Scene } from 'phaser';
-import { GAME_WIDTH, GAME_HEIGHT, AUTOROLL_INTERVAL, xpForLevel, UI, getOddsString } from '../core/config';
+import { GAME_WIDTH, GAME_HEIGHT, AUTOROLL_INTERVAL, xpForLevel, UI, getOddsString, ONBOARDING } from '../core/config';
 import { EventBus } from '../core/EventBus';
 import { GameManager } from '../core/GameManager';
 import { TopBar } from '../ui/TopBar';
@@ -11,6 +11,7 @@ import { SettingsPanel } from '../ui/SettingsPanel';
 import { BonusPanel } from '../ui/BonusPanel';
 import { Leaderboard } from '../ui/Leaderboard';
 import { NicknamePrompt } from '../ui/NicknamePrompt';
+import { ArrowHint } from '../ui/ArrowHint';
 import { showFloatingText } from '../ui/components/FloatingText';
 import { PETS } from '../data/pets';
 import { PetDef, RollResult } from '../types';
@@ -32,6 +33,8 @@ export class MainScene extends Scene {
     private isPaused = false;
     private wasAutorollActive = false;
     private pauseOverlay!: Phaser.GameObjects.Container;
+    private arrowHint: ArrowHint | null = null;
+    private idleTimer = 0;
 
     constructor() {
         super('MainScene');
@@ -48,7 +51,10 @@ export class MainScene extends Scene {
                 this.manager.save.setNickname(name);
                 this.topBar.setNickname(name);
                 this.leaderboard.updatePlayerEntry(name, this.getPlayerBestOdds(), 30);
+                if (this.manager.save.getData().totalRolls === 0) this.showArrowHint();
             });
+        } else if (this.manager.save.getData().totalRolls === 0) {
+            this.showArrowHint();
         }
     }
 
@@ -99,6 +105,10 @@ export class MainScene extends Scene {
 
         // Pause overlay
         this.pauseOverlay = this.createPauseOverlay();
+
+        // Idle tracking — reset timer on any input
+        this.input.on('pointerdown', () => { this.idleTimer = 0; });
+        this.input.keyboard?.on('keydown', () => { this.idleTimer = 0; });
 
         // Keyboard
         this.input.keyboard?.on('keydown-SPACE', () => {
@@ -166,6 +176,13 @@ export class MainScene extends Scene {
         this.rightPanel.updateBuffDisplay(this.manager.buffs);
         this.bonusPanel.updateBuffDisplay(this.manager.buffs);
 
+        // Idle arrow hint
+        this.idleTimer += delta;
+        if (this.idleTimer >= ONBOARDING.idleTimeout
+            && !this.manager.isRolling
+            && (!this.arrowHint || !this.arrowHint.visible)) {
+            this.showArrowHint();
+        }
     }
 
     private handleBuffRequest(type: string): void {
@@ -187,6 +204,8 @@ export class MainScene extends Scene {
 
     private onRollRequested(): void {
         this.audio.playSfx('sfx_click');
+        this.hideArrowHint();
+        this.idleTimer = 0;
     }
 
     private onRollComplete(result: RollResult): void {
@@ -289,6 +308,17 @@ export class MainScene extends Scene {
 
         const topPets = this.getTopPets();
         this.centerStage.updatePedestals(topPets);
+    }
+
+    private showArrowHint(): void {
+        if (this.arrowHint?.visible) return;
+        this.arrowHint = new ArrowHint(this);
+    }
+
+    private hideArrowHint(): void {
+        if (!this.arrowHint?.visible) return;
+        this.arrowHint.hide();
+        this.arrowHint = null;
     }
 
     shutdown(): void {
