@@ -12,6 +12,11 @@ export const en: Record<string, string> = {
     'duplicate': 'Duplicate',
     'level_up': 'LEVEL UP!',
 
+    // Level Up
+    'levelup_title': 'LEVEL UP!',
+    'levelup_new_egg': 'New Egg:',
+    'egg_effect': 'Rolls pets {odds} and more!',
+
     // Grades
     'grade_common': 'Common',
     'grade_uncommon': 'Uncommon',

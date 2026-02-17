@@ -19,6 +19,7 @@ export class CenterStage extends GameObjects.Container {
     private slots: PedestalSlot[] = [];
     private audio: AudioSystem | null = null;
     private autorollOverlayActive = false;
+    private keepOverlay = false;
 
     // Roll overlay elements
     private overlay: GameObjects.Rectangle;
@@ -289,8 +290,8 @@ export class CenterStage extends GameObjects.Container {
         // 5) Hold, then fade out reveal elements (shorter hold during autoroll)
         const holdTime = this.autorollOverlayActive ? 400 : 900;
         scene.time.delayedCall(holdTime, () => {
-            // Only fade overlay if autoroll is NOT keeping it persistent
-            if (!this.autorollOverlayActive) {
+            // Only fade overlay if nothing is keeping it persistent
+            if (!this.autorollOverlayActive && !this.keepOverlay) {
                 scene.tweens.add({
                     targets: this.overlay,
                     fillAlpha: 0,
@@ -313,6 +314,14 @@ export class CenterStage extends GameObjects.Container {
             });
         });
     }
+    setKeepOverlay(keep: boolean): void {
+        this.keepOverlay = keep;
+    }
+
+    getOverlay(): GameObjects.Rectangle {
+        return this.overlay;
+    }
+
     setAutorollOverlay(active: boolean): void {
         this.autorollOverlayActive = active;
         this.scene.tweens.killTweensOf(this.overlay);

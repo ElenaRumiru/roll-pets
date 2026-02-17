@@ -4,6 +4,7 @@ import { EventBus } from '../core/EventBus';
 import { GameManager } from '../core/GameManager';
 import { TopBar } from '../ui/TopBar';
 import { CenterStage } from '../ui/CenterStage';
+import { LevelUpOverlay } from '../ui/LevelUpOverlay';
 import { RightPanel } from '../ui/RightPanel';
 import { CollectionButton } from '../ui/CollectionButton';
 import { SettingsButton } from '../ui/SettingsButton';
@@ -12,9 +13,8 @@ import { BonusPanel } from '../ui/BonusPanel';
 import { Leaderboard } from '../ui/Leaderboard';
 import { NicknamePrompt } from '../ui/NicknamePrompt';
 import { ArrowHint } from '../ui/ArrowHint';
-import { showFloatingText } from '../ui/components/FloatingText';
 import { PETS } from '../data/pets';
-import { PetDef, RollResult } from '../types';
+import { PetDef, RollResult, LevelUpData } from '../types';
 import { AudioSystem } from '../systems/AudioSystem';
 import { t } from '../data/locales';
 
@@ -35,6 +35,8 @@ export class MainScene extends Scene {
     private pauseOverlay!: Phaser.GameObjects.Container;
     private arrowHint: ArrowHint | null = null;
     private idleTimer = 0;
+    private levelUpOverlay!: LevelUpOverlay;
+    private pendingLevelUp: LevelUpData | null = null;
 
     constructor() {
         super('MainScene');
@@ -70,6 +72,7 @@ export class MainScene extends Scene {
 
         this.leaderboard = new Leaderboard(this);
         this.centerStage = new CenterStage(this);
+        this.levelUpOverlay = new LevelUpOverlay(this, this.centerStage.getOverlay());
 
         this.rightPanel = new RightPanel(
             this,
@@ -214,19 +217,29 @@ export class MainScene extends Scene {
     private onRollComplete(result: RollResult): void {
         this.rightPanel.setRolling(true);
         this.centerStage.playHatch(result, () => {
-            this.manager.finishRoll();
-            this.rightPanel.setRolling(false);
-            this.refreshUI();
+            if (this.pendingLevelUp) {
+                const data = this.pendingLevelUp;
+                this.pendingLevelUp = null;
+                const autoActive = this.manager.buffs.isAutorollActive();
+                this.levelUpOverlay.show(data, autoActive, () => {
+                    this.centerStage.setEggImage(data.eggKey);
+                    this.bgImage.setTexture(data.bgKey);
+                    this.centerStage.setKeepOverlay(false);
+                    this.manager.finishRoll();
+                    this.rightPanel.setRolling(false);
+                    this.refreshUI();
+                });
+            } else {
+                this.manager.finishRoll();
+                this.rightPanel.setRolling(false);
+                this.refreshUI();
+            }
         });
     }
 
-    private onLevelUp(data: { level: number; eggKey: string; bgKey: string }): void {
-        showFloatingText(
-            this, GAME_WIDTH / 2, GAME_HEIGHT / 2 - 100,
-            `${t('level_up')} ${data.level}`, '#ffc107', 24,
-        );
-        this.centerStage.setEggImage(data.eggKey);
-        this.bgImage.setTexture(data.bgKey);
+    private onLevelUp(data: LevelUpData): void {
+        this.pendingLevelUp = data;
+        this.centerStage.setKeepOverlay(true);
     }
 
     private onBuffActivated(buff: string): void {

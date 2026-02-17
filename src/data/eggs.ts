@@ -1,6 +1,6 @@
 import { PetDef } from '../types';
 import { PETS } from './pets';
-import { getVisualTier, VISUAL_TIERS } from '../core/config';
+import { getVisualTier, VISUAL_TIERS, getOddsString } from '../core/config';
 
 export const TOTAL_EGGS = VISUAL_TIERS.length;
 
@@ -23,6 +23,24 @@ export function getEggFilterForLevel(level: number): number {
 /** Egg image key for a given level (changes at VISUAL_TIERS thresholds) */
 export function getEggImageKey(level: number): string {
     return `egg_${getVisualTier(level)}`;
+}
+
+/** Map egg image key (egg_1..egg_17) to a locale name key */
+export function getEggNameKey(eggImageKey: string): string {
+    const tier = parseInt(eggImageKey.replace('egg_', ''));
+    if (tier >= 15) return 'egg_cosmic';
+    if (tier >= 11) return 'egg_fire';
+    if (tier >= 8) return 'egg_crystal';
+    if (tier >= 5) return 'egg_golden';
+    return 'egg_basic';
+}
+
+/** Get formatted min odds string for a given level's egg pool */
+export function getEggMinOdds(level: number): string {
+    const eligible = getEligiblePets(level);
+    if (eligible.length === 0) return '1/2';
+    const minChance = eligible.reduce((min, p) => p.chance < min ? p.chance : min, Infinity);
+    return getOddsString(minChance);
 }
 
 export function getEligiblePets(level: number): PetDef[] {

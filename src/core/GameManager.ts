@@ -6,7 +6,7 @@ import { SaveSystem } from '../systems/SaveSystem';
 import { BuffSystem } from '../systems/BuffSystem';
 import { getEligiblePets, getEggImageKey } from '../data/eggs';
 import { getBgImageKey } from '../data/backgrounds';
-import { RollResult } from '../types';
+import { RollResult, LevelUpData } from '../types';
 
 export class GameManager {
     rng: RNGSystem;
@@ -62,13 +62,18 @@ export class GameManager {
         EventBus.emit('roll-complete', result);
         EventBus.emit('buffs-changed');
 
+        const oldEggKey = getEggImageKey(this.progression.level);
         const leveledUp = this.progression.checkLevelUp();
         if (leveledUp) {
-            EventBus.emit('level-up', {
+            const newEggKey = getEggImageKey(this.progression.level);
+            const levelUpData: LevelUpData = {
                 level: this.progression.level,
-                eggKey: getEggImageKey(this.progression.level),
+                eggKey: newEggKey,
                 bgKey: getBgImageKey(this.progression.level),
-            });
+                oldEggKey,
+                eggChanged: oldEggKey !== newEggKey,
+            };
+            EventBus.emit('level-up', levelUpData);
         }
 
         this.persistSave(result);

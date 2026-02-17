@@ -38,6 +38,14 @@ export interface RollLogEntry {
     xp: number;
 }
 
+export interface LevelUpData {
+    level: number;
+    eggKey: string;
+    bgKey: string;
+    oldEggKey: string;
+    eggChanged: boolean;
+}
+
 export interface SaveData {
     version: number;
     level: number;

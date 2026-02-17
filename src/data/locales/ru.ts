@@ -12,6 +12,11 @@ export const ru: Record<string, string> = {
     'duplicate': 'Дубликат',
     'level_up': 'УРОВЕНЬ!',
 
+    // Level Up
+    'levelup_title': 'НОВЫЙ УРОВЕНЬ!',
+    'levelup_new_egg': 'Новое яйцо:',
+    'egg_effect': 'Роллит питомцев {odds} и выше!',
+
     // Grades
     'grade_common': 'Обычный',
     'grade_uncommon': 'Необычный',
