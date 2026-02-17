@@ -1,43 +1,39 @@
-export type Rarity = 'common' | 'uncommon' | 'rare' | 'epic' | 'legendary';
+export type Grade =
+    | 'common' | 'uncommon' | 'improved' | 'rare' | 'valuable'
+    | 'elite' | 'epic' | 'heroic' | 'mythic' | 'ancient' | 'legendary'
+    | 'astral' | 'cosmic' | 'divine' | 'absolute';
 
 export interface PetDef {
     id: string;
     name: string;
     emoji: string;
     imageKey: string;
-    rarity: Rarity;
-    chance: number; // X from "1 in X" — individual pet drop chance
+    chance: number; // X from "1 in X" — grade derived via getGradeForChance()
 }
 
-export interface EggTier {
-    id: number;
-    levelMin: number;
-    levelMax: number;
-    filter: number; // pets with chance <= filter are excluded from this egg
-}
-
-export interface RarityConfig {
-    baseWeight: number;
+export interface GradeConfig {
     color: number;
     colorHex: string;
     outlineColor: number;
     outlineHex: string;
+    strokeThickness: number;
     label: string;
     xpNewPercent: number;
     xpDupPercent: number;
-    luckBonus: number;
+    minChance: number;
+    maxChance: number;
 }
 
 export interface RollResult {
     pet: PetDef;
     isNew: boolean;
     xpGained: number;
-    rarity: Rarity;
+    grade: Grade;
 }
 
 export interface RollLogEntry {
     id: string;
-    rarity: Rarity;
+    grade: Grade;
     isNew: boolean;
     xp: number;
 }
@@ -55,9 +51,9 @@ export interface SaveData {
 }
 
 export interface BuffState {
-    lucky: number;    // count of Lucky Rolls remaining
-    super: number;    // count of Super Rolls remaining
-    epic: number;     // count of Epic Rolls remaining
-    autoroll: number; // ms remaining for autoroll timer
-    autorollPaused: boolean; // true when user stopped autoroll (time preserved)
+    lucky: number;
+    super: number;
+    epic: number;
+    autoroll: number;
+    autorollPaused: boolean;
 }

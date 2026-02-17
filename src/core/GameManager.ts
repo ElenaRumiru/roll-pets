@@ -4,7 +4,7 @@ import { RNGSystem } from '../systems/RNGSystem';
 import { ProgressionSystem } from '../systems/ProgressionSystem';
 import { SaveSystem } from '../systems/SaveSystem';
 import { BuffSystem } from '../systems/BuffSystem';
-import { getEggTierForLevel, getEligiblePets, getEggImageKey } from '../data/eggs';
+import { getEligiblePets, getEggImageKey } from '../data/eggs';
 import { getBgImageKey } from '../data/backgrounds';
 import { RollResult } from '../types';
 
@@ -53,8 +53,7 @@ export class GameManager {
         if (this.isRolling) return;
         this.isRolling = true;
 
-        const eggTier = getEggTierForLevel(this.progression.level);
-        const eligible = getEligiblePets(eggTier);
+        const eligible = getEligiblePets(this.progression.level);
         const luckMultiplier = this.buffs.consumeForRoll();
         const pet = this.rng.rollPet(eligible, luckMultiplier);
         const result = this.progression.processRoll(pet);
@@ -72,7 +71,6 @@ export class GameManager {
         }
 
         this.persistSave(result);
-        // isRolling stays true until animation completes (finishRoll called)
     }
 
     finishRoll(): void {
@@ -113,7 +111,7 @@ export class GameManager {
             data.totalRolls++;
             data.rollLog.unshift({
                 id: result.pet.id,
-                rarity: result.rarity,
+                grade: result.grade,
                 isNew: result.isNew,
                 xp: result.xpGained,
             });
@@ -127,7 +125,6 @@ export class GameManager {
         this.buffs.update(deltaMs);
     }
 
-    getEggTier() { return getEggTierForLevel(this.progression.level); }
     getEggImageKey() { return getEggImageKey(this.progression.level); }
     getBgImageKey() { return getBgImageKey(this.progression.level); }
 }

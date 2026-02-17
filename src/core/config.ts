@@ -1,4 +1,4 @@
-import { Rarity, RarityConfig } from '../types';
+import { Grade, GradeConfig } from '../types';
 
 export const GAME_WIDTH = 836;
 export const GAME_HEIGHT = 470;
@@ -6,65 +6,97 @@ export const GAME_HEIGHT = 470;
 export const XP_BASE = 100;
 export const XP_MULTIPLIER = 1.15;
 
-export const RARITY_ORDER: Rarity[] = ['common', 'uncommon', 'rare', 'epic', 'legendary'];
+export const GRADE_ORDER: Grade[] = [
+    'common', 'uncommon', 'improved', 'rare', 'valuable',
+    'elite', 'epic', 'heroic', 'mythic', 'ancient', 'legendary',
+];
 
-export const RARITY: Record<Rarity, RarityConfig> = {
+export const GRADE: Record<string, GradeConfig> = {
     common: {
-        baseWeight: 60,
-        color: 0x9e9e9e,
-        colorHex: '#9e9e9e',
-        outlineColor: 0x323232,
-        outlineHex: '#323232',
-        label: 'Common',
-        xpNewPercent: 25,
-        xpDupPercent: 1,
-        luckBonus: 0,
+        color: 0x9e9e9e, colorHex: '#9e9e9e',
+        outlineColor: 0x323232, outlineHex: '#323232',
+        strokeThickness: 0, label: 'Common',
+        xpNewPercent: 25, xpDupPercent: 0.5,
+        minChance: 2, maxChance: 100,
     },
     uncommon: {
-        baseWeight: 25,
-        color: 0x71ff3e,
-        colorHex: '#71ff3e',
-        outlineColor: 0x2d4b1b,
-        outlineHex: '#2d4b1b',
-        label: 'Uncommon',
-        xpNewPercent: 25,
-        xpDupPercent: 2,
-        luckBonus: 0.2,
+        color: 0x88cc55, colorHex: '#88cc55',
+        outlineColor: 0x2d4b1b, outlineHex: '#2d4b1b',
+        strokeThickness: 2, label: 'Uncommon',
+        xpNewPercent: 25, xpDupPercent: 1,
+        minChance: 100, maxChance: 1_000,
+    },
+    improved: {
+        color: 0x2d8a2d, colorHex: '#2d8a2d',
+        outlineColor: 0x1a4a1a, outlineHex: '#1a4a1a',
+        strokeThickness: 2, label: 'Improved',
+        xpNewPercent: 25, xpDupPercent: 1.5,
+        minChance: 1_000, maxChance: 5_000,
     },
     rare: {
-        baseWeight: 10,
-        color: 0x42a5f5,
-        colorHex: '#42a5f5',
-        outlineColor: 0x1d414b,
-        outlineHex: '#1d414b',
-        label: 'Rare',
-        xpNewPercent: 25,
-        xpDupPercent: 3,
-        luckBonus: 0.15,
+        color: 0x42c9c9, colorHex: '#42c9c9',
+        outlineColor: 0x1d414b, outlineHex: '#1d414b',
+        strokeThickness: 2, label: 'Rare',
+        xpNewPercent: 25, xpDupPercent: 2,
+        minChance: 5_000, maxChance: 50_000,
+    },
+    valuable: {
+        color: 0x5dade2, colorHex: '#5dade2',
+        outlineColor: 0x1a3d5c, outlineHex: '#1a3d5c',
+        strokeThickness: 2, label: 'Valuable',
+        xpNewPercent: 25, xpDupPercent: 3,
+        minChance: 50_000, maxChance: 500_000,
+    },
+    elite: {
+        color: 0xa08cda, colorHex: '#a08cda',
+        outlineColor: 0x3a2e5c, outlineHex: '#3a2e5c',
+        strokeThickness: 2, label: 'Elite',
+        xpNewPercent: 25, xpDupPercent: 4,
+        minChance: 500_000, maxChance: 5_000_000,
     },
     epic: {
-        baseWeight: 4,
-        color: 0xce93d8,
-        colorHex: '#ce93d8',
-        outlineColor: 0x461a49,
-        outlineHex: '#461a49',
-        label: 'Epic',
-        xpNewPercent: 25,
-        xpDupPercent: 5,
-        luckBonus: 0.1,
+        color: 0xb060d0, colorHex: '#b060d0',
+        outlineColor: 0x461a49, outlineHex: '#461a49',
+        strokeThickness: 2, label: 'Epic',
+        xpNewPercent: 25, xpDupPercent: 5,
+        minChance: 5_000_000, maxChance: 50_000_000,
+    },
+    heroic: {
+        color: 0xe880a0, colorHex: '#e880a0',
+        outlineColor: 0x5c1a2e, outlineHex: '#5c1a2e',
+        strokeThickness: 2, label: 'Heroic',
+        xpNewPercent: 25, xpDupPercent: 6,
+        minChance: 50_000_000, maxChance: 250_000_000,
+    },
+    mythic: {
+        color: 0xffd700, colorHex: '#ffd700',
+        outlineColor: 0x5c4a00, outlineHex: '#5c4a00',
+        strokeThickness: 2, label: 'Mythic',
+        xpNewPercent: 25, xpDupPercent: 7,
+        minChance: 250_000_000, maxChance: 500_000_000,
+    },
+    ancient: {
+        color: 0xff8c00, colorHex: '#ff8c00',
+        outlineColor: 0x5c3200, outlineHex: '#5c3200',
+        strokeThickness: 2, label: 'Ancient',
+        xpNewPercent: 25, xpDupPercent: 8,
+        minChance: 500_000_000, maxChance: 750_000_000,
     },
     legendary: {
-        baseWeight: 1,
-        color: 0xffc107,
-        colorHex: '#ffc107',
-        outlineColor: 0x493719,
-        outlineHex: '#493719',
-        label: 'Legendary',
-        xpNewPercent: 25,
-        xpDupPercent: 10,
-        luckBonus: 0.05,
+        color: 0xff3333, colorHex: '#ff3333',
+        outlineColor: 0x5c1111, outlineHex: '#5c1111',
+        strokeThickness: 2, label: 'Legendary',
+        xpNewPercent: 25, xpDupPercent: 10,
+        minChance: 750_000_000, maxChance: 1_000_000_000,
     },
 };
+
+export function getGradeForChance(chance: number): Grade {
+    for (let i = GRADE_ORDER.length - 1; i >= 0; i--) {
+        if (chance >= GRADE[GRADE_ORDER[i]].minChance) return GRADE_ORDER[i];
+    }
+    return 'common';
+}
 
 // UI Style constants (PETS GO inspired)
 export const UI = {
@@ -86,9 +118,9 @@ export const UI = {
 
 // Pedestal positions (match bg_1.jpg layout)
 export const PEDESTAL = {
-    first:  { x: 421, y: 233, scale: 0.55 },  // center, tallest
-    second: { x: 268, y: 270, scale: 0.45 },  // left, medium
-    third:  { x: 570, y: 291, scale: 0.40 },  // right, shortest
+    first:  { x: 421, y: 233, scale: 0.55 },
+    second: { x: 268, y: 270, scale: 0.45 },
+    third:  { x: 570, y: 291, scale: 0.40 },
 };
 
 export const PET_OFFSET_Y = 0;
@@ -131,6 +163,7 @@ export function xpForLevel(level: number): number {
 
 /** Convert pet chance (X from "1 in X") to display string */
 export function getOddsString(chance: number): string {
+    if (chance >= 1_000_000_000) return `1/${(chance / 1_000_000_000).toFixed(1)}B`;
     if (chance >= 1_000_000) return `1/${(chance / 1_000_000).toFixed(1)}M`;
     if (chance >= 1_000) return `1/${(chance / 1_000).toFixed(1)}K`;
     return `1/${chance}`;

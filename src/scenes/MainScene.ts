@@ -13,7 +13,7 @@ import { Leaderboard } from '../ui/Leaderboard';
 import { NicknamePrompt } from '../ui/NicknamePrompt';
 import { showFloatingText } from '../ui/components/FloatingText';
 import { PETS } from '../data/pets';
-import { PetDef, Rarity, RollResult } from '../types';
+import { PetDef, RollResult } from '../types';
 import { AudioSystem } from '../systems/AudioSystem';
 import { t } from '../data/locales';
 
@@ -213,7 +213,9 @@ export class MainScene extends Scene {
     }
 
     private onBuffsChanged(): void {
-        this.refreshUI();
+        if (!this.manager.isRolling) {
+            this.refreshUI();
+        }
     }
 
     private onAutorollStop(): void {
@@ -263,12 +265,9 @@ export class MainScene extends Scene {
     }
 
     private getTopPets(): PetDef[] {
-        const rarityValue: Record<Rarity, number> = {
-            legendary: 5, epic: 4, rare: 3, uncommon: 2, common: 1,
-        };
         return PETS
             .filter(p => this.manager.progression.collection.has(p.id))
-            .sort((a, b) => rarityValue[b.rarity] - rarityValue[a.rarity])
+            .sort((a, b) => b.chance - a.chance)
             .slice(0, 3);
     }
 

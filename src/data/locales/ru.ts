@@ -12,12 +12,18 @@ export const ru: Record<string, string> = {
     'duplicate': 'Дубликат',
     'level_up': 'УРОВЕНЬ!',
 
-    // Rarity
-    'rarity_common': 'Обычный',
-    'rarity_uncommon': 'Необычный',
-    'rarity_rare': 'Редкий',
-    'rarity_epic': 'Эпический',
-    'rarity_legendary': 'Легендарный',
+    // Grades
+    'grade_common': 'Обычный',
+    'grade_uncommon': 'Необычный',
+    'grade_improved': 'Улучшенный',
+    'grade_rare': 'Редкий',
+    'grade_valuable': 'Ценный',
+    'grade_elite': 'Элитный',
+    'grade_epic': 'Эпический',
+    'grade_heroic': 'Героический',
+    'grade_mythic': 'Мифический',
+    'grade_ancient': 'Древний',
+    'grade_legendary': 'Легендарный',
 
     // Collection
     'collection_title': 'Коллекция',
@@ -84,7 +90,7 @@ export const ru: Record<string, string> = {
     'buff_get': 'ВЗЯТЬ',
     'default_nickname': 'Игрок',
     'leaderboard_player': 'ИГРОК',
-    'leaderboard_rarity': 'РЕДКОСТЬ',
+    'leaderboard_grade': 'ГРЕЙД',
 
     // Pause
     'paused': 'ПАУЗА',

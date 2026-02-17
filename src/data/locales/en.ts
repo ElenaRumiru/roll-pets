@@ -12,12 +12,18 @@ export const en: Record<string, string> = {
     'duplicate': 'Duplicate',
     'level_up': 'LEVEL UP!',
 
-    // Rarity
-    'rarity_common': 'Common',
-    'rarity_uncommon': 'Uncommon',
-    'rarity_rare': 'Rare',
-    'rarity_epic': 'Epic',
-    'rarity_legendary': 'Legendary',
+    // Grades
+    'grade_common': 'Common',
+    'grade_uncommon': 'Uncommon',
+    'grade_improved': 'Improved',
+    'grade_rare': 'Rare',
+    'grade_valuable': 'Valuable',
+    'grade_elite': 'Elite',
+    'grade_epic': 'Epic',
+    'grade_heroic': 'Heroic',
+    'grade_mythic': 'Mythic',
+    'grade_ancient': 'Ancient',
+    'grade_legendary': 'Legendary',
 
     // Collection
     'collection_title': 'Collection',
@@ -84,7 +90,7 @@ export const en: Record<string, string> = {
     'buff_get': 'GET',
     'default_nickname': 'Player',
     'leaderboard_player': 'PLAYER',
-    'leaderboard_rarity': 'RARITY',
+    'leaderboard_grade': 'GRADE',
 
     // Pause
     'paused': 'PAUSED',

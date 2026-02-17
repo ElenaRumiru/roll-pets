@@ -1,13 +1,13 @@
 import { Scene } from 'phaser';
-import { GAME_WIDTH, GAME_HEIGHT, RARITY_ORDER, RARITY, UI } from '../core/config';
-import { PETS, TOTAL_PETS } from '../data/pets';
+import { GAME_WIDTH, GAME_HEIGHT, GRADE_ORDER, GRADE, getGradeForChance, UI } from '../core/config';
+import { PETS, TOTAL_PETS, getPetsByGrade } from '../data/pets';
 import { SaveSystem } from '../systems/SaveSystem';
 import { PetCard } from '../ui/PetCard';
 import { Button } from '../ui/components/Button';
 import { t } from '../data/locales';
-import { Rarity } from '../types';
+import { Grade } from '../types';
 
-const GRID_TOP = 135;
+const GRID_TOP = 152;
 const GRID_H = GAME_HEIGHT - GRID_TOP;
 const COLS = 8;
 const CARD_SX = 100;
@@ -28,10 +28,8 @@ export class CollectionScene extends Scene {
         this.collection = new Set(save.getData().collection);
         this.scrollOffset = 0;
 
-        // Background
         this.add.rectangle(GAME_WIDTH / 2, GAME_HEIGHT / 2, GAME_WIDTH, GAME_HEIGHT, 0x12121e);
 
-        // Grid container + mask (created first so header draws on top)
         this.gridContainer = this.add.container(0, 0);
         const maskGfx = this.make.graphics({});
         maskGfx.fillRect(0, GRID_TOP, GAME_WIDTH, GRID_H);
@@ -39,7 +37,6 @@ export class CollectionScene extends Scene {
 
         this.createHeader();
         this.createFilters();
-        this.createRarityBars();
         this.buildGrid('all');
         this.setupScroll();
     }
@@ -51,12 +48,10 @@ export class CollectionScene extends Scene {
         hdr.lineStyle(1, UI.PANEL_BORDER, 0.3);
         hdr.lineBetween(0, GRID_TOP, GAME_WIDTH, GRID_TOP);
 
-        // Back button
         new Button(this, 55, 25, 90, 32, `← ${t('collection_back')}`, 0x444455, () => {
             this.scene.start('MainScene');
         });
 
-        // Title
         this.add.text(GAME_WIDTH / 2, 16, t('collection_title'), {
             fontFamily: UI.FONT_MAIN,
             fontSize: '24px',
@@ -65,7 +60,6 @@ export class CollectionScene extends Scene {
             strokeThickness: UI.STROKE_MEDIUM,
         }).setOrigin(0.5);
 
-        // Collected count
         this.add.text(GAME_WIDTH / 2, 42, t('collection_count', {
             current: String(this.collection.size),
             total: String(TOTAL_PETS),
@@ -77,62 +71,67 @@ export class CollectionScene extends Scene {
     }
 
     private createFilters(): void {
-        const y = 68;
-        const filters: (Rarity | 'all')[] = ['all', ...RARITY_ORDER];
-        const btnW = 90;
-        const gap = 6;
-        const totalW = filters.length * btnW + (filters.length - 1) * gap;
-        const startX = GAME_WIDTH / 2 - totalW / 2 + btnW / 2;
+        const filters: (Grade | 'all')[] = ['all', ...GRADE_ORDER];
+        const btnW = 68;
+        const gap = 4;
 
-        filters.forEach((f, i) => {
-            const label = f === 'all' ? t('filter_all') : t(`rarity_${f}`);
-            const color = f === 'all' ? 0x444455 : RARITY[f].color;
-            new Button(this, startX + i * (btnW + gap), y, btnW, 26, label, color, () => {
+        // Row 1: All + first 6 grades
+        const row1 = filters.slice(0, 7);
+        const row1W = row1.length * btnW + (row1.length - 1) * gap;
+        const row1X = GAME_WIDTH / 2 - row1W / 2 + btnW / 2;
+        const y1 = 68;
+
+        row1.forEach((f, i) => {
+            const { label, color } = this.getFilterStyle(f);
+            new Button(this, row1X + i * (btnW + gap), y1, btnW, 24, label, color, () => {
                 this.scrollOffset = 0;
                 this.buildGrid(f);
             });
         });
-    }
 
-    private createRarityBars(): void {
-        const barY = 100;
-        const segW = 145;
-        const barW = 120;
-        const barH = 8;
-        const startX = GAME_WIDTH / 2 - (5 * segW) / 2 + segW / 2;
+        // Row 2: remaining grades
+        const row2 = filters.slice(7);
+        if (row2.length > 0) {
+            const row2W = row2.length * btnW + (row2.length - 1) * gap;
+            const row2X = GAME_WIDTH / 2 - row2W / 2 + btnW / 2;
+            const y2 = 96;
 
-        RARITY_ORDER.forEach((r, i) => {
-            const cx = startX + i * segW;
-            const cfg = RARITY[r];
-            const total = PETS.filter(p => p.rarity === r).length;
-            const have = PETS.filter(p => p.rarity === r && this.collection.has(p.id)).length;
+            row2.forEach((f, i) => {
+                const { label, color } = this.getFilterStyle(f);
+                new Button(this, row2X + i * (btnW + gap), y2, btnW, 24, label, color, () => {
+                    this.scrollOffset = 0;
+                    this.buildGrid(f);
+                });
+            });
+        }
 
-            // Label + count
-            this.add.text(cx, barY, `${t(`rarity_${r}`)} ${have}/${total}`, {
+        // Compact grade counts row
+        const y3 = 122;
+        const countW = Math.floor(GAME_WIDTH / GRADE_ORDER.length);
+        const countStart = (GAME_WIDTH - countW * GRADE_ORDER.length) / 2 + countW / 2;
+        GRADE_ORDER.forEach((g, i) => {
+            const total = getPetsByGrade(g).length;
+            const have = getPetsByGrade(g).filter(p => this.collection.has(p.id)).length;
+            this.add.text(countStart + i * countW, y3, `${have}/${total}`, {
                 fontFamily: UI.FONT_MAIN,
-                fontSize: '10px',
-                color: cfg.colorHex,
+                fontSize: '9px',
+                color: GRADE[g].colorHex,
             }).setOrigin(0.5);
-
-            // Bar bg
-            const bg = this.add.graphics();
-            bg.fillStyle(0x1a1a2e, 0.9);
-            bg.fillRoundedRect(cx - barW / 2, barY + 9, barW, barH, 3);
-
-            // Bar fill
-            const pct = total > 0 ? have / total : 0;
-            if (pct > 0) {
-                const fill = this.add.graphics();
-                fill.fillStyle(cfg.color, 0.9);
-                fill.fillRoundedRect(cx - barW / 2, barY + 9, Math.max(4, barW * pct), barH, 3);
-            }
         });
     }
 
-    private buildGrid(filter: Rarity | 'all'): void {
+    private getFilterStyle(f: Grade | 'all'): { label: string; color: number } {
+        if (f === 'all') return { label: t('filter_all'), color: 0x444455 };
+        return { label: t(`grade_${f}`), color: GRADE[f].color };
+    }
+
+    private buildGrid(filter: Grade | 'all'): void {
         this.gridContainer.removeAll(true);
 
-        const pets = filter === 'all' ? PETS : PETS.filter(p => p.rarity === filter);
+        const pets = filter === 'all'
+            ? PETS
+            : PETS.filter(p => getGradeForChance(p.chance) === filter);
+
         const gridW = COLS * CARD_SX;
         const startX = GAME_WIDTH / 2 - gridW / 2 + CARD_SX / 2;
 

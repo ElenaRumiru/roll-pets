@@ -54,8 +54,11 @@ export class BootScene extends Scene {
         this.load.image('ui_x5chance_ready', 'assets/ui/x5chance_ready.png');
         this.load.image('ui_auto', 'assets/ui/auto.png');
 
-        // Pet images
+        // Pet images (deduplicate — multiple pets share sprites)
+        const loadedKeys = new Set<string>();
         for (const pet of PETS) {
+            if (loadedKeys.has(pet.imageKey)) continue;
+            loadedKeys.add(pet.imageKey);
             const filename = pet.imageKey.replace('pet_', '');
             this.load.image(pet.imageKey, `assets/pets/${filename}.webp`);
         }

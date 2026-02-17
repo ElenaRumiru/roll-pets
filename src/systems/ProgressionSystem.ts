@@ -1,5 +1,5 @@
 import { RollResult, PetDef } from '../types';
-import { RARITY, xpForLevel } from '../core/config';
+import { GRADE, getGradeForChance, xpForLevel } from '../core/config';
 
 export class ProgressionSystem {
     level: number;
@@ -14,16 +14,17 @@ export class ProgressionSystem {
 
     processRoll(pet: PetDef): RollResult {
         const isNew = !this.collection.has(pet.id);
-        const cfg = RARITY[pet.rarity];
+        const grade = getGradeForChance(pet.chance);
+        const cfg = GRADE[grade];
         const xpNeeded = xpForLevel(this.level);
 
         const xpPercent = isNew ? cfg.xpNewPercent : cfg.xpDupPercent;
-        const xpGained = Math.floor((xpPercent / 100) * xpNeeded);
+        const xpGained = Math.max(1, Math.floor((xpPercent / 100) * xpNeeded));
 
         if (isNew) this.collection.add(pet.id);
         this.xp += xpGained;
 
-        return { pet, isNew, xpGained, rarity: pet.rarity };
+        return { pet, isNew, xpGained, grade };
     }
 
     checkLevelUp(): boolean {

@@ -1,7 +1,9 @@
-import { SaveData } from '../types';
+import { SaveData, Grade } from '../types';
+import { PETS } from '../data/pets';
+import { getGradeForChance } from '../core/config';
 
 const SAVE_KEY = 'pets_go_lite_save';
-const CURRENT_VERSION = 5;
+const CURRENT_VERSION = 6;
 
 function getDefaults(): SaveData {
     return {
@@ -37,6 +39,18 @@ function migrate(data: SaveData): SaveData {
     if (data.version === 4) {
         data.nickname = data.nickname ?? '';
         data.version = 5;
+    }
+    if (data.version === 5) {
+        // Migrate rollLog: rarity → grade (recompute from pet chance)
+        for (const entry of data.rollLog) {
+            const old = entry as unknown as { rarity?: string; grade?: Grade };
+            if (old.rarity && !old.grade) {
+                const pet = PETS.find(p => p.id === entry.id);
+                entry.grade = pet ? getGradeForChance(pet.chance) : 'common';
+                delete old.rarity;
+            }
+        }
+        data.version = 6;
     }
     return data;
 }

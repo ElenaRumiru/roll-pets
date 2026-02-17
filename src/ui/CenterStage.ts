@@ -1,5 +1,5 @@
 import { GameObjects, Scene } from 'phaser';
-import { GAME_WIDTH, GAME_HEIGHT, RARITY, UI, PEDESTAL, PET_OFFSET_Y, getOddsString } from '../core/config';
+import { GAME_WIDTH, GAME_HEIGHT, GRADE, getGradeForChance, UI, PEDESTAL, PET_OFFSET_Y, getOddsString } from '../core/config';
 import { PetDef, RollResult } from '../types';
 import { AudioSystem } from '../systems/AudioSystem';
 import { IdleWobbleFX } from './IdleWobbleFX';
@@ -133,7 +133,7 @@ export class CenterStage extends GameObjects.Container {
             }
 
             if (pet) {
-                const cfg = RARITY[pet.rarity];
+                const cfg = GRADE[getGradeForChance(pet.chance)];
 
                 slot.image = this.scene.add.image(pos.x, pos.y + PET_OFFSET_Y, pet.imageKey)
                     .setScale(pos.scale)
@@ -173,7 +173,7 @@ export class CenterStage extends GameObjects.Container {
                 slot.oddsText.setText(getOddsString(pet.chance))
                     .setPosition(pos.x, topY - 20)
                     .setColor(cfg.colorHex)
-                    .setStroke(cfg.outlineHex, UI.STROKE_MEDIUM)
+                    .setStroke(cfg.outlineHex, cfg.strokeThickness || 0)
                     .setAlpha(1);
             } else {
                 slot.nameText.setAlpha(0);
@@ -184,7 +184,7 @@ export class CenterStage extends GameObjects.Container {
 
     playHatch(result: RollResult, onComplete: () => void): void {
         const scene = this.scene;
-        const cfg = RARITY[result.rarity];
+        const cfg = GRADE[result.grade];
 
         // 1) Fade in dark overlay (skip if autoroll keeps it persistent)
         if (!this.autorollOverlayActive) {
@@ -263,10 +263,10 @@ export class CenterStage extends GameObjects.Container {
             .setStroke('#000000', UI.STROKE_THICK)
             .setAlpha(1);
 
-        // Rarity label
-        this.revealRarity.setText(cfg.label)
+        // Grade label
+        this.revealRarity.setText(t(`grade_${result.grade}`))
             .setColor(cfg.colorHex)
-            .setStroke(cfg.outlineHex, UI.STROKE_MEDIUM)
+            .setStroke(cfg.outlineHex, cfg.strokeThickness || UI.STROKE_MEDIUM)
             .setAlpha(1);
 
         // XP

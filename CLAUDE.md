@@ -43,12 +43,12 @@ src/
 │   ├── GameManager.ts              # Creates systems, coordinates roll() logic
 │   └── config.ts                   # All balance constants
 │
-├── types/index.ts                  # All interfaces (Pet, Rarity, SaveData, etc.)
+├── types/index.ts                  # All interfaces (Pet, Grade, SaveData, etc.)
 │
 ├── data/
-│   ├── pets.ts                     # 30 pets (id, name, emoji, imageKey, rarity)
-│   ├── eggs.ts                     # 5 egg tiers
-│   ├── backgrounds.ts              # 5 background themes
+│   ├── pets.ts                     # 100 pets (id, name, emoji, imageKey, chance)
+│   ├── eggs.ts                     # Dynamic egg filter by level/visual tier
+│   ├── backgrounds.ts              # 17 background themes
 │   └── locales/
 │       ├── en.ts                   # English strings (base)
 │       ├── ru.ts                   # Russian strings
@@ -129,4 +129,10 @@ When official docs are not enough, **search the wider internet**: Reddit, YouTub
 
 ## Game Balance Reference
 
-Rarity weights (sum=100): Common 60, Uncommon 25, Rare 10, Epic 4, Legendary 1. XP curve: base 100, multiplier 1.15x per level. New pet = +25% XP bar, duplicate = +1-10% based on rarity. Luck improves with level (shifts weights from Common toward Rare+).
+**Grade system (11 MVP tiers):** Grade is derived from pet's `chance` value via `getGradeForChance()` — not stored as a field. Grades: Common [2,100), Uncommon [100,1K), Improved [1K,5K), Rare [5K,50K), Valuable [50K,500K), Elite [500K,5M), Epic [5M,50M), Heroic [50M,250M), Mythic [250M,500M), Ancient [500M,750M), Legendary [750M,1B). 4 post-MVP grades defined but unused: Astral, Cosmic, Divine, Absolute.
+
+**100 pets** distributed: Common(28), Uncommon(24), Improved(14), Rare(12), Valuable(8), Elite(5), Epic(4), Heroic(2), Mythic(1), Ancient(1), Legendary(1). New pets reuse existing 30 sprites via shared `imageKey`.
+
+**Roll algorithm:** Sequential check from rarest to most common, `checkChance = min(1, luckMultiplier / pet.chance)`. First pet to pass = result, fallback = most common in pool. Buff multipliers stack multiplicatively: Lucky x2, Super x3, Epic x5 (max x30).
+
+**Eggs:** Dynamic filter via `getEggFilterForLevel(level)` — each visual tier (1–17) removes one common pet from the pool. XP curve: base 100, multiplier 1.15x per level. New pet = +25% XP bar, duplicate = +0.5-10% based on grade.

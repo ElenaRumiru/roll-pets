@@ -1,6 +1,6 @@
 import { GameObjects, Scene } from 'phaser';
 import { PetDef } from '../types';
-import { RARITY, UI } from '../core/config';
+import { GRADE, getGradeForChance, UI } from '../core/config';
 
 const CARD_W = 88;
 const CARD_H = 100;
@@ -9,7 +9,7 @@ export class PetCard extends GameObjects.Container {
     constructor(scene: Scene, x: number, y: number, pet: PetDef, found: boolean) {
         super(scene, x, y);
 
-        const cfg = RARITY[pet.rarity];
+        const cfg = GRADE[getGradeForChance(pet.chance)];
         const r = 10;
 
         // Card background
