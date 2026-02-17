@@ -1,5 +1,6 @@
 import { GameObjects, Scene } from 'phaser';
 import { GAME_WIDTH } from '../core/config';
+import { addButtonFeedback } from './components/buttonFeedback';
 
 export class SettingsButton extends GameObjects.Container {
     constructor(scene: Scene, onPress: () => void) {
@@ -19,6 +20,7 @@ export class SettingsButton extends GameObjects.Container {
         this.setSize(60, 60);
         this.setInteractive({ useHandCursor: true });
         this.on('pointerdown', onPress);
+        addButtonFeedback(scene, this);
 
         scene.add.existing(this);
     }

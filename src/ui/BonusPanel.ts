@@ -2,6 +2,7 @@ import { GameObjects, Geom, Scene } from 'phaser';
 import { UI, BONUS_PANEL, BUFF_CONFIG, GAME_HEIGHT } from '../core/config';
 import { BuffSystem } from '../systems/BuffSystem';
 import { t } from '../data/locales';
+import { addButtonFeedback } from './components/buttonFeedback';
 
 interface BonusRow {
     container: GameObjects.Container;
@@ -114,6 +115,7 @@ export class BonusPanel extends GameObjects.Container {
         container.setInteractive(new Geom.Rectangle(0, 0, ROW_W, ROW_H), Geom.Rectangle.Contains);
         container.input!.cursor = 'pointer';
         container.on('pointerdown', onClick);
+        addButtonFeedback(scene, container);
 
         const iconX = ICON_PAD + ICON_SZ / 2;
         const icon = scene.add.image(iconX, ROW_H / 2, def.iconKey)

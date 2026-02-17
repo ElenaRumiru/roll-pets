@@ -1,6 +1,7 @@
 import { GameObjects, Geom, Scene } from 'phaser';
 import { UI, GAME_HEIGHT, LEFT_PANEL } from '../core/config';
 import { t } from '../data/locales';
+import { addButtonFeedback } from './components/buttonFeedback';
 
 const PANEL_W = LEFT_PANEL.w;
 const BG_H = 81;
@@ -64,6 +65,7 @@ export class CollectionButton extends GameObjects.Container {
         );
         this.input!.cursor = 'pointer';
         this.on('pointerdown', onClick);
+        addButtonFeedback(scene, this, { pivot: { x: PANEL_W / 2, y: TOTAL_H / 2 } });
 
         scene.add.existing(this);
     }

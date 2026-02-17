@@ -3,6 +3,7 @@ import { GAME_WIDTH, GAME_HEIGHT, UI } from '../core/config';
 import { t } from '../data/locales';
 import { AudioSystem } from '../systems/AudioSystem';
 import { SaveSystem } from '../systems/SaveSystem';
+import { addButtonFeedback } from './components/buttonFeedback';
 
 const PANEL_W = 320;
 const PANEL_H = 340;
@@ -54,6 +55,7 @@ export class SettingsPanel extends GameObjects.Container {
         closeBtn.on('pointerdown', () => this.hide());
         closeBtn.on('pointerover', () => closeBtn.setColor('#ffffff'));
         closeBtn.on('pointerout', () => closeBtn.setColor('#aaaaaa'));
+        addButtonFeedback(scene, closeBtn, { clickEffect: false });
         this.add(closeBtn);
 
         // --- Music section ---

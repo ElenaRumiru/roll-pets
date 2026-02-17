@@ -3,8 +3,10 @@ import { UI, ROLL_BTN } from '../core/config';
 import { BuffBadges } from './BuffBadges';
 import { BuffSystem } from '../systems/BuffSystem';
 import { t } from '../data/locales';
+import { addButtonFeedback } from './components/buttonFeedback';
 
 export class RightPanel extends GameObjects.Container {
+    private rollWrap: GameObjects.Container;
     private rollBg: GameObjects.Image;
     private rollLabel: GameObjects.Text;
     private badges: BuffBadges;
@@ -28,28 +30,31 @@ export class RightPanel extends GameObjects.Container {
         this.onStopAutoroll = onStopAutoroll;
         this.onResumeAutoroll = onResumeAutoroll;
 
-        // Roll button using image
-        this.rollBg = scene.add.image(ROLL_BTN.x, ROLL_BTN.y, 'ui_roll')
+        // Roll button wrapper (for scaling image + text together)
+        this.rollWrap = scene.add.container(ROLL_BTN.x, ROLL_BTN.y);
+        this.add(this.rollWrap);
+
+        this.rollBg = scene.add.image(0, 0, 'ui_roll')
             .setDisplaySize(ROLL_BTN.width, ROLL_BTN.height)
             .setInteractive({ useHandCursor: true });
         this.rollBg.on('pointerdown', () => this.handleRollClick());
-        this.add(this.rollBg);
+        this.rollWrap.add(this.rollBg);
 
-        // Roll text overlay
-        this.rollLabel = scene.add.text(ROLL_BTN.x, ROLL_BTN.y, t('roll_button'), {
+        this.rollLabel = scene.add.text(0, 0, t('roll_button'), {
             fontFamily: UI.FONT_MAIN,
             fontSize: '28px',
             color: '#ffffff',
             stroke: '#000000',
             strokeThickness: UI.STROKE_THICK,
         }).setOrigin(0.5);
-        this.add(this.rollLabel);
+        this.rollWrap.add(this.rollLabel);
 
-        // Space hint
-        this.spaceHint = scene.add.text(ROLL_BTN.x, ROLL_BTN.y + 36, 'SPACE', {
+        this.spaceHint = scene.add.text(0, 36, 'SPACE', {
             fontFamily: UI.FONT_BODY, fontSize: '10px', color: '#666666',
         }).setOrigin(0.5);
-        this.add(this.spaceHint);
+        this.rollWrap.add(this.spaceHint);
+
+        addButtonFeedback(scene, this.rollBg, { scaleTarget: this.rollWrap });
 
         // Buff badges above roll button
         this.badges = new BuffBadges(scene, ROLL_BTN.x, ROLL_BTN.y - 36);
@@ -74,6 +79,8 @@ export class RightPanel extends GameObjects.Container {
         } else if (this.autorollPaused) {
             this.rollLabel.setText(t('roll_auto'));
         } else if (rolling) {
+            this.rollWrap.scene.tweens.killTweensOf(this.rollWrap);
+            this.rollWrap.setScale(1);
             this.rollBg.setAlpha(0.5);
             this.rollBg.disableInteractive();
             this.rollLabel.setText(t('rolling'));
