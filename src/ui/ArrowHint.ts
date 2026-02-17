@@ -11,7 +11,6 @@ export class ArrowHint {
         this.scene = scene;
 
         this.image = scene.add.image(ROLL_BTN.x, ONBOARDING.arrowY, 'ui_arrow')
-            .setScale(ONBOARDING.arrowScale)
             .setDepth(10)
             .setAlpha(0);
 

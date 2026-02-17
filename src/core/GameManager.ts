@@ -126,6 +126,9 @@ export class GameManager {
         this.buffs.update(deltaMs);
     }
 
+    /** Save current state (call before scene transitions) */
+    saveState(): void { this.persistSave(); }
+
     getEggImageKey() { return getEggImageKey(this.progression.level); }
     getBgImageKey() { return getBgImageKey(this.progression.level); }
 }

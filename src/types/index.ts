@@ -57,4 +57,5 @@ export interface BuffState {
     epic: number;
     autoroll: number;
     autorollPaused: boolean;
+    epicTimer?: number;
 }

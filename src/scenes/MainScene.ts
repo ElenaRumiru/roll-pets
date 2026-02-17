@@ -78,7 +78,10 @@ export class MainScene extends Scene {
             () => EventBus.emit('autoroll-resume'),
         );
 
-        this.collectionBtn = new CollectionButton(this, () => this.scene.start('CollectionScene'));
+        this.collectionBtn = new CollectionButton(this, () => {
+            this.manager.saveState();
+            this.scene.start('CollectionScene');
+        });
 
         this.bonusPanel = new BonusPanel(this, (type: string) => this.handleBuffRequest(type));
 

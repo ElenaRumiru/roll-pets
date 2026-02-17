@@ -146,7 +146,6 @@ export const AUTOROLL_INTERVAL = 500;
 
 export const ONBOARDING = {
     arrowY: ROLL_BTN.y - 75,
-    arrowScale: 0.12,
     bobDistance: 18,
     bobDuration: 600,
     idleTimeout: 10_000,

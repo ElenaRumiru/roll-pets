@@ -123,6 +123,7 @@ export class BuffSystem {
         this.counts.epic = buffs.epic;
         this.autorollMs = buffs.autoroll;
         this.autorollPaused = buffs.autorollPaused ?? false;
+        this.epicTimer = buffs.epicTimer ?? 0;
     }
 
     toSave(): BuffState {
@@ -132,6 +133,7 @@ export class BuffSystem {
             epic: this.counts.epic,
             autoroll: this.autorollMs,
             autorollPaused: this.autorollPaused,
+            epicTimer: this.epicTimer,
         };
     }
 }
