@@ -50,6 +50,8 @@ export class BuffBadges extends GameObjects.Container {
             color: '#ffffff',
             stroke: '#000000',
             strokeThickness: UI.STROKE_THIN,
+            align: 'center',
+            wordWrap: { width: 130 },
         }).setOrigin(0.5).setDepth(200);
         this.tooltipBg.setVisible(false);
         this.tooltipText.setVisible(false);
@@ -98,12 +100,13 @@ export class BuffBadges extends GameObjects.Container {
     private showTooltip(badge: GameObjects.Container, localeKey: string): void {
         const text = t(localeKey);
         this.tooltipText.setText(text);
-        const pad = 8;
-        const tw = this.tooltipText.width + pad * 2;
-        const th = this.tooltipText.height + pad;
+        const padX = 14;
+        const padY = 12;
+        const tw = this.tooltipText.width + padX * 2;
+        const th = this.tooltipText.height + padY * 2;
         // Position above the badge
         const worldX = this.x + badge.x;
-        const worldY = this.y - BADGE_H - 10;
+        const worldY = this.y - BADGE_H - 35;
         this.tooltipText.setPosition(worldX, worldY);
         this.tooltipBg.clear();
         this.tooltipBg.fillStyle(0x000000, 0.85);

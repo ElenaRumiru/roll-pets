@@ -40,7 +40,7 @@ export class RightPanel extends GameObjects.Container {
         this.rollBg.on('pointerdown', () => this.handleRollClick());
         this.rollWrap.add(this.rollBg);
 
-        this.rollLabel = scene.add.text(0, 0, t('roll_button'), {
+        this.rollLabel = scene.add.text(0, -4, t('roll_button'), {
             fontFamily: UI.FONT_MAIN,
             fontSize: '28px',
             color: '#ffffff',
@@ -56,8 +56,8 @@ export class RightPanel extends GameObjects.Container {
 
         addButtonFeedback(scene, this.rollBg, { scaleTarget: this.rollWrap });
 
-        // Buff badges above roll button
-        this.badges = new BuffBadges(scene, ROLL_BTN.x, ROLL_BTN.y - 36);
+        // Buff badges above roll button (almost touching top edge)
+        this.badges = new BuffBadges(scene, ROLL_BTN.x, ROLL_BTN.y - ROLL_BTN.height / 2 - 10);
         this.add(this.badges);
 
         scene.add.existing(this);

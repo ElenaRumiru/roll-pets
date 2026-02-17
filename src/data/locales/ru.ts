@@ -46,9 +46,9 @@ export const ru: Record<string, string> = {
     'badge_epic': 'Epic',
 
     // Buff tooltips
-    'tip_lucky': 'x2 удача на 3 ролла',
-    'tip_super': 'x3 удача на 1 ролл',
-    'tip_epic': 'x5 удача на 1 ролл',
+    'tip_lucky': 'Повышает шанс в 2 раза для следующего ролла',
+    'tip_super': 'Повышает шанс в 3 раза для следующего ролла',
+    'tip_epic': 'Повышает шанс в 5 раз для следующего ролла',
     'tip_autoroll': 'Авто-ролл 30 сек',
 
     // Left Panel

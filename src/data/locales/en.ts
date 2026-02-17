@@ -46,9 +46,9 @@ export const en: Record<string, string> = {
     'badge_epic': 'Epic',
 
     // Buff tooltips
-    'tip_lucky': 'x2 luck for 3 rolls',
-    'tip_super': 'x3 luck for 1 roll',
-    'tip_epic': 'x5 luck for 1 roll',
+    'tip_lucky': 'Increases chance x2 for the next roll',
+    'tip_super': 'Increases chance x3 for the next roll',
+    'tip_epic': 'Increases chance x5 for the next roll',
     'tip_autoroll': 'Auto-rolls for 30s',
 
     // Left Panel

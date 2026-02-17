@@ -125,7 +125,7 @@ export const PEDESTAL = {
 
 export const PET_OFFSET_Y = 0;
 
-export const ROLL_BTN = { x: 418, y: 435, width: 340, height: 55 };
+export const ROLL_BTN = { x: 418, y: 435, width: 340, height: 74 };
 
 export const BUFF_CONFIG = {
     lucky:    { multiplier: 2, rollsPerAd: 1, color: 0x27ae60, colorHex: '#27ae60' },
@@ -145,7 +145,7 @@ export const BONUS_PANEL = {
 export const AUTOROLL_INTERVAL = 500;
 
 export const ONBOARDING = {
-    arrowY: ROLL_BTN.y - 75,
+    arrowY: ROLL_BTN.y - ROLL_BTN.height / 2 - 50,
     bobDistance: 18,
     bobDuration: 600,
     idleTimeout: 10_000,
