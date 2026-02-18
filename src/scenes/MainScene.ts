@@ -88,10 +88,8 @@ export class MainScene extends Scene {
 
         this.bonusPanel = new BonusPanel(this, (type: string) => this.handleBuffRequest(type));
 
-        // Audio
-        const settings = this.manager.save.getData().settings;
-        this.audio = new AudioSystem(this, settings.music, settings.volume, settings.sfx, settings.sfxVolume);
-        this.audio.startBGM();
+        // Audio (singleton from registry)
+        this.audio = this.registry.get('audio') as AudioSystem;
         this.centerStage.setAudio(this.audio);
 
         // Settings panel + button
@@ -108,6 +106,7 @@ export class MainScene extends Scene {
         EventBus.on('buff-activated', this.onBuffActivated, this);
         EventBus.on('buffs-changed', this.onBuffsChanged, this);
         EventBus.on('autoroll-stop', this.onAutorollStop, this);
+        EventBus.on('nickname-changed', this.onNicknameChanged, this);
 
         // Pause overlay
         this.pauseOverlay = this.createPauseOverlay();
@@ -253,6 +252,11 @@ export class MainScene extends Scene {
         }
     }
 
+    private onNicknameChanged(name: string): void {
+        this.topBar.setNickname(name);
+        this.leaderboard.updatePlayerEntry(name, this.getPlayerBestOdds(), 30);
+    }
+
     private onAutorollStop(): void {
         this.centerStage.setAutorollOverlay(false);
         this.wasAutorollActive = false;
@@ -344,5 +348,6 @@ export class MainScene extends Scene {
         EventBus.off('buff-activated', this.onBuffActivated, this);
         EventBus.off('buffs-changed', this.onBuffsChanged, this);
         EventBus.off('autoroll-stop', this.onAutorollStop, this);
+        EventBus.off('nickname-changed', this.onNicknameChanged, this);
     }
 }

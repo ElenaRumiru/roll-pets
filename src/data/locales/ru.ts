@@ -82,6 +82,7 @@ export const ru: Record<string, string> = {
     'settings_music': 'Музыка',
     'settings_sfx': 'Эффекты',
     'settings_volume': 'Громкость',
+    'settings_nickname': 'Никнейм',
 
     // New UI
     'ads_badge': 'ADs',

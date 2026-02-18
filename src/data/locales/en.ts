@@ -82,6 +82,7 @@ export const en: Record<string, string> = {
     'settings_music': 'Music',
     'settings_sfx': 'Effects',
     'settings_volume': 'Volume',
+    'settings_nickname': 'Nickname',
 
     // New UI
     'ads_badge': 'ADs',

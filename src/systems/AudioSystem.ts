@@ -1,17 +1,15 @@
-import { Scene } from 'phaser';
-
 export type SfxKey = 'sfx_click' | 'sfx_wobble' | 'sfx_reveal' | 'sfx_new_pet';
 
 export class AudioSystem {
-    private scene: Scene;
+    private sound: Phaser.Sound.BaseSoundManager;
     private bgm: Phaser.Sound.BaseSound | null = null;
     private _musicOn: boolean;
     private _volume: number;
     private _sfxOn: boolean;
     private _sfxVolume: number;
 
-    constructor(scene: Scene, musicOn: boolean, volume: number, sfxOn: boolean, sfxVolume: number) {
-        this.scene = scene;
+    constructor(soundManager: Phaser.Sound.BaseSoundManager, musicOn: boolean, volume: number, sfxOn: boolean, sfxVolume: number) {
+        this.sound = soundManager;
         this._musicOn = musicOn;
         this._volume = volume;
         this._sfxOn = sfxOn;
@@ -20,16 +18,27 @@ export class AudioSystem {
 
     startBGM(): void {
         if (this.bgm) return;
-        this.bgm = this.scene.sound.add('bgm', {
+        this.bgm = this.sound.add('bgm', {
             loop: true,
             volume: this._musicOn ? this._volume : 0,
         });
         this.bgm.play();
+
+        if (this.sound.locked) {
+            const onGesture = (): void => {
+                const ctx = (this.sound as unknown as { context?: AudioContext }).context;
+                if (ctx?.state === 'suspended') ctx.resume();
+                document.removeEventListener('click', onGesture, true);
+                document.removeEventListener('touchstart', onGesture, true);
+            };
+            document.addEventListener('click', onGesture, { capture: true, once: true });
+            document.addEventListener('touchstart', onGesture, { capture: true, once: true });
+        }
     }
 
     playSfx(key: SfxKey, volumeScale = 1): void {
         if (!this._sfxOn || this._sfxVolume <= 0) return;
-        this.scene.sound.play(key, { volume: this._sfxVolume * volumeScale });
+        this.sound.play(key, { volume: this._sfxVolume * volumeScale });
     }
 
     // --- Music ---

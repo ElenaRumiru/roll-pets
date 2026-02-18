@@ -4,6 +4,8 @@ import { IdleWobbleFX } from '../ui/IdleWobbleFX';
 import { PETS } from '../data/pets';
 import { TOTAL_EGGS } from '../data/eggs';
 import { TOTAL_BACKGROUNDS } from '../data/backgrounds';
+import { AudioSystem } from '../systems/AudioSystem';
+import { SaveSystem } from '../systems/SaveSystem';
 
 export class BootScene extends Scene {
     constructor() {
@@ -84,6 +86,12 @@ export class BootScene extends Scene {
         if (renderer instanceof Renderer.WebGL.WebGLRenderer) {
             renderer.pipelines.addPostPipeline('IdleWobbleFX', IdleWobbleFX);
         }
+        const save = new SaveSystem();
+        const settings = save.getData().settings;
+        const audio = new AudioSystem(this.game.sound, settings.music, settings.volume, settings.sfx, settings.sfxVolume);
+        this.registry.set('audio', audio);
+        audio.startBGM();
+
         this.scene.start('MainScene');
     }
 }

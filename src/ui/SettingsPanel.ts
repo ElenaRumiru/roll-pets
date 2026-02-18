@@ -1,12 +1,14 @@
 import { GameObjects, Scene } from 'phaser';
 import { GAME_WIDTH, GAME_HEIGHT, UI } from '../core/config';
+import { EventBus } from '../core/EventBus';
 import { t } from '../data/locales';
 import { AudioSystem } from '../systems/AudioSystem';
 import { SaveSystem } from '../systems/SaveSystem';
+import { NicknamePrompt } from './NicknamePrompt';
 import { addButtonFeedback } from './components/buttonFeedback';
 
 const PANEL_W = 320;
-const PANEL_H = 340;
+const PANEL_H = 390;
 const SLIDER_H = 8;
 
 export class SettingsPanel extends GameObjects.Container {
@@ -15,6 +17,7 @@ export class SettingsPanel extends GameObjects.Container {
     private sfxToggle!: GameObjects.Text;
     private audio: AudioSystem;
     private save: SaveSystem;
+    private nicknameText!: GameObjects.Text;
     private draggingMusic = false;
     private draggingSfx = false;
 
@@ -34,11 +37,11 @@ export class SettingsPanel extends GameObjects.Container {
         this.overlay.on('pointerdown', () => this.hide());
         this.add(this.overlay);
 
-        // Panel background
+        // Panel background (black theme)
         const panel = scene.add.graphics();
-        panel.fillStyle(UI.PANEL_BG, 0.95);
+        panel.fillStyle(0x000000, 0.95);
         panel.fillRoundedRect(px, py, PANEL_W, PANEL_H, UI.CORNER_RADIUS);
-        panel.lineStyle(2, UI.PANEL_BORDER);
+        panel.lineStyle(2, 0x000000);
         panel.strokeRoundedRect(px, py, PANEL_W, PANEL_H, UI.CORNER_RADIUS);
         this.add(panel);
 
@@ -65,6 +68,9 @@ export class SettingsPanel extends GameObjects.Container {
         // --- SFX section ---
         this.createSfxToggle(px, py + 170);
         this.createSlider(px, py + 200, 'sfx');
+
+        // --- Nickname section ---
+        this.createNicknameRow(px, py + 280);
 
         // Global pointer events
         scene.input.on('pointermove', (p: Phaser.Input.Pointer) => {
@@ -127,6 +133,36 @@ export class SettingsPanel extends GameObjects.Container {
             this.save.save();
         });
         this.add(this.sfxToggle);
+    }
+
+    private createNicknameRow(px: number, y: number): void {
+        const label = this.scene.add.text(px + 30, y, t('settings_nickname'), {
+            fontFamily: UI.FONT_BODY, fontSize: '16px', color: '#cccccc',
+        }).setOrigin(0, 0.5);
+        this.add(label);
+
+        const pencil = this.scene.add.text(px + PANEL_W - 20, y, '\u270F\uFE0F', {
+            fontSize: '14px',
+        }).setOrigin(1, 0.5);
+        this.add(pencil);
+
+        const currentName = this.save.getNickname() || t('default_nickname');
+        this.nicknameText = this.scene.add.text(
+            px + PANEL_W - 42, y, currentName,
+            { fontFamily: UI.FONT_MAIN, fontSize: '14px', color: '#00ff88' },
+        ).setOrigin(1, 0.5).setInteractive({ useHandCursor: true });
+
+        this.nicknameText.on('pointerover', () => this.nicknameText.setColor('#ffffff'));
+        this.nicknameText.on('pointerout', () => this.nicknameText.setColor('#00ff88'));
+        this.nicknameText.on('pointerdown', () => {
+            new NicknamePrompt((name: string) => {
+                this.save.setNickname(name);
+                this.nicknameText.setText(name);
+                EventBus.emit('nickname-changed', name);
+            });
+        });
+        addButtonFeedback(this.scene, this.nicknameText, { clickEffect: false });
+        this.add(this.nicknameText);
     }
 
     private createSlider(px: number, y: number, type: 'music' | 'sfx'): void {
@@ -208,6 +244,7 @@ export class SettingsPanel extends GameObjects.Container {
         this.musicToggle.setColor(this.audio.musicOn ? '#00ff88' : '#ff5555');
         this.sfxToggle.setText(this.audio.sfxOn ? t('sound_on') : t('sound_off'));
         this.sfxToggle.setColor(this.audio.sfxOn ? '#00ff88' : '#ff5555');
+        this.nicknameText.setText(this.save.getNickname() || t('default_nickname'));
     }
 
     hide(): void {
