@@ -43,7 +43,7 @@ export class MainScene extends Scene {
     }
 
     create(): void {
-        this.manager = new GameManager();
+        this.manager = this.registry.get('gameManager') as GameManager;
         this.buildUI();
 
         // Show nickname prompt if needed (non-blocking, overlay on top of game)
