@@ -129,13 +129,7 @@ export class BuffBadges extends GameObjects.Container {
         this.setBadge('super', t('badge_super'), buffs.getCount('super'));
         this.setBadge('epic',  t('badge_epic'),  buffs.getCount('epic'));
 
-        const autoMs = buffs.getAutorollRemaining();
-        if (autoMs > 0) {
-            const secs = Math.ceil(autoMs / 1000);
-            this.setBadgeRaw('auto', `Auto ${secs}s`, true);
-        } else {
-            this.setBadgeRaw('auto', '', false);
-        }
+        this.setBadgeRaw('auto', t('badge_auto'), buffs.isAutorollEnabled());
 
         this.layoutBadges();
     }

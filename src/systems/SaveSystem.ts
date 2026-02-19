@@ -3,7 +3,7 @@ import { PETS } from '../data/pets';
 import { getGradeForChance } from '../core/config';
 
 const SAVE_KEY = 'pets_go_lite_save';
-const CURRENT_VERSION = 7;
+const CURRENT_VERSION = 8;
 
 function getDefaults(): SaveData {
     return {
@@ -13,7 +13,7 @@ function getDefaults(): SaveData {
         collection: [],
         totalRolls: 0,
         settings: { music: true, sfx: true, volume: 0.3, sfxVolume: 0.2 },
-        buffs: { lucky: 0, super: 0, epic: 0, autoroll: 0, autorollPaused: false },
+        buffs: { lucky: 0, super: 0, epic: 0, autorollEnabled: false, autorollRunning: false },
         rollLog: [],
         nickname: '',
         newPets: [],
@@ -27,12 +27,11 @@ function migrate(data: SaveData): SaveData {
         data.version = 3;
     }
     if (data.version === 3) {
-        const old = data.buffs as unknown as { x2xp: number; autoroll: number; luck: number };
-        data.buffs = {
+        (data as unknown as Record<string, unknown>).buffs = {
             lucky: 0,
             super: 0,
             epic: 0,
-            autoroll: old?.autoroll ?? 0,
+            autoroll: 0,
             autorollPaused: false,
         };
         data.version = 4;
@@ -56,6 +55,17 @@ function migrate(data: SaveData): SaveData {
     if (data.version === 6) {
         data.newPets = data.newPets ?? [];
         data.version = 7;
+    }
+    if (data.version === 7) {
+        data.buffs = {
+            lucky: data.buffs.lucky,
+            super: data.buffs.super,
+            epic: data.buffs.epic,
+            autorollEnabled: false,
+            autorollRunning: false,
+            epicTimer: data.buffs.epicTimer,
+        };
+        data.version = 8;
     }
     return data;
 }

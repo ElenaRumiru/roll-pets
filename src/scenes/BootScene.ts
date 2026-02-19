@@ -59,6 +59,8 @@ export class BootScene extends Scene {
         this.load.image('ui_x3wow', 'assets/ui/x3wow.png');
         this.load.image('ui_x5wow', 'assets/ui/x5chanceWow.png');
         this.load.image('ui_auto', 'assets/ui/auto.png');
+        this.load.image('ui_automod_on', 'assets/ui/automod_on.png');
+        this.load.image('ui_automod_off', 'assets/ui/automod_off.png');
         this.load.image('ui_arrow', 'assets/ui/arrow.webp');
         this.load.image('ui_ad_film', 'assets/ui/ad_film.png');
         this.load.image('ui_ad_play', 'assets/ui/ad_play.png');
@@ -88,6 +90,25 @@ export class BootScene extends Scene {
         this.textures.remove('ui_roll');
         this.textures.addCanvas('ui_roll', canvas);
 
+        // Pre-downscale autoroll toggle images to avoid moiré at 94×58 display size
+        for (const key of ['ui_automod_on', 'ui_automod_off']) {
+            const src = this.textures.get(key).getSourceImage() as HTMLImageElement;
+            const c = document.createElement('canvas');
+            c.width = 188;  // 2x display width for crisp rendering
+            c.height = 116; // 2x display height
+            const cx2 = c.getContext('2d')!;
+            cx2.imageSmoothingEnabled = true;
+            cx2.imageSmoothingQuality = 'high';
+            cx2.drawImage(src, 0, 0, 188, 116);
+            this.textures.remove(key);
+            this.textures.addCanvas(key, c);
+        }
+
+        // Pre-downscale buff icons → "mid" size (2x BonusPanel display: 102px / 112px)
+        this.downscaleTexture('ui_x2simple', 'ui_x2simple_mid', 102, 102);
+        this.downscaleTexture('ui_x3wow', 'ui_x3wow_mid', 102, 102);
+        this.downscaleTexture('ui_x5wow', 'ui_x5wow_mid', 112, 112);
+
         const renderer = this.game.renderer;
         if (renderer instanceof Renderer.WebGL.WebGLRenderer) {
             renderer.pipelines.addPostPipeline('IdleWobbleFX', IdleWobbleFX);
@@ -101,5 +122,18 @@ export class BootScene extends Scene {
         audio.startBGM();
 
         this.scene.start('MainScene');
+    }
+
+    /** High-quality canvas resample: create a new smaller texture from source */
+    private downscaleTexture(srcKey: string, destKey: string, w: number, h: number): void {
+        const src = this.textures.get(srcKey).getSourceImage() as HTMLImageElement;
+        const c = document.createElement('canvas');
+        c.width = w;
+        c.height = h;
+        const ctx = c.getContext('2d')!;
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = 'high';
+        ctx.drawImage(src, 0, 0, w, h);
+        this.textures.addCanvas(destKey, c);
     }
 }

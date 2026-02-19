@@ -32,7 +32,8 @@ export class GameManager {
         EventBus.on('roll-requested', () => this.roll());
         EventBus.on('buff-requested', (buff: string) => this.activateBuff(buff));
         EventBus.on('autoroll-stop', () => this.stopAutoroll());
-        EventBus.on('autoroll-resume', () => this.resumeAutoroll());
+        EventBus.on('autoroll-start', () => this.startAutoroll());
+        EventBus.on('autoroll-toggle', (enabled: boolean) => this.setAutorollToggle(enabled));
     }
 
     stopAutoroll(): void {
@@ -41,9 +42,15 @@ export class GameManager {
         this.persistSave();
     }
 
-    resumeAutoroll(): void {
-        this.buffs.resumeAutoroll();
+    startAutoroll(): void {
+        this.buffs.startAutoroll();
         EventBus.emit('buff-activated', 'autoroll');
+        EventBus.emit('buffs-changed');
+        this.persistSave();
+    }
+
+    setAutorollToggle(enabled: boolean): void {
+        this.buffs.setAutorollEnabled(enabled);
         EventBus.emit('buffs-changed');
         this.persistSave();
     }
@@ -94,9 +101,6 @@ export class GameManager {
                 break;
             case 'epic':
                 if (!this.buffs.claimEpic()) return;
-                break;
-            case 'autoroll':
-                this.buffs.activateAutoroll();
                 break;
             default:
                 return;

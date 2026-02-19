@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-PETS GO Lite — 2D RNG casual/gacha-lite web game built with Phaser 3 + TypeScript + Vite. Target platforms: Poki, CrazyGames, GameDistribution. Monetization: rewarded video ads only.
+PETS GO Lite — 2D RNG casual/gacha-lite web game built with Phaser 3 + TypeScript + Vite. Target platforms: Poki, CrazyGames, GameDistribution. Monetization: rewarded video ads (buffs) + interstitial ads (autoroll toggle).
 
 Core loop: Click egg → hatch → get pet → XP → level up → better luck → repeat. No currency, no pity system, infinite free rolls.
 
@@ -59,10 +59,10 @@ src/
 │   ├── ProgressionSystem.ts        # XP, levels, luck formula
 │   ├── SaveSystem.ts               # localStorage with try/catch
 │   ├── AudioSystem.ts              # Play/stop/mute wrapper
-│   └── BuffSystem.ts               # Buff timers (x2xp, autoroll, luck)
+│   └── BuffSystem.ts               # Buff state (lucky/super/epic multipliers, autoroll toggle)
 │
 ├── scenes/
-│   ├── BootScene.ts                # Asset loading
+│   ├── BootScene.ts                # Asset loading + image pre-downscaling
 │   ├── MainScene.ts                # Gameplay dashboard (creates UI panels)
 │   └── CollectionScene.ts          # Pet grid with filters
 │
@@ -71,7 +71,7 @@ src/
 │   ├── SettingsButton.ts          # Gear icon (top-right)
 │   ├── CollectionButton.ts        # Collection count (left side)
 │   ├── CenterStage.ts             # 3 pedestal slots + rhombus shadows + dark overlay roll animation
-│   ├── RightPanel.ts              # Roll button (bottom-center) + buff buttons (right) with ADS badges
+│   ├── RightPanel.ts              # Roll button (bottom-center) + autoroll toggle (right of Roll)
 │   ├── PetCard.ts                  # Single pet card with image sprite (for collection grid)
 │   └── components/
 │       ├── Button.ts               # Reusable button with tween
@@ -79,7 +79,7 @@ src/
 │       └── FloatingText.ts         # "+25 XP" floating text
 │
 └── platform/
-    ├── PlatformSDK.ts              # Interface
+    ├── PlatformSDK.ts              # Interface (showRewardedBreak, commercialBreak)
     ├── PokiAdapter.ts              # Poki SDK implementation
     └── NullAdapter.ts              # No-op for local dev
 ```

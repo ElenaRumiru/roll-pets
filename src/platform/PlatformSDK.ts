@@ -4,4 +4,5 @@ export interface PlatformSDK {
     gameplayStart(): void;
     gameplayStop(): void;
     showRewardedBreak(): Promise<boolean>;
+    commercialBreak(): Promise<void>;
 }

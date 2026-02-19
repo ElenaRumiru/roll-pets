@@ -49,14 +49,12 @@ const BUFF_DESC: Record<string, string> = {
     lucky: 'x2 chance',
     super: 'x3 chance',
     epic: 'x5 chance',
-    autoroll: '30s',
 };
 
 const TOOLTIP_KEYS: Record<string, string> = {
     epic: 'tip_epic',
     lucky: 'tip_lucky',
     super: 'tip_super',
-    autoroll: 'tip_autoroll',
 };
 
 const TAB_W = 50;
@@ -74,10 +72,9 @@ export class BonusPanel extends GameObjects.Container {
 
     constructor(scene: Scene, onBuff: (type: string) => void) {
         const rowDefs = [
-            { type: 'epic',     iconKey: 'ui_x5wow',     label: t('buff_epic'),     color: BUFF_CONFIG.epic.color },
-            { type: 'lucky',    iconKey: 'ui_x2simple',   label: t('buff_lucky'),    color: BUFF_CONFIG.lucky.color },
-            { type: 'autoroll', iconKey: 'ui_auto',       label: t('buff_autoroll'), color: BUFF_CONFIG.autoroll.color },
-            { type: 'super',    iconKey: 'ui_x3wow',      label: t('buff_super'),    color: BUFF_CONFIG.super.color },
+            { type: 'epic',     iconKey: 'ui_x5wow_mid',     label: t('buff_epic'),     color: BUFF_CONFIG.epic.color },
+            { type: 'lucky',    iconKey: 'ui_x2simple_mid',   label: t('buff_lucky'),    color: BUFF_CONFIG.lucky.color },
+            { type: 'super',    iconKey: 'ui_x3wow_mid',      label: t('buff_super'),    color: BUFF_CONFIG.super.color },
         ];
 
         const totalH = rowDefs.length * ROW_H + (rowDefs.length - 1) * GAP;
@@ -121,6 +118,7 @@ export class BonusPanel extends GameObjects.Container {
         this.add(container);
 
         const isEpic = def.type === 'epic';
+        const isSuper = def.type === 'super';
         const isAd = !isEpic;
 
         // Outer glow — slow, subtle pulse
@@ -162,8 +160,10 @@ export class BonusPanel extends GameObjects.Container {
 
         // Icon — left side, centered in content zone
         const iconX = ICON_PAD + ICON_SZ / 2;
-        const iconSize = isEpic ? EPIC_ICON_SZ : ICON_SZ;
-        const icon = scene.add.image(iconX, CONTENT_CY, def.iconKey)
+        const isLucky = def.type === 'lucky';
+        const iconSize = isEpic ? EPIC_ICON_SZ : isSuper ? 54 : isLucky ? 49 : ICON_SZ;
+        const iconY = isEpic ? CONTENT_CY + 2 : CONTENT_CY;
+        const icon = scene.add.image(iconX, iconY, def.iconKey)
             .setDisplaySize(iconSize, iconSize);
         container.add(icon);
 
@@ -409,7 +409,7 @@ export class BonusPanel extends GameObjects.Container {
             row.progressBg!.setAlpha(ready ? 0 : 1);
             row.progressFill!.setAlpha(ready ? 0 : 1);
             row.progressText!.setAlpha(ready ? 0 : 1);
-            row.icon.setTexture('ui_x5wow');
+            row.icon.setTexture('ui_x5wow_mid');
             row.glow.setVisible(ready);
             if (ready) {
                 this.draw3DButton(row.getBtnBg, FREE_COLOR, FREE_COLOR_DARK);

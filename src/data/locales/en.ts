@@ -54,7 +54,8 @@ export const en: Record<string, string> = {
     'tip_lucky': 'Increases chance x2 for the next roll',
     'tip_super': 'Increases chance x3 for the next roll',
     'tip_epic': 'Increases chance x5 for the next roll',
-    'tip_autoroll': 'Auto-rolls for 30s',
+    'tip_autoroll': 'Toggle auto-rolling',
+    'badge_auto': 'Auto',
 
     // Left Panel
     'recent_rolls': 'Recent',

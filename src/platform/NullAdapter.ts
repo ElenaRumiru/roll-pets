@@ -6,4 +6,5 @@ export class NullAdapter implements PlatformSDK {
     gameplayStart(): void { /* no-op */ }
     gameplayStop(): void { /* no-op */ }
     async showRewardedBreak(): Promise<boolean> { return true; }
+    async commercialBreak(): Promise<void> { /* no-op */ }
 }

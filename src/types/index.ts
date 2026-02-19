@@ -63,7 +63,7 @@ export interface BuffState {
     lucky: number;
     super: number;
     epic: number;
-    autoroll: number;
-    autorollPaused: boolean;
+    autorollEnabled: boolean;
+    autorollRunning: boolean;
     epicTimer?: number;
 }

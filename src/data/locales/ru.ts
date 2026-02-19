@@ -54,7 +54,8 @@ export const ru: Record<string, string> = {
     'tip_lucky': 'Повышает шанс в 2 раза для следующего ролла',
     'tip_super': 'Повышает шанс в 3 раза для следующего ролла',
     'tip_epic': 'Повышает шанс в 5 раз для следующего ролла',
-    'tip_autoroll': 'Авто-ролл 30 сек',
+    'tip_autoroll': 'Включить авто-ролл',
+    'badge_auto': 'Авто',
 
     // Left Panel
     'recent_rolls': 'Последние',

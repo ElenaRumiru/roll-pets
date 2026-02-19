@@ -26,7 +26,8 @@ export class CollectionScene extends Scene {
     }
 
     create(): void {
-        this.save = new SaveSystem();
+        const manager = this.registry.get('gameManager') as import('../core/GameManager').GameManager;
+        this.save = manager.save;
         this.collection = new Set(this.save.getData().collection);
         this.newPetIds = new Set(this.save.getNewPets());
         this.scrollOffset = 0;

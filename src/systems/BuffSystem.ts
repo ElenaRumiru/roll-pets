@@ -5,8 +5,8 @@ export type CountBuff = 'lucky' | 'super' | 'epic';
 
 export class BuffSystem {
     private counts: Record<CountBuff, number> = { lucky: 0, super: 0, epic: 0 };
-    private autorollMs = 0;
-    private autorollPaused = false;
+    private autorollEnabled = false;
+    private autorollRunning = false;
     private epicTimer = 0;
     private superCooldown = 0;
     private _superOffered = false;
@@ -27,26 +27,20 @@ export class BuffSystem {
         this.counts.epic = Math.min(this.counts.epic + n, BUFF_CONFIG.epic.maxStack);
     }
 
-    /** Add 30s to autoroll bank. If not currently running, bank it (paused). */
-    activateAutoroll(): void {
-        const wasRunning = this.autorollMs > 0 && !this.autorollPaused;
-        this.autorollMs += BUFF_CONFIG.autoroll.duration;
-        if (!wasRunning) this.autorollPaused = true;
+    setAutorollEnabled(enabled: boolean): void {
+        this.autorollEnabled = enabled;
+        if (!enabled) this.autorollRunning = false;
+    }
+
+    startAutoroll(): void {
+        this.autorollRunning = true;
     }
 
     stopAutoroll(): void {
-        this.autorollPaused = true;
-    }
-
-    resumeAutoroll(): void {
-        this.autorollPaused = false;
+        this.autorollRunning = false;
     }
 
     update(deltaMs: number): void {
-        if (this.autorollMs > 0 && !this.autorollPaused) {
-            this.autorollMs = Math.max(0, this.autorollMs - deltaMs);
-        }
-
         if (this.epicTimer < BUFF_CONFIG.epic.timer) {
             this.epicTimer = Math.min(this.epicTimer + deltaMs, BUFF_CONFIG.epic.timer);
         }
@@ -85,9 +79,8 @@ export class BuffSystem {
     }
 
     getCount(buff: CountBuff): number { return this.counts[buff]; }
-    isAutorollActive(): boolean { return this.autorollMs > 0 && !this.autorollPaused; }
-    isAutorollPaused(): boolean { return this.autorollMs > 0 && this.autorollPaused; }
-    getAutorollRemaining(): number { return this.autorollMs; }
+    isAutorollActive(): boolean { return this.autorollEnabled && this.autorollRunning; }
+    isAutorollEnabled(): boolean { return this.autorollEnabled; }
     isSuperOffered(): boolean { return this._superOffered; }
     getSuperOfferRemaining(): number { return this.superOfferTimer; }
     getSuperCooldown(): number { return this.superCooldown; }
@@ -121,8 +114,8 @@ export class BuffSystem {
         this.counts.lucky = buffs.lucky;
         this.counts.super = buffs.super;
         this.counts.epic = buffs.epic;
-        this.autorollMs = buffs.autoroll;
-        this.autorollPaused = buffs.autorollPaused ?? false;
+        this.autorollEnabled = buffs.autorollEnabled ?? false;
+        this.autorollRunning = buffs.autorollRunning ?? false;
         this.epicTimer = buffs.epicTimer ?? 0;
     }
 
@@ -131,8 +124,8 @@ export class BuffSystem {
             lucky: this.counts.lucky,
             super: this.counts.super,
             epic: this.counts.epic,
-            autoroll: this.autorollMs,
-            autorollPaused: this.autorollPaused,
+            autorollEnabled: this.autorollEnabled,
+            autorollRunning: this.autorollRunning,
             epicTimer: this.epicTimer,
         };
     }

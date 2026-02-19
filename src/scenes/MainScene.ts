@@ -15,6 +15,7 @@ import { NicknamePrompt } from '../ui/NicknamePrompt';
 import { ArrowHint } from '../ui/ArrowHint';
 import { PETS } from '../data/pets';
 import { PetDef, RollResult, LevelUpData } from '../types';
+import { PlatformSDK } from '../platform/PlatformSDK';
 import { AudioSystem } from '../systems/AudioSystem';
 import { t } from '../data/locales';
 
@@ -78,10 +79,13 @@ export class MainScene extends Scene {
             this,
             () => EventBus.emit('roll-requested'),
             () => EventBus.emit('autoroll-stop'),
-            () => EventBus.emit('autoroll-resume'),
+            () => EventBus.emit('autoroll-start'),
+            (enabled: boolean) => this.handleAutorollToggle(enabled),
         );
 
         this.collectionBtn = new CollectionButton(this, () => {
+            this.manager.buffs.stopAutoroll();
+            this.manager.isRolling = false;
             this.manager.saveState();
             this.scene.start('CollectionScene');
         });
@@ -107,6 +111,7 @@ export class MainScene extends Scene {
         EventBus.on('buffs-changed', this.onBuffsChanged, this);
         EventBus.on('autoroll-stop', this.onAutorollStop, this);
         EventBus.on('nickname-changed', this.onNicknameChanged, this);
+        this.events.on('shutdown', this.shutdown, this);
 
         // Pause overlay
         this.pauseOverlay = this.createPauseOverlay();
@@ -120,8 +125,8 @@ export class MainScene extends Scene {
             if (this.isPaused) return;
             if (this.manager.buffs.isAutorollActive()) {
                 EventBus.emit('autoroll-stop');
-            } else if (this.manager.buffs.isAutorollPaused()) {
-                EventBus.emit('autoroll-resume');
+            } else if (this.manager.buffs.isAutorollEnabled()) {
+                EventBus.emit('autoroll-start');
             } else {
                 EventBus.emit('roll-requested');
             }
@@ -190,12 +195,22 @@ export class MainScene extends Scene {
         }
     }
 
+    private async handleAutorollToggle(enabled: boolean): Promise<void> {
+        const sdk = this.registry.get('platformSDK') as PlatformSDK | undefined;
+        if (sdk) {
+            sdk.gameplayStop();
+            try { await sdk.commercialBreak(); } catch { /* ad failed, still toggle */ }
+            sdk.gameplayStart();
+        }
+        EventBus.emit('autoroll-toggle', enabled);
+    }
+
     private handleBuffRequest(type: string): void {
         if (type === 'epic') {
             EventBus.emit('buff-requested', type);
             return;
         }
-        if (type === 'lucky' || type === 'super' || type === 'autoroll') {
+        if (type === 'lucky' || type === 'super') {
             const sdk = this.registry.get('platformSDK');
             if (sdk) {
                 sdk.showRewardedBreak().then((success: boolean) => {
@@ -342,6 +357,11 @@ export class MainScene extends Scene {
     }
 
     shutdown(): void {
+        // Stop autoroll & reset rolling state before scene is destroyed
+        this.manager.buffs.stopAutoroll();
+        this.manager.isRolling = false;
+        this.manager.saveState();
+
         EventBus.off('roll-requested', this.onRollRequested, this);
         EventBus.off('roll-complete', this.onRollComplete, this);
         EventBus.off('level-up', this.onLevelUp, this);

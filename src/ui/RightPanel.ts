@@ -1,5 +1,5 @@
 import { GameObjects, Scene } from 'phaser';
-import { UI, ROLL_BTN } from '../core/config';
+import { UI, ROLL_BTN, AUTOROLL_TOGGLE } from '../core/config';
 import { BuffBadges } from './BuffBadges';
 import { BuffSystem } from '../systems/BuffSystem';
 import { t } from '../data/locales';
@@ -11,24 +11,28 @@ export class RightPanel extends GameObjects.Container {
     private rollLabel: GameObjects.Text;
     private badges: BuffBadges;
     private spaceHint: GameObjects.Text;
-    private autorollActive = false;
-    private autorollPaused = false;
+    private toggleImg: GameObjects.Image;
+    private autorollEnabled = false;
+    private autorollRunning = false;
 
     private onRoll: () => void;
     private onStopAutoroll: () => void;
-    private onResumeAutoroll: () => void;
+    private onStartAutoroll: () => void;
+    private onToggleAutoroll: (enabled: boolean) => void;
 
     constructor(
         scene: Scene,
         onRoll: () => void,
         onStopAutoroll: () => void,
-        onResumeAutoroll: () => void,
+        onStartAutoroll: () => void,
+        onToggleAutoroll: (enabled: boolean) => void,
     ) {
         super(scene, 0, 0);
 
         this.onRoll = onRoll;
         this.onStopAutoroll = onStopAutoroll;
-        this.onResumeAutoroll = onResumeAutoroll;
+        this.onStartAutoroll = onStartAutoroll;
+        this.onToggleAutoroll = onToggleAutoroll;
 
         // Roll button wrapper (for scaling image + text together)
         this.rollWrap = scene.add.container(ROLL_BTN.x, ROLL_BTN.y);
@@ -56,6 +60,17 @@ export class RightPanel extends GameObjects.Container {
 
         addButtonFeedback(scene, this.rollBg, { scaleTarget: this.rollWrap });
 
+        // Autoroll toggle button (right of Roll, bottom-aligned)
+        const toggleX = ROLL_BTN.x + ROLL_BTN.width / 2 + AUTOROLL_TOGGLE.gap + AUTOROLL_TOGGLE.width / 2 - 7;
+        const rollBottom = ROLL_BTN.y + ROLL_BTN.height / 2;
+        const toggleY = rollBottom - AUTOROLL_TOGGLE.height / 2 - 10;
+        this.toggleImg = scene.add.image(toggleX, toggleY, 'ui_automod_off')
+            .setDisplaySize(AUTOROLL_TOGGLE.width, AUTOROLL_TOGGLE.height)
+            .setInteractive({ useHandCursor: true });
+        this.toggleImg.on('pointerdown', () => this.handleToggleClick());
+        this.add(this.toggleImg);
+        addButtonFeedback(scene, this.toggleImg);
+
         // Buff badges above roll button (almost touching top edge)
         this.badges = new BuffBadges(scene, ROLL_BTN.x, ROLL_BTN.y - ROLL_BTN.height / 2 - 10);
         this.add(this.badges);
@@ -64,19 +79,23 @@ export class RightPanel extends GameObjects.Container {
     }
 
     private handleRollClick(): void {
-        if (this.autorollActive) {
+        if (this.autorollRunning) {
             this.onStopAutoroll();
-        } else if (this.autorollPaused) {
-            this.onResumeAutoroll();
+        } else if (this.autorollEnabled) {
+            this.onStartAutoroll();
         } else {
             this.onRoll();
         }
     }
 
+    private handleToggleClick(): void {
+        this.onToggleAutoroll(!this.autorollEnabled);
+    }
+
     setRolling(rolling: boolean): void {
-        if (this.autorollActive) {
+        if (this.autorollRunning) {
             this.rollLabel.setText(t('roll_stop'));
-        } else if (this.autorollPaused) {
+        } else if (this.autorollEnabled) {
             this.rollLabel.setText(t('roll_auto'));
         } else if (rolling) {
             this.rollWrap.scene.tweens.killTweensOf(this.rollWrap);
@@ -94,28 +113,29 @@ export class RightPanel extends GameObjects.Container {
     updateBuffDisplay(buffs: BuffSystem): void {
         this.badges.updateFromBuffs(buffs);
 
-        // Autoroll state on roll button
-        const wasAuto = this.autorollActive;
-        const wasPaused = this.autorollPaused;
-        this.autorollActive = buffs.isAutorollActive();
-        this.autorollPaused = buffs.isAutorollPaused();
+        const wasEnabled = this.autorollEnabled;
+        const wasRunning = this.autorollRunning;
+        this.autorollEnabled = buffs.isAutorollEnabled();
+        this.autorollRunning = buffs.isAutorollActive();
 
-        if (this.autorollActive && !wasAuto) {
+        // Update toggle image
+        this.toggleImg.setTexture(this.autorollEnabled ? 'ui_automod_on' : 'ui_automod_off');
+
+        // Update roll button label based on state
+        if (this.autorollRunning) {
             this.rollLabel.setText(t('roll_stop'));
             this.rollBg.setAlpha(1);
             this.rollBg.setInteractive({ useHandCursor: true });
-        } else if (!this.autorollActive && wasAuto) {
-            if (this.autorollPaused) {
-                this.rollLabel.setText(t('roll_auto'));
-            } else {
-                this.rollLabel.setText(t('roll_button'));
-            }
-        } else if (this.autorollPaused && !wasPaused) {
+        } else if (this.autorollEnabled) {
             this.rollLabel.setText(t('roll_auto'));
             this.rollBg.setAlpha(1);
             this.rollBg.setInteractive({ useHandCursor: true });
-        } else if (!this.autorollPaused && wasPaused && !this.autorollActive) {
+        } else if (wasEnabled || wasRunning) {
+            // Was in autoroll mode, now back to normal
             this.rollLabel.setText(t('roll_button'));
+            this.rollBg.setAlpha(1);
+            this.rollBg.setInteractive({ useHandCursor: true });
         }
+        // else: normal state, don't overwrite "Hatching..." during a roll
     }
 }
