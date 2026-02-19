@@ -94,6 +94,8 @@ export const ru: Record<string, string> = {
     'nickname_ok': 'OK',
     'bonus_get': 'ВЗЯТЬ',
     'buff_get': 'ВЗЯТЬ',
+    'buff_watch': 'СМОТРЕТЬ',
+    'buff_free': 'БЕСПЛАТНО',
     'default_nickname': 'Игрок',
     'leaderboard_player': 'ИГРОК',
     'leaderboard_grade': 'ГРЕЙД',

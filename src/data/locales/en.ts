@@ -94,6 +94,8 @@ export const en: Record<string, string> = {
     'nickname_ok': 'OK',
     'bonus_get': 'GET',
     'buff_get': 'GET',
+    'buff_watch': 'WATCH',
+    'buff_free': 'FREE',
     'default_nickname': 'Player',
     'leaderboard_player': 'PLAYER',
     'leaderboard_grade': 'GRADE',
