@@ -57,6 +57,7 @@ export interface SaveData {
     rollLog: RollLogEntry[];
     nickname: string;
     newPets: string[];
+    quests: QuestState;
 }
 
 export interface BuffState {
@@ -66,4 +67,16 @@ export interface BuffState {
     autorollEnabled: boolean;
     autorollRunning: boolean;
     epicTimer?: number;
+}
+
+export interface QuestProgress {
+    current: number;
+    target: number;
+    sequenceIndex: number;
+}
+
+export interface QuestState {
+    lastResetDate: string;
+    rollQuest: QuestProgress;
+    gradeQuest: QuestProgress;
 }

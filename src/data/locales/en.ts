@@ -104,4 +104,16 @@ export const en: Record<string, string> = {
     // Pause
     'paused': 'PAUSED',
     'press_esc': 'Press ESC to resume',
+
+    // Daily Quests
+    'quest_title': 'DAILY QUESTS',
+    'quest_roll': 'Roll {target} times',
+    'quest_grade': 'Get {grade}+',
+    'quest_claim': 'CLAIM',
+    'quest_complete': 'Quest Complete!',
+    'quest_choose': 'Choose reward:',
+    'quest_free': 'FREE',
+    'quest_watch': '\u25B6 WATCH',
+    'quest_rolls': '{count} Roll',
+    'quest_rolls_plural': '{count} Rolls',
 };

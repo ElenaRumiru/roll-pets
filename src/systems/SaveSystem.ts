@@ -1,9 +1,9 @@
 import { SaveData, Grade } from '../types';
 import { PETS } from '../data/pets';
-import { getGradeForChance } from '../core/config';
+import { getGradeForChance, getDefaultQuestState } from '../core/config';
 
 const SAVE_KEY = 'pets_go_lite_save';
-const CURRENT_VERSION = 8;
+const CURRENT_VERSION = 9;
 
 function getDefaults(): SaveData {
     return {
@@ -17,6 +17,7 @@ function getDefaults(): SaveData {
         rollLog: [],
         nickname: '',
         newPets: [],
+        quests: getDefaultQuestState(),
     };
 }
 
@@ -67,6 +68,10 @@ function migrate(data: SaveData): SaveData {
         };
         data.version = 8;
     }
+    if (data.version === 8) {
+        data.quests = getDefaultQuestState();
+        data.version = 9;
+    }
     return data;
 }
 
@@ -95,6 +100,7 @@ export class SaveSystem {
         data.version = CURRENT_VERSION;
         data.settings = { ...defaults.settings, ...data.settings };
         data.buffs = { ...defaults.buffs, ...data.buffs };
+        data.quests = data.quests ?? getDefaultQuestState();
         return data;
     }
 

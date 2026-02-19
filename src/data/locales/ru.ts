@@ -104,4 +104,16 @@ export const ru: Record<string, string> = {
     // Pause
     'paused': 'ПАУЗА',
     'press_esc': 'Нажмите ESC для продолжения',
+
+    // Daily Quests
+    'quest_title': 'ЕЖЕДНЕВНЫЕ',
+    'quest_roll': 'Сделай {target} роллов',
+    'quest_grade': 'Получи {grade}+',
+    'quest_claim': 'ЗАБРАТЬ',
+    'quest_complete': 'Задание выполнено!',
+    'quest_choose': 'Выбери награду:',
+    'quest_free': 'БЕСПЛАТНО',
+    'quest_watch': '\u25B6 СМОТРЕТЬ',
+    'quest_rolls': '{count} ролл',
+    'quest_rolls_plural': '{count} ролла',
 };

@@ -57,9 +57,10 @@ src/
 ├── systems/                        # Pure TS, zero Phaser dependency
 │   ├── RNGSystem.ts                # sfc32 PRNG + weightedRandom
 │   ├── ProgressionSystem.ts        # XP, levels, luck formula
-│   ├── SaveSystem.ts               # localStorage with try/catch
+│   ├── SaveSystem.ts               # localStorage with try/catch (v9)
 │   ├── AudioSystem.ts              # Play/stop/mute wrapper
-│   └── BuffSystem.ts               # Buff state (lucky/super/epic multipliers, autoroll toggle)
+│   ├── BuffSystem.ts               # Buff state (lucky/super/epic multipliers, autoroll toggle)
+│   └── QuestSystem.ts              # Daily quest logic, progress tracking, UTC midnight reset
 │
 ├── scenes/
 │   ├── BootScene.ts                # Asset loading + image pre-downscaling
@@ -72,6 +73,8 @@ src/
 │   ├── CollectionButton.ts        # Collection count (left side)
 │   ├── CenterStage.ts             # 3 pedestal slots + rhombus shadows + dark overlay roll animation
 │   ├── RightPanel.ts              # Roll button (bottom-center) + autoroll toggle (right of Roll)
+│   ├── QuestPanel.ts              # Daily quest panel (right side, above BonusPanel)
+│   ├── QuestClaimPopup.ts         # Quest reward confirmation popup (free vs ad)
 │   ├── PetCard.ts                  # Single pet card with image sprite (for collection grid)
 │   └── components/
 │       ├── Button.ts               # Reusable button with tween
@@ -136,3 +139,9 @@ When official docs are not enough, **search the wider internet**: Reddit, YouTub
 **Roll algorithm:** Sequential check from rarest to most common, `checkChance = min(1, luckMultiplier / pet.chance)`. First pet to pass = result, fallback = most common in pool. Buff multipliers stack multiplicatively: Lucky x2, Super x3, Epic x5 (max x30).
 
 **Eggs:** Dynamic filter via `getEggFilterForLevel(level)` — each visual tier (1–17) removes one common pet from the pool. XP curve: base 100, multiplier 1.15x per level. New pet = +25% XP bar, duplicate = +0.5-10% based on grade.
+
+**Daily Quests:** Two repeating quests that reset at UTC midnight. Managed by `QuestSystem` (pure TS), UI in `QuestPanel` + `QuestClaimPopup`. Save version 9.
+- Quest 1 (Roll): targets [3, 5, 10], loops at 10. Reward: 1x Lucky (free) / 5x Lucky (ad).
+- Quest 2 (Grade): sequence [Uncommon, Improved], loops at Improved. Accepts target grade or higher. Reward: 1x Super (free) / 3x Super (ad).
+- Claim flow: progress bar → CLAIM button → popup with two card choices (free green / ad purple) → buff granted.
+- Events: `quests-changed` emitted on progress/claim/reset. Daily reset checked on load, each roll, and periodic 60s timer.

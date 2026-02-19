@@ -10,6 +10,8 @@ import { CollectionButton } from '../ui/CollectionButton';
 import { SettingsButton } from '../ui/SettingsButton';
 import { SettingsPanel } from '../ui/SettingsPanel';
 import { BonusPanel } from '../ui/BonusPanel';
+import { QuestPanel } from '../ui/QuestPanel';
+import { QuestClaimPopup } from '../ui/QuestClaimPopup';
 import { Leaderboard } from '../ui/Leaderboard';
 import { NicknamePrompt } from '../ui/NicknamePrompt';
 import { ArrowHint } from '../ui/ArrowHint';
@@ -27,6 +29,8 @@ export class MainScene extends Scene {
     private collectionBtn!: CollectionButton;
     private settingsPanel!: SettingsPanel;
     private bonusPanel!: BonusPanel;
+    private questPanel!: QuestPanel;
+    private questPopup: QuestClaimPopup | null = null;
     private leaderboard!: Leaderboard;
     private audio!: AudioSystem;
     private bgImage!: Phaser.GameObjects.Image;
@@ -91,6 +95,16 @@ export class MainScene extends Scene {
         });
 
         this.bonusPanel = new BonusPanel(this, (type: string) => this.handleBuffRequest(type));
+        this.questPanel = new QuestPanel(this, (type: 'roll' | 'grade') => this.handleQuestClaim(type));
+
+        // Position quest panel + bonus panel below settings button
+        const SETTINGS_BOTTOM = 62;
+        const BONUS_TOTAL_H = 3 * 68 + 2 * 7; // 218
+        const COMBINED_GAP = 6;
+        const combinedH = this.questPanel.panelHeight + COMBINED_GAP + BONUS_TOTAL_H;
+        const startY = SETTINGS_BOTTOM + Math.max(0, (GAME_HEIGHT - SETTINGS_BOTTOM - combinedH) / 2);
+        this.questPanel.y = startY;
+        this.bonusPanel.y = startY + this.questPanel.panelHeight + COMBINED_GAP;
 
         // Audio (singleton from registry)
         this.audio = this.registry.get('audio') as AudioSystem;
@@ -111,6 +125,7 @@ export class MainScene extends Scene {
         EventBus.on('buffs-changed', this.onBuffsChanged, this);
         EventBus.on('autoroll-stop', this.onAutorollStop, this);
         EventBus.on('nickname-changed', this.onNicknameChanged, this);
+        EventBus.on('quests-changed', this.onQuestsChanged, this);
         this.events.on('shutdown', this.shutdown, this);
 
         // Pause overlay
@@ -140,6 +155,7 @@ export class MainScene extends Scene {
             this.rightPanel.setDepth(105);
             this.topBar.setDepth(105);
             this.bonusPanel.setDepth(105);
+            this.questPanel.setDepth(105);
             this.leaderboard.setDepth(105);
             this.collectionBtn.setDepth(105);
         }
@@ -170,6 +186,7 @@ export class MainScene extends Scene {
             this.rightPanel.setDepth(105);
             this.topBar.setDepth(105);
             this.bonusPanel.setDepth(105);
+            this.questPanel.setDepth(105);
             this.leaderboard.setDepth(105);
             this.collectionBtn.setDepth(105);
         } else if (!autoActive && this.wasAutorollActive) {
@@ -177,6 +194,7 @@ export class MainScene extends Scene {
             this.rightPanel.setDepth(0);
             this.topBar.setDepth(0);
             this.bonusPanel.setDepth(0);
+            this.questPanel.setDepth(0);
             this.leaderboard.setDepth(0);
             this.collectionBtn.setDepth(0);
         }
@@ -272,12 +290,39 @@ export class MainScene extends Scene {
         this.leaderboard.updatePlayerEntry(name, this.getPlayerBestOdds(), 30);
     }
 
+    private onQuestsChanged(): void {
+        this.questPanel.updateDisplay(this.manager.quests);
+    }
+
+    private handleQuestClaim(type: 'roll' | 'grade'): void {
+        if (this.questPopup) return;
+        this.questPopup = new QuestClaimPopup(this, type,
+            () => {
+                this.manager.claimQuestReward(type, false);
+                this.questPopup = null;
+            },
+            () => {
+                const sdk = this.registry.get('platformSDK') as PlatformSDK | undefined;
+                if (sdk) {
+                    sdk.showRewardedBreak().then((success: boolean) => {
+                        this.manager.claimQuestReward(type, success);
+                        this.questPopup = null;
+                    });
+                } else {
+                    this.manager.claimQuestReward(type, true);
+                    this.questPopup = null;
+                }
+            },
+        );
+    }
+
     private onAutorollStop(): void {
         this.centerStage.setAutorollOverlay(false);
         this.wasAutorollActive = false;
         this.rightPanel.setDepth(0);
         this.topBar.setDepth(0);
         this.bonusPanel.setDepth(0);
+        this.questPanel.setDepth(0);
         this.leaderboard.setDepth(0);
         this.collectionBtn.setDepth(0);
         this.rightPanel.updateBuffDisplay(this.manager.buffs);
@@ -343,6 +388,7 @@ export class MainScene extends Scene {
 
         const topPets = this.getTopPets();
         this.centerStage.updatePedestals(topPets);
+        this.questPanel.updateDisplay(this.manager.quests);
     }
 
     private showArrowHint(): void {
@@ -369,5 +415,6 @@ export class MainScene extends Scene {
         EventBus.off('buffs-changed', this.onBuffsChanged, this);
         EventBus.off('autoroll-stop', this.onAutorollStop, this);
         EventBus.off('nickname-changed', this.onNicknameChanged, this);
+        EventBus.off('quests-changed', this.onQuestsChanged, this);
     }
 }

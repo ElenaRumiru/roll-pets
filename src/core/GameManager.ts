@@ -1,9 +1,10 @@
 import { EventBus } from './EventBus';
-import { BUFF_CONFIG } from './config';
+import { BUFF_CONFIG, QUEST_CONFIG } from './config';
 import { RNGSystem } from '../systems/RNGSystem';
 import { ProgressionSystem } from '../systems/ProgressionSystem';
 import { SaveSystem } from '../systems/SaveSystem';
 import { BuffSystem } from '../systems/BuffSystem';
+import { QuestSystem } from '../systems/QuestSystem';
 import { getEligiblePets, getEggImageKey } from '../data/eggs';
 import { getBgImageKey } from '../data/backgrounds';
 import { RollResult, LevelUpData } from '../types';
@@ -13,7 +14,9 @@ export class GameManager {
     progression: ProgressionSystem;
     save: SaveSystem;
     buffs: BuffSystem;
+    quests: QuestSystem;
     isRolling = false;
+    private questResetTimer = 0;
 
     constructor() {
         this.save = new SaveSystem();
@@ -24,6 +27,8 @@ export class GameManager {
         this.buffs = new BuffSystem();
         this.buffs.loadFromSave(data.buffs);
         this.buffs.startSuperCooldown();
+        this.quests = new QuestSystem();
+        this.quests.loadFromSave(data.quests);
 
         this.setupListeners();
     }
@@ -69,6 +74,9 @@ export class GameManager {
         EventBus.emit('roll-complete', result);
         EventBus.emit('buffs-changed');
 
+        this.quests.onRollComplete(result);
+        EventBus.emit('quests-changed');
+
         const oldEggKey = getEggImageKey(this.progression.level);
         const leveledUp = this.progression.checkLevelUp();
         if (leveledUp) {
@@ -110,12 +118,30 @@ export class GameManager {
         this.persistSave();
     }
 
+    claimQuestReward(questType: 'roll' | 'grade', useAd: boolean): void {
+        const cfg = QUEST_CONFIG.rewards[questType];
+        const count = useAd ? cfg.adCount : cfg.freeCount;
+        const claimed = questType === 'roll'
+            ? this.quests.claimRollQuest()
+            : this.quests.claimGradeQuest();
+        if (!claimed) return;
+
+        if (cfg.buffType === 'lucky') this.buffs.addLucky(count);
+        else this.buffs.addSuper(count);
+
+        EventBus.emit('buff-activated', cfg.buffType);
+        EventBus.emit('buffs-changed');
+        EventBus.emit('quests-changed');
+        this.persistSave();
+    }
+
     private persistSave(result?: RollResult): void {
         const data = this.save.getData();
         data.level = this.progression.level;
         data.xp = this.progression.xp;
         data.collection = this.progression.getCollectionArray();
         data.buffs = this.buffs.toSave();
+        data.quests = this.quests.toSave();
 
         if (result) {
             data.totalRolls++;
@@ -133,6 +159,14 @@ export class GameManager {
 
     update(deltaMs: number): void {
         this.buffs.update(deltaMs);
+        this.questResetTimer += deltaMs;
+        if (this.questResetTimer >= 60_000) {
+            this.questResetTimer = 0;
+            if (this.quests.checkDailyReset()) {
+                EventBus.emit('quests-changed');
+                this.persistSave();
+            }
+        }
     }
 
     /** Save current state (call before scene transitions) */

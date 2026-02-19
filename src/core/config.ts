@@ -1,4 +1,4 @@
-import { Grade, GradeConfig } from '../types';
+import { Grade, GradeConfig, QuestState } from '../types';
 
 export const GAME_WIDTH = 836;
 export const GAME_HEIGHT = 470;
@@ -142,6 +142,27 @@ export const BONUS_PANEL = {
     w: 143, iconSize: 56, padding: 5,
     gap: 7,
 };
+
+export const QUEST_CONFIG = {
+    rollSequence: [3, 5, 10],
+    gradeSequence: ['uncommon', 'improved'] as Grade[],
+    rewards: {
+        roll:  { freeCount: 1, adCount: 5, buffType: 'lucky' as const },
+        grade: { freeCount: 1, adCount: 3, buffType: 'super' as const },
+    },
+};
+
+export const QUEST_PANEL = { x: BONUS_PANEL.x, w: BONUS_PANEL.w };
+
+export function getDefaultQuestState(): QuestState {
+    const d = new Date();
+    const today = `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}-${String(d.getUTCDate()).padStart(2, '0')}`;
+    return {
+        lastResetDate: today,
+        rollQuest: { current: 0, target: QUEST_CONFIG.rollSequence[0], sequenceIndex: 0 },
+        gradeQuest: { current: 0, target: 1, sequenceIndex: 0 },
+    };
+}
 
 export const AUTOROLL_INTERVAL = 500;
 
