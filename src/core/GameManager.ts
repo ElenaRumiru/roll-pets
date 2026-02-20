@@ -49,7 +49,6 @@ export class GameManager {
 
     startAutoroll(): void {
         this.buffs.startAutoroll();
-        EventBus.emit('buff-activated', 'autoroll');
         EventBus.emit('buffs-changed');
         this.persistSave();
     }
@@ -129,7 +128,6 @@ export class GameManager {
         if (cfg.buffType === 'lucky') this.buffs.addLucky(count);
         else this.buffs.addSuper(count);
 
-        EventBus.emit('buff-activated', cfg.buffType);
         EventBus.emit('buffs-changed');
         EventBus.emit('quests-changed');
         this.persistSave();
