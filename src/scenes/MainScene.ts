@@ -1,5 +1,5 @@
 import { Scene } from 'phaser';
-import { GAME_WIDTH, GAME_HEIGHT, AUTOROLL_INTERVAL, xpForLevel, UI, getOddsString, ONBOARDING } from '../core/config';
+import { GAME_WIDTH, GAME_HEIGHT, AUTOROLL_INTERVAL, xpForLevel, UI, getOddsString, ONBOARDING, LEVELUP_CONFIG } from '../core/config';
 import { EventBus } from '../core/EventBus';
 import { GameManager } from '../core/GameManager';
 import { TopBar } from '../ui/TopBar';
@@ -252,14 +252,12 @@ export class MainScene extends Scene {
             if (this.pendingLevelUp) {
                 const data = this.pendingLevelUp;
                 this.pendingLevelUp = null;
-                const autoActive = this.manager.buffs.isAutorollActive();
-                this.levelUpOverlay.show(data, autoActive, () => {
-                    this.centerStage.setEggImage(data.eggKey);
-                    this.bgImage.setTexture(data.bgKey);
-                    this.centerStage.setKeepOverlay(false);
-                    this.manager.finishRoll();
-                    this.rightPanel.setRolling(false);
-                    this.refreshUI();
+                this.levelUpOverlay.show(data, (chosenCoinAmount: number) => {
+                    if (chosenCoinAmount > 0) {
+                        this.handleLevelUpCoinChoice(data, chosenCoinAmount);
+                    } else {
+                        this.finishLevelUp(data);
+                    }
                 });
             } else {
                 this.manager.finishRoll();
@@ -267,6 +265,48 @@ export class MainScene extends Scene {
                 this.refreshUI();
             }
         });
+    }
+
+    private handleLevelUpCoinChoice(data: LevelUpData, chosenAmount: number): void {
+        const baseAmount = data.coinReward;
+        const adAmount = baseAmount * LEVELUP_CONFIG.adCoinMultiplier;
+
+        if (chosenAmount === adAmount) {
+            const sdk = this.registry.get('platformSDK') as PlatformSDK | undefined;
+            if (sdk) {
+                sdk.showRewardedBreak().then((success: boolean) => {
+                    const finalAmount = success ? adAmount : baseAmount;
+                    this.manager.claimLevelUpCoins(finalAmount);
+                    this.coinDisplay.showFloatingGain(finalAmount, this);
+                    this.finishLevelUp(data);
+                });
+            } else {
+                this.manager.claimLevelUpCoins(adAmount);
+                this.coinDisplay.showFloatingGain(adAmount, this);
+                this.finishLevelUp(data);
+            }
+        } else {
+            this.manager.claimLevelUpCoins(baseAmount);
+            this.coinDisplay.showFloatingGain(baseAmount, this);
+            this.finishLevelUp(data);
+        }
+    }
+
+    private finishLevelUp(data: LevelUpData): void {
+        this.centerStage.setEggImage(data.eggKey);
+        this.bgImage.setTexture(data.bgKey);
+        this.centerStage.setKeepOverlay(false);
+        // Fade the CenterStage hatch overlay back (was kept visible for level-up)
+        if (!this.manager.buffs.isAutorollActive()) {
+            this.tweens.add({
+                targets: this.centerStage.getOverlay(),
+                fillAlpha: 0,
+                duration: 250,
+            });
+        }
+        this.manager.finishRoll();
+        this.rightPanel.setRolling(false);
+        this.refreshUI();
     }
 
     private onLevelUp(data: LevelUpData): void {

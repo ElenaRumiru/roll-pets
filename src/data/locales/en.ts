@@ -120,4 +120,11 @@ export const en: Record<string, string> = {
     // Coins
     'coins': 'Coins',
     'coins_reward': '+{amount}',
+
+    // Level Up Overlay
+    'levelup_new_egg_unlocked': 'New Egg Unlocked!',
+    'levelup_rewards': 'Rewards:',
+    'levelup_tap_close': 'Tap to close ({seconds})',
+    'levelup_auto_accept': 'Auto-accept in {seconds}s',
+    'levelup_best': 'BEST',
 };

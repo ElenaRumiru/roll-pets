@@ -120,4 +120,11 @@ export const ru: Record<string, string> = {
     // Coins
     'coins': 'Монеты',
     'coins_reward': '+{amount}',
+
+    // Level Up Overlay
+    'levelup_new_egg_unlocked': 'Новое яйцо открыто!',
+    'levelup_rewards': 'Награды:',
+    'levelup_tap_close': 'Нажми чтобы закрыть ({seconds})',
+    'levelup_auto_accept': 'Автовыбор через {seconds}с',
+    'levelup_best': 'ЛУЧШЕЕ',
 };

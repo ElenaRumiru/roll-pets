@@ -84,7 +84,6 @@ export class GameManager {
             const newEggKey = getEggImageKey(this.progression.level);
             const eggChanged = oldEggKey !== newEggKey;
             const coinReward = eggChanged ? 0 : levelUpCoinReward(this.progression.level);
-            if (coinReward > 0) this.progression.addCoins(coinReward);
             const levelUpData: LevelUpData = {
                 level: this.progression.level,
                 eggKey: newEggKey,
@@ -102,6 +101,11 @@ export class GameManager {
 
     finishRoll(): void {
         this.isRolling = false;
+    }
+
+    claimLevelUpCoins(amount: number): void {
+        if (amount > 0) this.progression.addCoins(amount);
+        this.persistSave();
     }
 
     private activateBuff(buff: string): void {

@@ -206,6 +206,12 @@ export function levelUpCoinReward(level: number): number {
     return level * 10;
 }
 
+export const LEVELUP_CONFIG = {
+    adCoinMultiplier: 3,
+    eggCloseSeconds: 5,
+    coinAcceptSeconds: 10,
+};
+
 export const COIN_HUD = { w: 83, h: 29, iconSize: 31, gap: 8 };
 
 /** Convert pet chance (X from "1 in X") to display string */
