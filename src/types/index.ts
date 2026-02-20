@@ -20,6 +20,8 @@ export interface GradeConfig {
     label: string;
     xpNewPercent: number;
     xpDupPercent: number;
+    coinsNew: number;
+    coinsDup: number;
     minChance: number;
     maxChance: number;
 }
@@ -28,6 +30,7 @@ export interface RollResult {
     pet: PetDef;
     isNew: boolean;
     xpGained: number;
+    coinsGained: number;
     grade: Grade;
 }
 
@@ -44,12 +47,14 @@ export interface LevelUpData {
     bgKey: string;
     oldEggKey: string;
     eggChanged: boolean;
+    coinReward: number;
 }
 
 export interface SaveData {
     version: number;
     level: number;
     xp: number;
+    coins: number;
     collection: string[];
     totalRolls: number;
     settings: { music: boolean; sfx: boolean; volume: number; sfxVolume: number };

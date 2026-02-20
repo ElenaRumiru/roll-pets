@@ -3,13 +3,14 @@ import { PETS } from '../data/pets';
 import { getGradeForChance, getDefaultQuestState } from '../core/config';
 
 const SAVE_KEY = 'pets_go_lite_save';
-const CURRENT_VERSION = 11;
+const CURRENT_VERSION = 12;
 
 function getDefaults(): SaveData {
     return {
         version: CURRENT_VERSION,
         level: 1,
         xp: 0,
+        coins: 0,
         collection: [],
         totalRolls: 0,
         settings: { music: true, sfx: true, volume: 0.3, sfxVolume: 0.2 },
@@ -86,6 +87,10 @@ function migrate(data: SaveData): SaveData {
         data.level = 1;
         data.xp = 0;
         data.version = 11;
+    }
+    if (data.version === 11) {
+        data.coins = data.coins ?? 0;
+        data.version = 12;
     }
     return data;
 }

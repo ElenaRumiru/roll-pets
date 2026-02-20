@@ -8,6 +8,7 @@ import { LevelUpOverlay } from '../ui/LevelUpOverlay';
 import { RightPanel } from '../ui/RightPanel';
 import { CollectionButton } from '../ui/CollectionButton';
 import { SettingsButton } from '../ui/SettingsButton';
+import { CoinDisplay } from '../ui/CoinDisplay';
 import { SettingsPanel } from '../ui/SettingsPanel';
 import { BonusPanel } from '../ui/BonusPanel';
 import { QuestPanel } from '../ui/QuestPanel';
@@ -32,6 +33,7 @@ export class MainScene extends Scene {
     private questPanel!: QuestPanel;
     private questPopup: QuestClaimPopup | null = null;
     private leaderboard!: Leaderboard;
+    private coinDisplay!: CoinDisplay;
     private audio!: AudioSystem;
     private bgImage!: Phaser.GameObjects.Image;
     private autorollTimer = 0;
@@ -107,6 +109,9 @@ export class MainScene extends Scene {
         this.audio = this.registry.get('audio') as AudioSystem;
         this.centerStage.setAudio(this.audio);
 
+        // Coin HUD (left of settings button)
+        this.coinDisplay = new CoinDisplay(this);
+
         // Settings panel + button
         this.settingsPanel = new SettingsPanel(this, this.audio, this.manager.save);
         new SettingsButton(this, () => this.settingsPanel.show());
@@ -155,6 +160,7 @@ export class MainScene extends Scene {
             this.questPanel.setDepth(105);
             this.leaderboard.setDepth(105);
             this.collectionBtn.setDepth(105);
+            this.coinDisplay.setDepth(105);
         }
 
         // Initial UI update
@@ -186,6 +192,7 @@ export class MainScene extends Scene {
             this.questPanel.setDepth(105);
             this.leaderboard.setDepth(105);
             this.collectionBtn.setDepth(105);
+            this.coinDisplay.setDepth(105);
         } else if (!autoActive && this.wasAutorollActive) {
             this.centerStage.setAutorollOverlay(false);
             this.rightPanel.setDepth(0);
@@ -194,6 +201,7 @@ export class MainScene extends Scene {
             this.questPanel.setDepth(0);
             this.leaderboard.setDepth(0);
             this.collectionBtn.setDepth(0);
+            this.coinDisplay.setDepth(0);
         }
         this.wasAutorollActive = autoActive;
 
@@ -240,6 +248,7 @@ export class MainScene extends Scene {
     private onRollComplete(result: RollResult): void {
         this.rightPanel.setRolling(true);
         this.centerStage.playHatch(result, () => {
+            this.coinDisplay.showFloatingGain(this.manager.lastRollCoinGain, this);
             if (this.pendingLevelUp) {
                 const data = this.pendingLevelUp;
                 this.pendingLevelUp = null;
@@ -316,6 +325,7 @@ export class MainScene extends Scene {
         this.questPanel.setDepth(0);
         this.leaderboard.setDepth(0);
         this.collectionBtn.setDepth(0);
+        this.coinDisplay.setDepth(0);
         this.rightPanel.updateBuffDisplay(this.manager.buffs);
         this.rightPanel.setRolling(this.manager.isRolling);
     }
@@ -372,6 +382,7 @@ export class MainScene extends Scene {
         const p = this.manager.progression;
         const needed = xpForLevel(p.level);
         this.topBar.updateDisplay(p.level, p.getXpProgress(), p.xp, needed);
+        this.coinDisplay.updateCoins(p.coins);
         this.collectionBtn.updateCount(this.manager.save.getNewPets().length);
 
         const nickname = this.manager.save.getNickname() || t('default_nickname');

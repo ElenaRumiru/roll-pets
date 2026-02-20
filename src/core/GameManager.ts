@@ -1,5 +1,5 @@
 import { EventBus } from './EventBus';
-import { BUFF_CONFIG, QUEST_CONFIG } from './config';
+import { BUFF_CONFIG, QUEST_CONFIG, levelUpCoinReward } from './config';
 import { RNGSystem } from '../systems/RNGSystem';
 import { ProgressionSystem } from '../systems/ProgressionSystem';
 import { SaveSystem } from '../systems/SaveSystem';
@@ -16,6 +16,7 @@ export class GameManager {
     buffs: BuffSystem;
     quests: QuestSystem;
     isRolling = false;
+    lastRollCoinGain = 0;
     private questResetTimer = 0;
 
     constructor() {
@@ -23,7 +24,7 @@ export class GameManager {
         const data = this.save.getData();
 
         this.rng = new RNGSystem();
-        this.progression = new ProgressionSystem(data.level, data.xp, data.collection);
+        this.progression = new ProgressionSystem(data.level, data.xp, data.coins, data.collection);
         this.buffs = new BuffSystem();
         this.buffs.loadFromSave(data.buffs);
         this.buffs.startOfferCooldown();
@@ -64,6 +65,7 @@ export class GameManager {
         if (this.isRolling) return;
         this.isRolling = true;
 
+        const coinsBefore = this.progression.coins;
         const eligible = getEligiblePets(this.progression.level);
         const luckMultiplier = this.buffs.consumeForRoll();
         const pet = this.rng.rollPet(eligible, luckMultiplier);
@@ -80,16 +82,21 @@ export class GameManager {
         const leveledUp = this.progression.checkLevelUp();
         if (leveledUp) {
             const newEggKey = getEggImageKey(this.progression.level);
+            const eggChanged = oldEggKey !== newEggKey;
+            const coinReward = eggChanged ? 0 : levelUpCoinReward(this.progression.level);
+            if (coinReward > 0) this.progression.addCoins(coinReward);
             const levelUpData: LevelUpData = {
                 level: this.progression.level,
                 eggKey: newEggKey,
                 bgKey: getBgImageKey(this.progression.level),
                 oldEggKey,
-                eggChanged: oldEggKey !== newEggKey,
+                eggChanged,
+                coinReward,
             };
             EventBus.emit('level-up', levelUpData);
         }
 
+        this.lastRollCoinGain = this.progression.coins - coinsBefore;
         this.persistSave(result);
     }
 
@@ -137,6 +144,7 @@ export class GameManager {
         const data = this.save.getData();
         data.level = this.progression.level;
         data.xp = this.progression.xp;
+        data.coins = this.progression.coins;
         data.collection = this.progression.getCollectionArray();
         data.buffs = this.buffs.toSave();
         data.quests = this.quests.toSave();

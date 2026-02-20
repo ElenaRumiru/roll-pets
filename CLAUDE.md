@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 PETS GO Lite — 2D RNG casual/gacha-lite web game built with Phaser 3 + TypeScript + Vite. Target platforms: Poki, CrazyGames, GameDistribution. Monetization: rewarded video ads (buffs) + interstitial ads (autoroll toggle).
 
-Core loop: Click egg → hatch → get pet → XP → level up → better luck → repeat. No currency, no pity system, infinite free rolls.
+Core loop: Click egg → hatch → get pet → XP + coins → level up → better luck → repeat. No pity system, infinite free rolls. Coins accumulate (no spending yet).
 
 ## Commands
 
@@ -56,8 +56,8 @@ src/
 │
 ├── systems/                        # Pure TS, zero Phaser dependency
 │   ├── RNGSystem.ts                # sfc32 PRNG + weightedRandom
-│   ├── ProgressionSystem.ts        # XP, levels, luck formula
-│   ├── SaveSystem.ts               # localStorage with try/catch (v9)
+│   ├── ProgressionSystem.ts        # XP, coins, levels, luck formula
+│   ├── SaveSystem.ts               # localStorage with try/catch (v12)
 │   ├── AudioSystem.ts              # Play/stop/mute wrapper
 │   ├── BuffSystem.ts               # Buff state (lucky/super/epic multipliers, autoroll toggle)
 │   └── QuestSystem.ts              # Daily quest logic, progress tracking, UTC midnight reset
@@ -69,9 +69,10 @@ src/
 │
 ├── ui/
 │   ├── TopBar.ts                   # Level badge + XP bar (top-left, floating)
+│   ├── CoinDisplay.ts             # Coin HUD (top-right, left of settings)
 │   ├── SettingsButton.ts          # Gear icon (top-right)
 │   ├── CollectionButton.ts        # Collection count (left side)
-│   ├── CenterStage.ts             # 3 pedestal slots + rhombus shadows + dark overlay roll animation
+│   ├── CenterStage.ts             # 3 pedestal slots + rhombus shadows + roll overlay (pet + odds + rewards)
 │   ├── RightPanel.ts              # Roll button (bottom-center) + autoroll toggle (right of Roll)
 │   ├── QuestPanel.ts              # Daily quest panel (right side, above BonusPanel)
 │   ├── QuestClaimPopup.ts         # Quest reward confirmation popup (free vs ad)
@@ -92,7 +93,7 @@ src/
 - No `any` — strict TypeScript everywhere
 - No inheritance between game objects — composition only
 - No hardcoded UI strings — all text goes through `t('key')` from `data/locales/`
-- ~25 files, ~1800 lines total, average file ~60-80 lines
+- ~26 files, ~2000 lines total, average file ~60-80 lines
 
 **Localization:** All user-facing text is stored in `data/locales/en.ts` as key-value pairs. Scenes use `t('roll_button')` instead of `'ROLL!'`. To add a language: copy `en.ts`, translate values (AI-ready), register in `index.ts`.
 
@@ -140,7 +141,9 @@ When official docs are not enough, **search the wider internet**: Reddit, YouTub
 
 **Eggs:** Dynamic filter via `getEggFilterForLevel(level)` — each visual tier (1–17) removes one common pet from the pool. XP curve: base 100, multiplier 1.15x per level. New pet = +25% XP bar, duplicate = +0.5-10% based on grade.
 
-**Daily Quests:** Two repeating quests that reset at UTC midnight. Managed by `QuestSystem` (pure TS), UI in `QuestPanel` + `QuestClaimPopup`. Save version 9.
+**Coin economy:** Each roll awards coins based on grade. New pets: Common 5, Uncommon 10, Improved 25, Rare 50, Valuable 100, Elite 250, Epic 500, Heroic 1K, Mythic 2.5K, Ancient 5K, Legendary 10K. Duplicates: ~10-20% of new (Common 1 → Legendary 1K). Non-egg level-ups grant `level * 10` coins. Coins persist in save, displayed via `CoinDisplay` HUD (top-right). Roll overlay shows EXP + coin rewards on one line with icons.
+
+**Daily Quests:** Two repeating quests that reset at UTC midnight. Managed by `QuestSystem` (pure TS), UI in `QuestPanel` + `QuestClaimPopup`. Save version 12.
 - Quest 1 (Roll): targets [3, 5, 10], loops at 10. Reward: 1x Lucky (free) / 5x Lucky (ad).
 - Quest 2 (Grade): sequence [Uncommon, Improved], loops at Improved. Accepts target grade or higher. Reward: 1x Super (free) / 3x Super (ad).
 - Claim flow: progress bar → CLAIM button → popup with two card choices (free green / ad purple) → buff granted.

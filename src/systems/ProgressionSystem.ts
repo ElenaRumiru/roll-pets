@@ -4,11 +4,13 @@ import { GRADE, getGradeForChance, xpForLevel } from '../core/config';
 export class ProgressionSystem {
     level: number;
     xp: number;
+    coins: number;
     collection: Set<string>;
 
-    constructor(level: number, xp: number, collection: string[]) {
+    constructor(level: number, xp: number, coins: number, collection: string[]) {
         this.level = level;
         this.xp = xp;
+        this.coins = coins;
         this.collection = new Set(collection);
     }
 
@@ -20,11 +22,17 @@ export class ProgressionSystem {
 
         const xpPercent = isNew ? cfg.xpNewPercent : cfg.xpDupPercent;
         const xpGained = Math.max(1, Math.floor((xpPercent / 100) * xpNeeded));
+        const coinsGained = isNew ? cfg.coinsNew : cfg.coinsDup;
 
         if (isNew) this.collection.add(pet.id);
         this.xp += xpGained;
+        this.coins += coinsGained;
 
-        return { pet, isNew, xpGained, grade };
+        return { pet, isNew, xpGained, coinsGained, grade };
+    }
+
+    addCoins(amount: number): void {
+        this.coins += amount;
     }
 
     checkLevelUp(): boolean {

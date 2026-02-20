@@ -29,7 +29,7 @@ export class CenterStage extends GameObjects.Container {
     private revealName: GameObjects.Text;
     private revealRarity: GameObjects.Text;
     private newBadge: GameObjects.Text;
-    private xpText: GameObjects.Text;
+    private rewardsContainer: GameObjects.Container;
 
     constructor(scene: Scene) {
         super(scene, 0, 0);
@@ -83,10 +83,10 @@ export class CenterStage extends GameObjects.Container {
 
         this.revealRarity = scene.add.text(CX, CY + 90, '', {
             fontFamily: UI.FONT_MAIN,
-            fontSize: '14px',
+            fontSize: '20px',
             color: '#ffffff',
             stroke: '#000000',
-            strokeThickness: UI.STROKE_MEDIUM,
+            strokeThickness: UI.STROKE_THICK,
         }).setOrigin(0.5).setAlpha(0).setDepth(103);
 
         this.newBadge = scene.add.text(CX, CY - 135, t('new_pet'), {
@@ -97,13 +97,19 @@ export class CenterStage extends GameObjects.Container {
             strokeThickness: UI.STROKE_THICK,
         }).setOrigin(0.5).setAlpha(0).setDepth(103);
 
-        this.xpText = scene.add.text(CX, CY + 115, '', {
-            fontFamily: UI.FONT_MAIN,
-            fontSize: '16px',
-            color: '#ffffff',
-            stroke: '#000000',
-            strokeThickness: UI.STROKE_MEDIUM,
-        }).setOrigin(0.5).setAlpha(0).setDepth(103);
+        // Rewards line: [EXP icon] +25  [COIN icon] +5 — single container, centered
+        const expIcon = scene.add.image(0, 1, 'ui_exp_md');
+        const expLabel = scene.add.text(0, 0, '', {
+            fontFamily: UI.FONT_MAIN, fontSize: '16px',
+            color: '#88cc55', stroke: '#000000', strokeThickness: UI.STROKE_MEDIUM,
+        }).setOrigin(0, 0.5);
+        const coinIcon = scene.add.image(0, 1, 'ui_coin_sm').setDisplaySize(17, 17);
+        const coinLabel = scene.add.text(0, 0, '', {
+            fontFamily: UI.FONT_MAIN, fontSize: '16px',
+            color: '#ffc107', stroke: '#000000', strokeThickness: UI.STROKE_MEDIUM,
+        }).setOrigin(0, 0.5);
+        this.rewardsContainer = scene.add.container(CX, CY + 122,
+            [expIcon, expLabel, coinIcon, coinLabel]).setAlpha(0).setDepth(103);
 
         scene.add.existing(this);
     }
@@ -264,17 +270,37 @@ export class CenterStage extends GameObjects.Container {
             .setStroke('#000000', UI.STROKE_THICK)
             .setAlpha(1);
 
-        // Grade label
-        this.revealRarity.setText(t(`grade_${result.grade}`))
+        // Odds (replaces grade label)
+        this.revealRarity.setText(getOddsString(result.pet.chance))
             .setColor(cfg.colorHex)
             .setStroke(cfg.outlineHex, cfg.strokeThickness || UI.STROKE_MEDIUM)
             .setAlpha(1);
 
-        // XP
-        const xpColor = result.isNew ? '#ffc107' : '#aaaaaa';
-        this.xpText.setText(`+${result.xpGained} XP`)
-            .setColor(xpColor)
-            .setAlpha(1);
+        // Rewards line: [EXP] +25   [COIN] +5 — layout then center
+        const expIcon = this.rewardsContainer.getAt(0) as GameObjects.Image;
+        const expLabel = this.rewardsContainer.getAt(1) as GameObjects.Text;
+        const coinIcon = this.rewardsContainer.getAt(2) as GameObjects.Image;
+        const coinLabel = this.rewardsContainer.getAt(3) as GameObjects.Text;
+
+        // Scale EXP icon to 16px height, preserving aspect
+        const expTex = this.scene.textures.get('ui_exp_md').getSourceImage();
+        const expH = 16;
+        const expW = Math.round(expTex.width * (expH / expTex.height));
+        expIcon.setDisplaySize(expW, expH);
+
+        expLabel.setText(`+${result.xpGained}`);
+        coinLabel.setText(`+${result.coinsGained}`);
+
+        const gap = 3;
+        const sep = 12;
+        const coinH = 17;
+        const totalW = expW + gap + expLabel.width + sep + coinH + gap + coinLabel.width;
+        let cx = -totalW / 2;
+        expIcon.setX(cx + expW / 2);  cx += expW + gap;
+        expLabel.setX(cx);             cx += expLabel.width + sep;
+        coinIcon.setX(cx + coinH / 2); cx += coinH + gap;
+        coinLabel.setX(cx);
+        this.rewardsContainer.setAlpha(1);
 
         // NEW badge
         if (result.isNew) {
@@ -299,7 +325,7 @@ export class CenterStage extends GameObjects.Container {
                 });
             }
 
-            const fadeTargets = [this.revealName, this.revealRarity, this.newBadge, this.xpText];
+            const fadeTargets = [this.revealName, this.revealRarity, this.newBadge, this.rewardsContainer];
             if (this.revealImage) fadeTargets.push(this.revealImage as any);
 
             scene.tweens.add({
@@ -338,7 +364,7 @@ export class CenterStage extends GameObjects.Container {
         this.revealName.setAlpha(0);
         this.revealRarity.setAlpha(0);
         this.newBadge.setAlpha(0).setScale(1);
-        this.xpText.setAlpha(0);
+        this.rewardsContainer.setAlpha(0);
         if (this.revealImage) { this.revealImage.destroy(); this.revealImage = null; }
     }
 }

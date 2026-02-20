@@ -17,6 +17,7 @@ export const GRADE: Record<string, GradeConfig> = {
         outlineColor: 0x323232, outlineHex: '#323232',
         strokeThickness: 0, label: 'Common',
         xpNewPercent: 25, xpDupPercent: 0.5,
+        coinsNew: 5, coinsDup: 1,
         minChance: 2, maxChance: 100,
     },
     uncommon: {
@@ -24,6 +25,7 @@ export const GRADE: Record<string, GradeConfig> = {
         outlineColor: 0x2d4b1b, outlineHex: '#2d4b1b',
         strokeThickness: 2, label: 'Uncommon',
         xpNewPercent: 25, xpDupPercent: 1,
+        coinsNew: 10, coinsDup: 2,
         minChance: 100, maxChance: 1_000,
     },
     improved: {
@@ -31,6 +33,7 @@ export const GRADE: Record<string, GradeConfig> = {
         outlineColor: 0x1a4a1a, outlineHex: '#1a4a1a',
         strokeThickness: 2, label: 'Improved',
         xpNewPercent: 25, xpDupPercent: 1.5,
+        coinsNew: 25, coinsDup: 3,
         minChance: 1_000, maxChance: 5_000,
     },
     rare: {
@@ -38,6 +41,7 @@ export const GRADE: Record<string, GradeConfig> = {
         outlineColor: 0x1d414b, outlineHex: '#1d414b',
         strokeThickness: 2, label: 'Rare',
         xpNewPercent: 25, xpDupPercent: 2,
+        coinsNew: 50, coinsDup: 5,
         minChance: 5_000, maxChance: 50_000,
     },
     valuable: {
@@ -45,6 +49,7 @@ export const GRADE: Record<string, GradeConfig> = {
         outlineColor: 0x1a3d5c, outlineHex: '#1a3d5c',
         strokeThickness: 2, label: 'Valuable',
         xpNewPercent: 25, xpDupPercent: 3,
+        coinsNew: 100, coinsDup: 10,
         minChance: 50_000, maxChance: 500_000,
     },
     elite: {
@@ -52,6 +57,7 @@ export const GRADE: Record<string, GradeConfig> = {
         outlineColor: 0x3a2e5c, outlineHex: '#3a2e5c',
         strokeThickness: 2, label: 'Elite',
         xpNewPercent: 25, xpDupPercent: 4,
+        coinsNew: 250, coinsDup: 25,
         minChance: 500_000, maxChance: 5_000_000,
     },
     epic: {
@@ -59,6 +65,7 @@ export const GRADE: Record<string, GradeConfig> = {
         outlineColor: 0x461a49, outlineHex: '#461a49',
         strokeThickness: 2, label: 'Epic',
         xpNewPercent: 25, xpDupPercent: 5,
+        coinsNew: 500, coinsDup: 50,
         minChance: 5_000_000, maxChance: 50_000_000,
     },
     heroic: {
@@ -66,6 +73,7 @@ export const GRADE: Record<string, GradeConfig> = {
         outlineColor: 0x5c1a2e, outlineHex: '#5c1a2e',
         strokeThickness: 2, label: 'Heroic',
         xpNewPercent: 25, xpDupPercent: 6,
+        coinsNew: 1_000, coinsDup: 100,
         minChance: 50_000_000, maxChance: 250_000_000,
     },
     mythic: {
@@ -73,6 +81,7 @@ export const GRADE: Record<string, GradeConfig> = {
         outlineColor: 0x5c4a00, outlineHex: '#5c4a00',
         strokeThickness: 2, label: 'Mythic',
         xpNewPercent: 25, xpDupPercent: 7,
+        coinsNew: 2_500, coinsDup: 250,
         minChance: 250_000_000, maxChance: 500_000_000,
     },
     ancient: {
@@ -80,6 +89,7 @@ export const GRADE: Record<string, GradeConfig> = {
         outlineColor: 0x5c3200, outlineHex: '#5c3200',
         strokeThickness: 2, label: 'Ancient',
         xpNewPercent: 25, xpDupPercent: 8,
+        coinsNew: 5_000, coinsDup: 500,
         minChance: 500_000_000, maxChance: 750_000_000,
     },
     legendary: {
@@ -87,6 +97,7 @@ export const GRADE: Record<string, GradeConfig> = {
         outlineColor: 0x5c1111, outlineHex: '#5c1111',
         strokeThickness: 2, label: 'Legendary',
         xpNewPercent: 25, xpDupPercent: 10,
+        coinsNew: 10_000, coinsDup: 1_000,
         minChance: 750_000_000, maxChance: 1_000_000_000,
     },
 };
@@ -190,6 +201,12 @@ export function getVisualTier(level: number): number {
 export function xpForLevel(level: number): number {
     return Math.floor(XP_BASE * Math.pow(XP_MULTIPLIER, level - 1));
 }
+
+export function levelUpCoinReward(level: number): number {
+    return level * 10;
+}
+
+export const COIN_HUD = { w: 83, h: 29, iconSize: 31, gap: 8 };
 
 /** Convert pet chance (X from "1 in X") to display string */
 export function getOddsString(chance: number): string {

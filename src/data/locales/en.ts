@@ -116,4 +116,8 @@ export const en: Record<string, string> = {
     'quest_watch': '\u25B6 WATCH',
     'quest_rolls': '{count} Roll',
     'quest_rolls_plural': '{count} Rolls',
+
+    // Coins
+    'coins': 'Coins',
+    'coins_reward': '+{amount}',
 };

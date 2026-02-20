@@ -64,6 +64,8 @@ export class BootScene extends Scene {
         this.load.image('ui_arrow', 'assets/ui/arrow.webp');
         this.load.image('ui_ad_film', 'assets/ui/ad_film.png');
         this.load.image('ui_ad_play', 'assets/ui/ad_play.png');
+        this.load.image('ui_coin_raw', 'assets/ui/coin.png');
+        this.load.image('ui_exp_raw', 'assets/ui/exp.png');
 
         // Pet images (deduplicate — multiple pets share sprites)
         const loadedKeys = new Set<string>();
@@ -130,6 +132,16 @@ export class BootScene extends Scene {
         this.downscaleTexture('ui_x3wow', 'ui_x3wow_mid', 102, 102);
         this.downscaleTexture('ui_x5wow', 'ui_x5wow_mid', 112, 112);
 
+        // Trim transparent pixels from coin icon and create size variants
+        this.trimAndDownscaleCoin('ui_coin_raw', [
+            { key: 'ui_coin_lg', size: 64 },
+            { key: 'ui_coin_md', size: 44 },
+            { key: 'ui_coin_sm', size: 16 },
+        ]);
+
+        // Trim exp icon preserving aspect ratio (wide text, not square)
+        this.trimToHeight('ui_exp_raw', 'ui_exp_md', 36);
+
         const renderer = this.game.renderer;
         if (renderer instanceof Renderer.WebGL.WebGLRenderer) {
             renderer.pipelines.addPostPipeline('IdleWobbleFX', IdleWobbleFX);
@@ -143,6 +155,77 @@ export class BootScene extends Scene {
         audio.startBGM();
 
         this.scene.start('MainScene');
+    }
+
+    /** Trim transparent pixels from source, then create multiple sized textures */
+    private trimAndDownscaleCoin(srcKey: string, targets: { key: string; size: number }[]): void {
+        const src = this.textures.get(srcKey).getSourceImage() as HTMLImageElement;
+        const tmp = document.createElement('canvas');
+        tmp.width = src.width;
+        tmp.height = src.height;
+        const tmpCtx = tmp.getContext('2d')!;
+        tmpCtx.drawImage(src, 0, 0);
+        const data = tmpCtx.getImageData(0, 0, tmp.width, tmp.height);
+        let top = tmp.height, left = tmp.width, bottom = 0, right = 0;
+        for (let y = 0; y < tmp.height; y++) {
+            for (let x = 0; x < tmp.width; x++) {
+                if (data.data[(y * tmp.width + x) * 4 + 3] > 10) {
+                    if (y < top) top = y;
+                    if (y > bottom) bottom = y;
+                    if (x < left) left = x;
+                    if (x > right) right = x;
+                }
+            }
+        }
+        const tw = right - left + 1;
+        const th = bottom - top + 1;
+        for (const { key, size } of targets) {
+            const c = document.createElement('canvas');
+            c.width = size;
+            c.height = size;
+            const ctx = c.getContext('2d')!;
+            ctx.imageSmoothingEnabled = true;
+            ctx.imageSmoothingQuality = 'high';
+            const scale = Math.min(size / tw, size / th);
+            const dw = Math.round(tw * scale);
+            const dh = Math.round(th * scale);
+            ctx.drawImage(src, left, top, tw, th, (size - dw) / 2, (size - dh) / 2, dw, dh);
+            this.textures.addCanvas(key, c);
+        }
+    }
+
+    /** Trim transparent pixels, then scale so height = targetHeight, preserving aspect ratio */
+    private trimToHeight(srcKey: string, destKey: string, targetHeight: number): void {
+        const src = this.textures.get(srcKey).getSourceImage() as HTMLImageElement;
+        const tmp = document.createElement('canvas');
+        tmp.width = src.width;
+        tmp.height = src.height;
+        const tmpCtx = tmp.getContext('2d')!;
+        tmpCtx.drawImage(src, 0, 0);
+        const data = tmpCtx.getImageData(0, 0, tmp.width, tmp.height);
+        let top = tmp.height, left = tmp.width, bottom = 0, right = 0;
+        for (let y = 0; y < tmp.height; y++) {
+            for (let x = 0; x < tmp.width; x++) {
+                if (data.data[(y * tmp.width + x) * 4 + 3] > 10) {
+                    if (y < top) top = y;
+                    if (y > bottom) bottom = y;
+                    if (x < left) left = x;
+                    if (x > right) right = x;
+                }
+            }
+        }
+        const tw = right - left + 1;
+        const th = bottom - top + 1;
+        const scale = targetHeight / th;
+        const dw = Math.round(tw * scale);
+        const c = document.createElement('canvas');
+        c.width = dw;
+        c.height = targetHeight;
+        const ctx = c.getContext('2d')!;
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = 'high';
+        ctx.drawImage(src, left, top, tw, th, 0, 0, dw, targetHeight);
+        this.textures.addCanvas(destKey, c);
     }
 
     /** High-quality canvas resample: create a new smaller texture from source */

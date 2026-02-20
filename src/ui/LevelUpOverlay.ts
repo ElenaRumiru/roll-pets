@@ -122,6 +122,21 @@ export class LevelUpOverlay {
             strokeThickness: UI.STROKE_MEDIUM,
         }).setOrigin(0.5);
         container.add(eggName);
+
+        // Coin reward (only on non-egg level-ups)
+        if (data.coinReward > 0) {
+            const coinIcon = this.scene.add.image(-30, 135, 'ui_coin_lg')
+                .setDisplaySize(32, 32);
+            container.add(coinIcon);
+            const coinText = this.scene.add.text(0, 135, `+${data.coinReward}`, {
+                fontFamily: UI.FONT_MAIN,
+                fontSize: '22px',
+                color: '#ffc107',
+                stroke: '#000000',
+                strokeThickness: UI.STROKE_MEDIUM,
+            }).setOrigin(0, 0.5);
+            container.add(coinText);
+        }
     }
 
     private fadeOut(autorollActive: boolean, onComplete: () => void): void {

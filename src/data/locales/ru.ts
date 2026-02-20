@@ -116,4 +116,8 @@ export const ru: Record<string, string> = {
     'quest_watch': '\u25B6 СМОТРЕТЬ',
     'quest_rolls': '{count} ролл',
     'quest_rolls_plural': '{count} ролла',
+
+    // Coins
+    'coins': 'Монеты',
+    'coins_reward': '+{amount}',
 };
