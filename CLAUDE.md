@@ -76,6 +76,7 @@ src/
 │   ├── RightPanel.ts              # Roll button (bottom-center) + autoroll toggle (right of Roll)
 │   ├── QuestPanel.ts              # Daily quest panel (right side, above BonusPanel)
 │   ├── QuestClaimPopup.ts         # Quest reward confirmation popup (free vs ad)
+│   ├── LevelUpOverlay.ts          # Level-up popup: egg variant (tap-to-close) / coins variant (free vs ad choice)
 │   ├── PetCard.ts                  # Single pet card with image sprite (for collection grid)
 │   └── components/
 │       ├── Button.ts               # Reusable button with tween
@@ -141,7 +142,11 @@ When official docs are not enough, **search the wider internet**: Reddit, YouTub
 
 **Eggs:** Dynamic filter via `getEggFilterForLevel(level)` — each visual tier (1–17) removes one common pet from the pool. XP curve: base 100, multiplier 1.15x per level. New pet = +25% XP bar, duplicate = +0.5-10% based on grade.
 
-**Coin economy:** Each roll awards coins based on grade. New pets: Common 5, Uncommon 10, Improved 25, Rare 50, Valuable 100, Elite 250, Epic 500, Heroic 1K, Mythic 2.5K, Ancient 5K, Legendary 10K. Duplicates: ~10-20% of new (Common 1 → Legendary 1K). Non-egg level-ups grant `level * 10` coins. Coins persist in save, displayed via `CoinDisplay` HUD (top-right). Roll overlay shows EXP + coin rewards on one line with icons.
+**Coin economy:** Each roll awards coins based on grade. New pets: Common 5, Uncommon 10, Improved 25, Rare 50, Valuable 100, Elite 250, Epic 500, Heroic 1K, Mythic 2.5K, Ancient 5K, Legendary 10K. Duplicates: ~10-20% of new (Common 1 → Legendary 1K). Coins persist in save, displayed via `CoinDisplay` HUD (top-right). Roll overlay shows EXP + coin rewards on one line with icons.
+
+**Level-up overlay:** Two variants triggered on level-up. Config in `LEVELUP_CONFIG`.
+- **Egg variant** (`eggChanged === true`): double gold ring with level number, "New Egg Unlocked!" subtitle, old→new egg transition, egg name + odds characteristic, "Tap to close (N)" countdown (5s), tap anywhere or auto-close.
+- **Coins variant** (`eggChanged === false`): double ring, "Rewards:" subtitle, two choice cards — FREE (green, `level * 10` coins, auto-accepts after 10s countdown shown in button) and WATCH AD (purple, `level * 10 * 3` coins, +300% badge, rewarded video via PlatformSDK). Coins are **deferred** — not added in `roll()`, but via `GameManager.claimLevelUpCoins(amount)` after player choice. Ad failure falls back to free amount. Overlay depth 500 (above autoroll UI at 105), blocks all clicks behind it. Both variants pause autoroll until dismissed.
 
 **Daily Quests:** Two repeating quests that reset at UTC midnight. Managed by `QuestSystem` (pure TS), UI in `QuestPanel` + `QuestClaimPopup`. Save version 12.
 - Quest 1 (Roll): targets [3, 5, 10], loops at 10. Reward: 1x Lucky (free) / 5x Lucky (ad).
