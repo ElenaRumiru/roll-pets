@@ -47,13 +47,17 @@ export class ProgressBar extends GameObjects.Container {
 
         // Fill
         if (fillW > 2) {
+            const fw = Math.min(fillW, w - 2);
+            const fr = fw >= h ? r - 1 : 0;
             g.fillStyle(this.fillColor, 1);
-            g.fillRoundedRect(1, -h / 2 + 1, Math.min(fillW, w - 2), h - 2, r - 1);
+            g.fillRoundedRect(1, -h / 2 + 1, fw, h - 2, fr);
 
             // Highlight on fill
-            g.fillStyle(0xffffff, 0.2);
-            g.fillRoundedRect(2, -h / 2 + 2, Math.min(fillW, w - 4) - 2, (h - 4) * 0.4,
-                { tl: r - 2, tr: r - 2, bl: 0, br: 0 });
+            if (fw > 4) {
+                const hr = fw >= h ? { tl: r - 2, tr: r - 2, bl: 0, br: 0 } : 0;
+                g.fillStyle(0xffffff, 0.2);
+                g.fillRoundedRect(2, -h / 2 + 2, fw - 2, (h - 4) * 0.4, hr);
+            }
         }
     }
 
