@@ -74,7 +74,12 @@ export class MainScene extends Scene {
             .setDepth(-1);
 
         // UI components
-        this.topBar = new TopBar(this);
+        this.topBar = new TopBar(this, () => {
+            this.manager.buffs.stopAutoroll();
+            this.manager.isRolling = false;
+            this.manager.saveState();
+            this.scene.start('ProgressionScene');
+        });
         this.topBar.setNickname(this.manager.save.getNickname() || t('default_nickname'));
 
         this.leaderboard = new Leaderboard(this);

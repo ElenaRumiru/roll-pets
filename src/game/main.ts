@@ -3,6 +3,7 @@ import { GAME_WIDTH, GAME_HEIGHT } from '../core/config';
 import { BootScene } from '../scenes/BootScene';
 import { MainScene } from '../scenes/MainScene';
 import { CollectionScene } from '../scenes/CollectionScene';
+import { ProgressionScene } from '../scenes/ProgressionScene';
 
 const config: Phaser.Types.Core.GameConfig = {
     type: AUTO,
@@ -19,6 +20,7 @@ const config: Phaser.Types.Core.GameConfig = {
         BootScene,
         MainScene,
         CollectionScene,
+        ProgressionScene,
     ],
 };
 

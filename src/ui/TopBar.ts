@@ -1,4 +1,4 @@
-import { GameObjects, Scene } from 'phaser';
+import { GameObjects, Geom, Scene } from 'phaser';
 import { UI, LEFT_PANEL } from '../core/config';
 import { ProgressBar } from './components/ProgressBar';
 import { t } from '../data/locales';
@@ -13,7 +13,7 @@ export class TopBar extends GameObjects.Container {
     private xpBar: ProgressBar;
     private xpLabel: GameObjects.Text;
 
-    constructor(scene: Scene) {
+    constructor(scene: Scene, onClick?: () => void) {
         super(scene, LEFT_PANEL.x, 8);
 
         // Semi-transparent black panel
@@ -21,6 +21,16 @@ export class TopBar extends GameObjects.Container {
         bg.fillStyle(0x000000, 0.75);
         bg.fillRoundedRect(0, 0, PANEL_W, PANEL_H, RADIUS);
         this.add(bg);
+
+        // Make entire panel clickable
+        if (onClick) {
+            this.setInteractive({
+                hitArea: new Geom.Rectangle(0, 0, PANEL_W, PANEL_H),
+                hitAreaCallback: Geom.Rectangle.Contains,
+                useHandCursor: true,
+            });
+            this.on('pointerdown', onClick);
+        }
 
         // Nickname (top row, prominent)
         this.nicknameText = scene.add.text(10, 6, '', {

@@ -121,6 +121,11 @@ export const ru: Record<string, string> = {
     'coins': 'Монеты',
     'coins_reward': '+{amount}',
 
+    // Progression
+    'progression_title': 'Прогрессия',
+    'progression_back': 'Назад',
+    'progression_new_egg': 'Новое яйцо',
+
     // Level Up Overlay
     'levelup_new_egg_unlocked': 'Новое яйцо открыто!',
     'levelup_rewards': 'Награды:',

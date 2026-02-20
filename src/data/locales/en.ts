@@ -121,6 +121,11 @@ export const en: Record<string, string> = {
     'coins': 'Coins',
     'coins_reward': '+{amount}',
 
+    // Progression
+    'progression_title': 'Progression',
+    'progression_back': 'Back',
+    'progression_new_egg': 'New Egg',
+
     // Level Up Overlay
     'levelup_new_egg_unlocked': 'New Egg Unlocked!',
     'levelup_rewards': 'Rewards:',
