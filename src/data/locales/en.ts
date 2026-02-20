@@ -132,4 +132,14 @@ export const en: Record<string, string> = {
     'levelup_tap_close': 'Tap to close ({seconds})',
     'levelup_auto_accept': 'Auto-accept in {seconds}s',
     'levelup_best': 'BEST',
+
+    // Shop
+    'shop_title': 'Shop',
+    'shop_button': 'Shop',
+    'shop_back': 'Back',
+    'shop_empty': 'No pets available.\nRefresh or wait for restock!',
+    'shop_refresh': 'REFRESH',
+    'shop_timer': 'Refresh in {time}',
+    'shop_bought': 'Purchased!',
+    'shop_no_coins': 'Not enough coins!',
 };

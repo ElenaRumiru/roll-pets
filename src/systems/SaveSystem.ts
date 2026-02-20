@@ -3,7 +3,7 @@ import { PETS } from '../data/pets';
 import { getGradeForChance, getDefaultQuestState } from '../core/config';
 
 const SAVE_KEY = 'pets_go_lite_save';
-const CURRENT_VERSION = 12;
+const CURRENT_VERSION = 13;
 
 function getDefaults(): SaveData {
     return {
@@ -19,6 +19,7 @@ function getDefaults(): SaveData {
         nickname: '',
         newPets: [],
         quests: getDefaultQuestState(),
+        shop: { lastRefreshDate: '', offers: [] },
     };
 }
 
@@ -91,6 +92,10 @@ function migrate(data: SaveData): SaveData {
     if (data.version === 11) {
         data.coins = data.coins ?? 0;
         data.version = 12;
+    }
+    if (data.version === 12) {
+        data.shop = { lastRefreshDate: '', offers: [] };
+        data.version = 13;
     }
     return data;
 }

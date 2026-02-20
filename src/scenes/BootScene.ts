@@ -66,6 +66,7 @@ export class BootScene extends Scene {
         this.load.image('ui_ad_play', 'assets/ui/ad_play.png');
         this.load.image('ui_coin_raw', 'assets/ui/coin.png');
         this.load.image('ui_exp_raw', 'assets/ui/exp.png');
+        this.load.image('ui_shop', 'assets/ui/shop_icon.png');
 
         // Pet images (deduplicate — multiple pets share sprites)
         const loadedKeys = new Set<string>();
@@ -126,6 +127,9 @@ export class BootScene extends Scene {
             this.textures.remove(pet.imageKey);
             this.textures.addCanvas(pet.imageKey, c);
         }
+
+        // Pre-downscale shop icon for crisp rendering (original 1536x1024, ratio 3:2)
+        this.downscaleTexture('ui_shop', 'ui_shop_mid', 300, 200);
 
         // Pre-downscale buff icons → "mid" size (2x BonusPanel display: 102px / 112px)
         this.downscaleTexture('ui_x2simple', 'ui_x2simple_mid', 102, 102);

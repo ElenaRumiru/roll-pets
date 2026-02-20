@@ -63,6 +63,7 @@ export interface SaveData {
     nickname: string;
     newPets: string[];
     quests: QuestState;
+    shop: ShopState;
 }
 
 export interface BuffState {
@@ -84,4 +85,14 @@ export interface QuestState {
     lastResetDate: string;
     rollQuest: QuestProgress;
     gradeQuest: QuestProgress;
+}
+
+export interface ShopOffer {
+    petId: string;
+    price: number;
+}
+
+export interface ShopState {
+    lastRefreshDate: string;
+    offers: ShopOffer[];
 }

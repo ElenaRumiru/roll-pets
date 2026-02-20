@@ -7,6 +7,7 @@ import { CenterStage } from '../ui/CenterStage';
 import { LevelUpOverlay } from '../ui/LevelUpOverlay';
 import { RightPanel } from '../ui/RightPanel';
 import { CollectionButton } from '../ui/CollectionButton';
+import { ShopButton } from '../ui/ShopButton';
 import { SettingsButton } from '../ui/SettingsButton';
 import { CoinDisplay } from '../ui/CoinDisplay';
 import { SettingsPanel } from '../ui/SettingsPanel';
@@ -28,6 +29,7 @@ export class MainScene extends Scene {
     private centerStage!: CenterStage;
     private rightPanel!: RightPanel;
     private collectionBtn!: CollectionButton;
+    private shopBtn!: ShopButton;
     private settingsPanel!: SettingsPanel;
     private bonusPanel!: BonusPanel;
     private questPanel!: QuestPanel;
@@ -101,12 +103,19 @@ export class MainScene extends Scene {
             this.scene.start('CollectionScene');
         });
 
+        this.shopBtn = new ShopButton(this, () => {
+            this.manager.buffs.stopAutoroll();
+            this.manager.isRolling = false;
+            this.manager.saveState();
+            this.scene.start('ShopScene');
+        });
+
         this.bonusPanel = new BonusPanel(this, (type: string) => this.handleBuffRequest(type));
         this.questPanel = new QuestPanel(this, (type: 'roll' | 'grade') => this.handleQuestClaim(type));
 
         // Position quest panel + bonus panel aligned with leaderboard
         const COMBINED_GAP = 6;
-        const leaderboardY = Math.round((GAME_HEIGHT - 165) / 2) - 18; // match Leaderboard position
+        const leaderboardY = Math.round((GAME_HEIGHT - 165) / 2) - 18 - 20; // shifted 20px up for shop button
         this.questPanel.y = leaderboardY;
         this.bonusPanel.y = leaderboardY + this.questPanel.panelHeight + COMBINED_GAP;
 
@@ -165,6 +174,7 @@ export class MainScene extends Scene {
             this.questPanel.setDepth(105);
             this.leaderboard.setDepth(105);
             this.collectionBtn.setDepth(105);
+            this.shopBtn.setDepth(105);
             this.coinDisplay.setDepth(105);
         }
 
@@ -197,6 +207,7 @@ export class MainScene extends Scene {
             this.questPanel.setDepth(105);
             this.leaderboard.setDepth(105);
             this.collectionBtn.setDepth(105);
+            this.shopBtn.setDepth(105);
             this.coinDisplay.setDepth(105);
         } else if (!autoActive && this.wasAutorollActive) {
             this.centerStage.setAutorollOverlay(false);
@@ -206,6 +217,7 @@ export class MainScene extends Scene {
             this.questPanel.setDepth(0);
             this.leaderboard.setDepth(0);
             this.collectionBtn.setDepth(0);
+            this.shopBtn.setDepth(0);
             this.coinDisplay.setDepth(0);
         }
         this.wasAutorollActive = autoActive;
@@ -370,6 +382,7 @@ export class MainScene extends Scene {
         this.questPanel.setDepth(0);
         this.leaderboard.setDepth(0);
         this.collectionBtn.setDepth(0);
+        this.shopBtn.setDepth(0);
         this.coinDisplay.setDepth(0);
         this.rightPanel.updateBuffDisplay(this.manager.buffs);
         this.rightPanel.setRolling(this.manager.isRolling);

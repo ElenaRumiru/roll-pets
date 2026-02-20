@@ -22,12 +22,12 @@ export class CollectionButton extends GameObjects.Container {
         this.add(bg);
 
         // Book icon — large, centered, overlaps dark panel top
-        const icon = scene.add.image(PANEL_W / 2, 42, 'ui_collections')
+        const icon = scene.add.image(PANEL_W / 2, 47, 'ui_collections')
             .setDisplaySize(160, 133);
         this.add(icon);
 
         // "Collection" label — centered in dark panel
-        const label = scene.add.text(PANEL_W / 2, TOTAL_H - BG_H / 2 + 12, t('collection_button'), {
+        const label = scene.add.text(PANEL_W / 2, TOTAL_H - BG_H / 2 + 17, t('collection_button'), {
             fontFamily: UI.FONT_MAIN,
             fontSize: '16px',
             color: '#ffffff',

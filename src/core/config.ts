@@ -136,7 +136,7 @@ export const PEDESTAL = {
 
 export const PET_OFFSET_Y = 0;
 
-export const ROLL_BTN = { x: 418, y: 435, width: 340, height: 74 };
+export const ROLL_BTN = { x: 395, y: 435, width: 340, height: 74 };
 export const AUTOROLL_TOGGLE = { width: 94, height: 58, gap: 6 };
 
 export const BUFF_CONFIG = {

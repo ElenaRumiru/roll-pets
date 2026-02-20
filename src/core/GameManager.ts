@@ -5,6 +5,7 @@ import { ProgressionSystem } from '../systems/ProgressionSystem';
 import { SaveSystem } from '../systems/SaveSystem';
 import { BuffSystem } from '../systems/BuffSystem';
 import { QuestSystem } from '../systems/QuestSystem';
+import { ShopSystem } from '../systems/ShopSystem';
 import { getEligiblePets, getEggImageKey } from '../data/eggs';
 import { getBgImageKey } from '../data/backgrounds';
 import { RollResult, LevelUpData } from '../types';
@@ -15,6 +16,7 @@ export class GameManager {
     save: SaveSystem;
     buffs: BuffSystem;
     quests: QuestSystem;
+    shop: ShopSystem;
     isRolling = false;
     lastRollCoinGain = 0;
     private questResetTimer = 0;
@@ -30,6 +32,13 @@ export class GameManager {
         this.buffs.startOfferCooldown();
         this.quests = new QuestSystem();
         this.quests.loadFromSave(data.quests);
+        this.shop = new ShopSystem();
+        const shopState = data.shop ?? { lastRefreshDate: '', offers: [] };
+        this.shop.loadFromSave(shopState);
+        if (this.shop.getOffers().length === 0) {
+            this.shop.generateOffers(this.progression.collection);
+        }
+        this.shop.checkDailyReset(this.progression.collection);
 
         this.setupListeners();
     }
@@ -108,6 +117,22 @@ export class GameManager {
         this.persistSave();
     }
 
+    purchasePet(petId: string): boolean {
+        const price = this.shop.purchase(petId, this.progression.coins);
+        if (price === null) return false;
+        this.progression.addCoins(-price);
+        this.progression.collection.add(petId);
+        this.save.addNewPet(petId);
+        EventBus.emit('shop-purchase', petId);
+        this.persistSave();
+        return true;
+    }
+
+    refreshShop(): void {
+        this.shop.refresh(this.progression.collection);
+        this.persistSave();
+    }
+
     private activateBuff(buff: string): void {
         switch (buff) {
             case 'lucky':
@@ -152,6 +177,7 @@ export class GameManager {
         data.collection = this.progression.getCollectionArray();
         data.buffs = this.buffs.toSave();
         data.quests = this.quests.toSave();
+        data.shop = this.shop.toSave();
 
         if (result) {
             data.totalRolls++;
@@ -172,8 +198,10 @@ export class GameManager {
         this.questResetTimer += deltaMs;
         if (this.questResetTimer >= 60_000) {
             this.questResetTimer = 0;
-            if (this.quests.checkDailyReset()) {
-                EventBus.emit('quests-changed');
+            const questReset = this.quests.checkDailyReset();
+            const shopReset = this.shop.checkDailyReset(this.progression.collection);
+            if (questReset || shopReset) {
+                if (questReset) EventBus.emit('quests-changed');
                 this.persistSave();
             }
         }

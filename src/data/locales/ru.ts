@@ -132,4 +132,14 @@ export const ru: Record<string, string> = {
     'levelup_tap_close': 'Нажми чтобы закрыть ({seconds})',
     'levelup_auto_accept': 'Автовыбор через {seconds}с',
     'levelup_best': 'ЛУЧШЕЕ',
+
+    // Shop
+    'shop_title': 'Магазин',
+    'shop_button': 'Магазин',
+    'shop_back': 'Назад',
+    'shop_empty': 'Питомцев нет.\nОбновите или подождите!',
+    'shop_refresh': 'ОБНОВИТЬ',
+    'shop_timer': 'Обновление через {time}',
+    'shop_bought': 'Куплено!',
+    'shop_no_coins': 'Недостаточно монет!',
 };
