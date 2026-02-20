@@ -3,7 +3,7 @@ import { PETS } from '../data/pets';
 import { getGradeForChance, getDefaultQuestState } from '../core/config';
 
 const SAVE_KEY = 'pets_go_lite_save';
-const CURRENT_VERSION = 10;
+const CURRENT_VERSION = 11;
 
 function getDefaults(): SaveData {
     return {
@@ -77,6 +77,15 @@ function migrate(data: SaveData): SaveData {
         delete (data.buffs as unknown as Record<string, unknown>).epicTimer;
         data.buffs.queueIndex = 0;
         data.version = 10;
+    }
+    if (data.version === 10) {
+        data.collection = [];
+        data.rollLog = [];
+        data.newPets = [];
+        data.totalRolls = 0;
+        data.level = 1;
+        data.xp = 0;
+        data.version = 11;
     }
     return data;
 }

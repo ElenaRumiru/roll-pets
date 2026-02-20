@@ -104,6 +104,27 @@ export class BootScene extends Scene {
             this.textures.addCanvas(key, c);
         }
 
+        // Pre-downscale pet textures (512px → 250px) to avoid WebGL aliasing
+        const TARGET_PET = 250;
+        const loadedKeys = new Set<string>();
+        for (const pet of PETS) {
+            if (loadedKeys.has(pet.imageKey)) continue;
+            loadedKeys.add(pet.imageKey);
+            const src = this.textures.get(pet.imageKey).getSourceImage() as HTMLImageElement;
+            const ratio = Math.min(TARGET_PET / src.width, TARGET_PET / src.height, 1);
+            const w = Math.round(src.width * ratio);
+            const h = Math.round(src.height * ratio);
+            const c = document.createElement('canvas');
+            c.width = w;
+            c.height = h;
+            const cx2 = c.getContext('2d')!;
+            cx2.imageSmoothingEnabled = true;
+            cx2.imageSmoothingQuality = 'high';
+            cx2.drawImage(src, 0, 0, w, h);
+            this.textures.remove(pet.imageKey);
+            this.textures.addCanvas(pet.imageKey, c);
+        }
+
         // Pre-downscale buff icons → "mid" size (2x BonusPanel display: 102px / 112px)
         this.downscaleTexture('ui_x2simple', 'ui_x2simple_mid', 102, 102);
         this.downscaleTexture('ui_x3wow', 'ui_x3wow_mid', 102, 102);
