@@ -3,7 +3,7 @@ import { PETS } from '../data/pets';
 import { getGradeForChance, getDefaultQuestState } from '../core/config';
 
 const SAVE_KEY = 'pets_go_lite_save';
-const CURRENT_VERSION = 9;
+const CURRENT_VERSION = 10;
 
 function getDefaults(): SaveData {
     return {
@@ -13,7 +13,7 @@ function getDefaults(): SaveData {
         collection: [],
         totalRolls: 0,
         settings: { music: true, sfx: true, volume: 0.3, sfxVolume: 0.2 },
-        buffs: { lucky: 0, super: 0, epic: 0, autorollEnabled: false, autorollRunning: false },
+        buffs: { lucky: 0, super: 0, epic: 0, autorollEnabled: false, autorollRunning: false, queueIndex: 0 },
         rollLog: [],
         nickname: '',
         newPets: [],
@@ -58,19 +58,25 @@ function migrate(data: SaveData): SaveData {
         data.version = 7;
     }
     if (data.version === 7) {
+        const old = data.buffs as unknown as Record<string, unknown>;
         data.buffs = {
             lucky: data.buffs.lucky,
             super: data.buffs.super,
             epic: data.buffs.epic,
             autorollEnabled: false,
             autorollRunning: false,
-            epicTimer: data.buffs.epicTimer,
         };
+        (data.buffs as unknown as Record<string, unknown>).epicTimer = old.epicTimer;
         data.version = 8;
     }
     if (data.version === 8) {
         data.quests = getDefaultQuestState();
         data.version = 9;
+    }
+    if (data.version === 9) {
+        delete (data.buffs as unknown as Record<string, unknown>).epicTimer;
+        data.buffs.queueIndex = 0;
+        data.version = 10;
     }
     return data;
 }

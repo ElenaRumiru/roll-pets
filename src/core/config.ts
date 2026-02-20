@@ -130,9 +130,10 @@ export const AUTOROLL_TOGGLE = { width: 94, height: 58, gap: 6 };
 
 export const BUFF_CONFIG = {
     lucky:    { multiplier: 2, rollsPerAd: 1, color: 0x27ae60, colorHex: '#27ae60' },
-    super:    { multiplier: 3, rollsPerAd: 1, offerCooldown: 15_000, offerDuration: 15_000, color: 0x3498db, colorHex: '#3498db' },
-    epic:     { multiplier: 5, timer: 30_000, maxStack: 10, color: 0xffc107, colorHex: '#ffc107' },
+    super:    { multiplier: 3, rollsPerAd: 1, color: 0x3498db, colorHex: '#3498db' },
+    epic:     { multiplier: 5, rollsPerAd: 1, color: 0xffc107, colorHex: '#ffc107' },
     autoroll: { color: 0xff9d43, colorHex: '#ff9d43' },
+    offer:    { duration: 15_000, cooldown: 5_000 },
 } as const;
 
 export const LEFT_PANEL = { x: 12, w: 155 };

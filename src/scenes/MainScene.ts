@@ -97,14 +97,11 @@ export class MainScene extends Scene {
         this.bonusPanel = new BonusPanel(this, (type: string) => this.handleBuffRequest(type));
         this.questPanel = new QuestPanel(this, (type: 'roll' | 'grade') => this.handleQuestClaim(type));
 
-        // Position quest panel + bonus panel below settings button
-        const SETTINGS_BOTTOM = 62;
-        const BONUS_TOTAL_H = 3 * 68 + 2 * 7; // 218
+        // Position quest panel + bonus panel aligned with leaderboard
         const COMBINED_GAP = 6;
-        const combinedH = this.questPanel.panelHeight + COMBINED_GAP + BONUS_TOTAL_H;
-        const startY = SETTINGS_BOTTOM + Math.max(0, (GAME_HEIGHT - SETTINGS_BOTTOM - combinedH) / 2);
-        this.questPanel.y = startY;
-        this.bonusPanel.y = startY + this.questPanel.panelHeight + COMBINED_GAP;
+        const leaderboardY = Math.round((GAME_HEIGHT - 165) / 2) - 18; // match Leaderboard position
+        this.questPanel.y = leaderboardY;
+        this.bonusPanel.y = leaderboardY + this.questPanel.panelHeight + COMBINED_GAP;
 
         // Audio (singleton from registry)
         this.audio = this.registry.get('audio') as AudioSystem;
@@ -224,19 +221,13 @@ export class MainScene extends Scene {
     }
 
     private handleBuffRequest(type: string): void {
-        if (type === 'epic') {
+        const sdk = this.registry.get('platformSDK') as PlatformSDK | undefined;
+        if (sdk) {
+            sdk.showRewardedBreak().then((success: boolean) => {
+                if (success) EventBus.emit('buff-requested', type);
+            });
+        } else {
             EventBus.emit('buff-requested', type);
-            return;
-        }
-        if (type === 'lucky' || type === 'super') {
-            const sdk = this.registry.get('platformSDK');
-            if (sdk) {
-                sdk.showRewardedBreak().then((success: boolean) => {
-                    if (success) EventBus.emit('buff-requested', type);
-                });
-            } else {
-                EventBus.emit('buff-requested', type);
-            }
         }
     }
 
@@ -274,9 +265,9 @@ export class MainScene extends Scene {
         this.centerStage.setKeepOverlay(true);
     }
 
-    private onBuffActivated(buff: string): void {
+    private onBuffActivated(_buff: string): void {
         this.refreshUI();
-        this.bonusPanel.onBuffClaimed(buff);
+        this.bonusPanel.onOfferAccepted();
     }
 
     private onBuffsChanged(): void {

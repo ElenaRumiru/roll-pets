@@ -26,7 +26,7 @@ export class GameManager {
         this.progression = new ProgressionSystem(data.level, data.xp, data.collection);
         this.buffs = new BuffSystem();
         this.buffs.loadFromSave(data.buffs);
-        this.buffs.startSuperCooldown();
+        this.buffs.startOfferCooldown();
         this.quests = new QuestSystem();
         this.quests.loadFromSave(data.quests);
 
@@ -105,14 +105,14 @@ export class GameManager {
                 break;
             case 'super':
                 this.buffs.addSuper(BUFF_CONFIG.super.rollsPerAd);
-                this.buffs.consumeSuperOffer();
                 break;
             case 'epic':
-                if (!this.buffs.claimEpic()) return;
+                this.buffs.addEpic(BUFF_CONFIG.epic.rollsPerAd);
                 break;
             default:
                 return;
         }
+        this.buffs.consumeOffer();
         EventBus.emit('buff-activated', buff);
         EventBus.emit('buffs-changed');
         this.persistSave();

@@ -106,7 +106,7 @@ export const en: Record<string, string> = {
     'press_esc': 'Press ESC to resume',
 
     // Daily Quests
-    'quest_title': 'DAILY QUESTS',
+    'quest_title': 'Quests',
     'quest_roll': 'Roll {target} times',
     'quest_grade': 'Get {grade}+',
     'quest_claim': 'CLAIM',

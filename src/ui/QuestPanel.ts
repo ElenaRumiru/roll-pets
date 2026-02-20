@@ -6,7 +6,7 @@ import { addButtonFeedback } from './components/buttonFeedback';
 
 const PW = QUEST_PANEL.w;              // 143
 const PAD = 6;
-const HEADER_H = 20;
+const HEADER_H = 28;
 const TEXT_H = 14;
 const GAP = 3;
 const BAR_W = 78;
@@ -51,8 +51,8 @@ export class QuestPanel extends GameObjects.Container {
 
         // Header
         const header = scene.add.text(PW / 2, PAD + HEADER_H / 2, t('quest_title'), {
-            fontFamily: UI.FONT_MAIN, fontSize: '10px', color: '#ffffff',
-            stroke: '#000000', strokeThickness: UI.STROKE_THIN,
+            fontFamily: UI.FONT_MAIN, fontSize: '16px', color: '#ffffff',
+            stroke: '#000000', strokeThickness: UI.STROKE_MEDIUM,
         }).setOrigin(0.5);
         this.add(header);
 

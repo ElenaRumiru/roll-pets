@@ -3,14 +3,17 @@ import { BuffState } from '../types';
 
 export type CountBuff = 'lucky' | 'super' | 'epic';
 
+const OFFER_QUEUE: CountBuff[] = ['lucky', 'super', 'epic'];
+
 export class BuffSystem {
     private counts: Record<CountBuff, number> = { lucky: 0, super: 0, epic: 0 };
     private autorollEnabled = false;
     private autorollRunning = false;
-    private epicTimer = 0;
-    private superCooldown = 0;
-    private _superOffered = false;
-    private superOfferTimer = 0;
+
+    private queueIndex = 0;
+    private offerActive = false;
+    private offerTimer = 0;
+    private cooldownTimer = 0;
 
     addLucky(n: number): void {
         this.counts.lucky += n;
@@ -18,13 +21,10 @@ export class BuffSystem {
 
     addSuper(n: number): void {
         this.counts.super += n;
-        this._superOffered = false;
-        this.superOfferTimer = 0;
-        this.superCooldown = BUFF_CONFIG.super.offerCooldown;
     }
 
     addEpic(n: number): void {
-        this.counts.epic = Math.min(this.counts.epic + n, BUFF_CONFIG.epic.maxStack);
+        this.counts.epic += n;
     }
 
     setAutorollEnabled(enabled: boolean): void {
@@ -41,21 +41,18 @@ export class BuffSystem {
     }
 
     update(deltaMs: number): void {
-        if (this.epicTimer < BUFF_CONFIG.epic.timer) {
-            this.epicTimer = Math.min(this.epicTimer + deltaMs, BUFF_CONFIG.epic.timer);
-        }
-
-        if (this._superOffered) {
-            this.superOfferTimer = Math.max(0, this.superOfferTimer - deltaMs);
-            if (this.superOfferTimer <= 0) {
-                this._superOffered = false;
-                this.superCooldown = BUFF_CONFIG.super.offerCooldown;
+        if (this.offerActive) {
+            this.offerTimer = Math.max(0, this.offerTimer - deltaMs);
+            if (this.offerTimer <= 0) {
+                this.offerActive = false;
+                this.advanceQueue();
+                this.cooldownTimer = BUFF_CONFIG.offer.cooldown;
             }
-        } else if (this.superCooldown > 0) {
-            this.superCooldown = Math.max(0, this.superCooldown - deltaMs);
-            if (this.superCooldown <= 0) {
-                this._superOffered = true;
-                this.superOfferTimer = BUFF_CONFIG.super.offerDuration;
+        } else if (this.cooldownTimer > 0) {
+            this.cooldownTimer = Math.max(0, this.cooldownTimer - deltaMs);
+            if (this.cooldownTimer <= 0) {
+                this.offerActive = true;
+                this.offerTimer = BUFF_CONFIG.offer.duration;
             }
         }
     }
@@ -81,33 +78,35 @@ export class BuffSystem {
     getCount(buff: CountBuff): number { return this.counts[buff]; }
     isAutorollActive(): boolean { return this.autorollEnabled && this.autorollRunning; }
     isAutorollEnabled(): boolean { return this.autorollEnabled; }
-    isSuperOffered(): boolean { return this._superOffered; }
-    getSuperOfferRemaining(): number { return this.superOfferTimer; }
-    getSuperCooldown(): number { return this.superCooldown; }
-    getEpicTimerRemaining(): number { return Math.max(0, BUFF_CONFIG.epic.timer - this.epicTimer); }
 
-    /** Claim epic charge (player clicked the button). Returns true if granted. */
-    claimEpic(): boolean {
-        if (this.epicTimer < BUFF_CONFIG.epic.timer) return false;
-        this.addEpic(1);
-        this.epicTimer = 0;
-        return true;
+    /** Get the buff type of the current offer */
+    getCurrentOffer(): CountBuff {
+        return OFFER_QUEUE[this.queueIndex];
     }
 
-    isEpicReady(): boolean {
-        return this.epicTimer >= BUFF_CONFIG.epic.timer;
+    /** Is an offer currently being displayed? */
+    isOfferActive(): boolean { return this.offerActive; }
+
+    /** Remaining ms on the current offer timer */
+    getOfferRemaining(): number { return this.offerActive ? this.offerTimer : 0; }
+
+    /** Player watched the ad — consume the offer and start cooldown */
+    consumeOffer(): void {
+        this.offerActive = false;
+        this.offerTimer = 0;
+        this.advanceQueue();
+        this.cooldownTimer = BUFF_CONFIG.offer.cooldown;
     }
 
-    /** Mark super offer as consumed (button slides out) */
-    consumeSuperOffer(): void {
-        this._superOffered = false;
-    }
-
-    /** Start the super cooldown (e.g., on first load) */
-    startSuperCooldown(): void {
-        if (this.superCooldown <= 0 && !this._superOffered) {
-            this.superCooldown = BUFF_CONFIG.super.offerCooldown;
+    /** Start the initial cooldown (called on game start) */
+    startOfferCooldown(): void {
+        if (!this.offerActive && this.cooldownTimer <= 0) {
+            this.cooldownTimer = BUFF_CONFIG.offer.cooldown;
         }
+    }
+
+    private advanceQueue(): void {
+        this.queueIndex = (this.queueIndex + 1) % OFFER_QUEUE.length;
     }
 
     loadFromSave(buffs: BuffState): void {
@@ -116,7 +115,7 @@ export class BuffSystem {
         this.counts.epic = buffs.epic;
         this.autorollEnabled = buffs.autorollEnabled ?? false;
         this.autorollRunning = buffs.autorollRunning ?? false;
-        this.epicTimer = buffs.epicTimer ?? 0;
+        this.queueIndex = (buffs.queueIndex ?? 0) % OFFER_QUEUE.length;
     }
 
     toSave(): BuffState {
@@ -126,7 +125,7 @@ export class BuffSystem {
             epic: this.counts.epic,
             autorollEnabled: this.autorollEnabled,
             autorollRunning: this.autorollRunning,
-            epicTimer: this.epicTimer,
+            queueIndex: this.queueIndex,
         };
     }
 }

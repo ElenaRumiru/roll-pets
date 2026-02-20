@@ -66,7 +66,7 @@ export interface BuffState {
     epic: number;
     autorollEnabled: boolean;
     autorollRunning: boolean;
-    epicTimer?: number;
+    queueIndex?: number;
 }
 
 export interface QuestProgress {

@@ -106,7 +106,7 @@ export const ru: Record<string, string> = {
     'press_esc': 'Нажмите ESC для продолжения',
 
     // Daily Quests
-    'quest_title': 'ЕЖЕДНЕВНЫЕ',
+    'quest_title': 'Квесты',
     'quest_roll': 'Сделай {target} роллов',
     'quest_grade': 'Получи {grade}+',
     'quest_claim': 'ЗАБРАТЬ',
