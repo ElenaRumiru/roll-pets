@@ -5,14 +5,14 @@ import { Button } from '../ui/components/Button';
 import { t } from '../data/locales';
 import { GameManager } from '../core/GameManager';
 
-const HEADER_H = 50;
+const HEADER_H = 62;
 const TRACK_Y = Math.round(GAME_HEIGHT * 0.55);
-const TRACK_H = 10;
-const MILESTONE_GAP = 260;
-const FIRST_X = 140;
+const TRACK_H = 12;
+const MILESTONE_GAP = 321;
+const FIRST_X = 173;
 
-const EGG_R = 62;
-const COIN_R = 50;
+const EGG_R = 76;
+const COIN_R = 62;
 const RING_COLOR = 0xffc107;
 const RING_GRAY = 0x555566;
 const FILL_COLOR = 0x1a1a2e;
@@ -52,12 +52,12 @@ export class ProgressionScene extends Scene {
         hdr.lineBetween(0, HEADER_H, GAME_WIDTH, HEADER_H);
         hdr.setDepth(10);
 
-        new Button(this, 55, 25, 90, 32, `← ${t('progression_back')}`, 0x444455, () => {
+        new Button(this, 68, 31, 111, 39, `← ${t('progression_back')}`, 0x444455, () => {
             this.scene.start('MainScene');
         });
 
-        const title = this.add.text(GAME_WIDTH / 2, 25, t('progression_title'), {
-            fontFamily: UI.FONT_MAIN, fontSize: '22px',
+        const title = this.add.text(GAME_WIDTH / 2, 31, t('progression_title'), {
+            fontFamily: UI.FONT_MAIN, fontSize: '27px',
             color: '#ffffff', stroke: '#000000', strokeThickness: UI.STROKE_MEDIUM,
         }).setOrigin(0.5).setDepth(10);
     }
@@ -74,9 +74,9 @@ export class ProgressionScene extends Scene {
 
         const trackGfx = this.add.graphics();
         trackGfx.fillStyle(RING_COLOR, 1);
-        trackGfx.fillRect(FIRST_X - 30, TRACK_Y - TRACK_H / 2, transitionX - FIRST_X + 30, TRACK_H);
+        trackGfx.fillRect(FIRST_X - 37, TRACK_Y - TRACK_H / 2, transitionX - FIRST_X + 37, TRACK_H);
         trackGfx.fillStyle(0x444455, 1);
-        trackGfx.fillRect(transitionX, TRACK_Y - TRACK_H / 2, totalW - transitionX + 60, TRACK_H);
+        trackGfx.fillRect(transitionX, TRACK_Y - TRACK_H / 2, totalW - transitionX + 74, TRACK_H);
         this.trackContainer.add(trackGfx);
 
         for (let i = 0; i < milestones.length; i++) {
@@ -86,7 +86,7 @@ export class ProgressionScene extends Scene {
             this.drawMilestone(x, m, reached);
         }
 
-        this.maxScroll = Math.max(0, totalW - GAME_WIDTH + 80);
+        this.maxScroll = Math.max(0, totalW - GAME_WIDTH + 99);
     }
 
     private drawMilestone(x: number, m: Milestone, reached: boolean): void {
@@ -122,32 +122,32 @@ export class ProgressionScene extends Scene {
         }
 
         // Level number above
-        this.trackContainer.add(this.add.text(x, TRACK_Y - r - 22, `${m.level}`, {
-            fontFamily: UI.FONT_MAIN, fontSize: '28px',
+        this.trackContainer.add(this.add.text(x, TRACK_Y - r - 27, `${m.level}`, {
+            fontFamily: UI.FONT_MAIN, fontSize: '35px',
             color: reached ? '#ffffff' : '#777777',
             stroke: '#000000', strokeThickness: UI.STROKE_THICK,
         }).setOrigin(0.5));
 
         // Label below circle
-        const labelY = TRACK_Y + r + 14;
+        const labelY = TRACK_Y + r + 17;
         if (isEgg) {
             this.trackContainer.add(this.add.text(x, labelY, t('progression_new_egg'), {
-                fontFamily: UI.FONT_MAIN, fontSize: '16px',
+                fontFamily: UI.FONT_MAIN, fontSize: '20px',
                 color: reached ? '#ffffff' : '#777777',
                 stroke: '#000000', strokeThickness: UI.STROKE_MEDIUM,
             }).setOrigin(0.5));
 
             if (m.eggMinOdds) {
-                this.trackContainer.add(this.add.text(x, labelY + 22,
+                this.trackContainer.add(this.add.text(x, labelY + 27,
                     t('egg_effect', { odds: m.eggMinOdds }), {
-                        fontFamily: UI.FONT_BODY, fontSize: '12px',
+                        fontFamily: UI.FONT_BODY, fontSize: '15px',
                         color: reached ? '#aaaaaa' : '#555555',
                         stroke: '#000000', strokeThickness: 1,
                     }).setOrigin(0.5));
             }
         } else {
             this.trackContainer.add(this.add.text(x, labelY, `+${m.coinAmount}`, {
-                fontFamily: UI.FONT_MAIN, fontSize: '16px',
+                fontFamily: UI.FONT_MAIN, fontSize: '20px',
                 color: reached ? '#ffc107' : '#777777',
                 stroke: '#000000', strokeThickness: UI.STROKE_MEDIUM,
             }).setOrigin(0.5));

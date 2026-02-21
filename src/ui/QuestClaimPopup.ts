@@ -3,17 +3,17 @@ import { UI, GAME_WIDTH, GAME_HEIGHT, QUEST_CONFIG } from '../core/config';
 import { t } from '../data/locales';
 import { addButtonFeedback } from './components/buttonFeedback';
 
-const POPUP_W = 280;
-const POPUP_H = 190;
-const CARD_W = 110;
-const CARD_H = 120;
-const CARD_GAP = 16;
-const CARD_R = 10;
-const BTN_W = 90;
-const BTN_H = 28;
+const POPUP_W = 345;
+const POPUP_H = 234;
+const CARD_W = 136;
+const CARD_H = 148;
+const CARD_GAP = 20;
+const CARD_R = 12;
+const BTN_W = 111;
+const BTN_H = 35;
 const BTN_R = BTN_H / 2;
 const BTN_SHADOW = 2;
-const ICON_SZ = 40;
+const ICON_SZ = 49;
 
 const FREE_COLOR = 0x4CAF50;
 const FREE_DARK = 0x2E7D32;
@@ -56,17 +56,17 @@ export class QuestClaimPopup {
         this.container.add(popBg);
 
         // Title
-        const titleY = cy - POPUP_H / 2 + 20;
+        const titleY = cy - POPUP_H / 2 + 25;
         const title = scene.add.text(cx, titleY, t('quest_complete'), {
-            fontFamily: UI.FONT_MAIN, fontSize: '14px', color: '#ffffff',
+            fontFamily: UI.FONT_MAIN, fontSize: '17px', color: '#ffffff',
             stroke: '#000000', strokeThickness: UI.STROKE_MEDIUM,
         }).setOrigin(0.5);
         this.container.add(title);
 
         // Subtitle
-        const subY = titleY + 18;
+        const subY = titleY + 22;
         const sub = scene.add.text(cx, subY, t('quest_choose'), {
-            fontFamily: UI.FONT_MAIN, fontSize: '11px', color: '#aaaaaa',
+            fontFamily: UI.FONT_MAIN, fontSize: '14px', color: '#aaaaaa',
             stroke: '#000000', strokeThickness: 1,
         }).setOrigin(0.5);
         this.container.add(sub);
@@ -78,7 +78,7 @@ export class QuestClaimPopup {
         const tipKey = cfg.buffType === 'lucky' ? 'tip_lucky' : 'tip_super';
 
         // Cards area
-        const cardsY = subY + 14;
+        const cardsY = subY + 17;
         const leftX = cx - CARD_GAP / 2 - CARD_W / 2;
         const rightX = cx + CARD_GAP / 2 + CARD_W / 2;
 
@@ -108,7 +108,7 @@ export class QuestClaimPopup {
         this.container.add(cardBg);
 
         // Icon — interactive with long-press tooltip
-        const iconY = topY + 24;
+        const iconY = topY + 30;
         const icon = scene.add.image(cx, iconY, iconKey).setDisplaySize(ICON_SZ, ICON_SZ);
         icon.setInteractive({ useHandCursor: true });
         icon.on('pointerdown', () => {
@@ -124,21 +124,21 @@ export class QuestClaimPopup {
         const countText = count > 1
             ? t('quest_rolls_plural', { count: String(count) })
             : t('quest_rolls', { count: String(count) });
-        const label = scene.add.text(cx, iconY + ICON_SZ / 2 + 12, countText, {
-            fontFamily: UI.FONT_MAIN, fontSize: '12px', color: '#ffffff',
+        const label = scene.add.text(cx, iconY + ICON_SZ / 2 + 15, countText, {
+            fontFamily: UI.FONT_MAIN, fontSize: '15px', color: '#ffffff',
             stroke: '#000000', strokeThickness: UI.STROKE_THIN,
         }).setOrigin(0.5);
         this.container.add(label);
 
         // Buff name below count
-        const nameLabel = scene.add.text(cx, label.y + 14, buffName, {
-            fontFamily: UI.FONT_MAIN, fontSize: '9px', color: '#aaaaaa',
+        const nameLabel = scene.add.text(cx, label.y + 17, buffName, {
+            fontFamily: UI.FONT_MAIN, fontSize: '11px', color: '#aaaaaa',
             stroke: '#000000', strokeThickness: 1,
         }).setOrigin(0.5);
         this.container.add(nameLabel);
 
         // Action button at bottom of card
-        const btnY = topY + CARD_H - BTN_H / 2 - 8;
+        const btnY = topY + CARD_H - BTN_H / 2 - 10;
         const btnWrap = scene.add.container(cx, btnY);
         this.container.add(btnWrap);
 
@@ -158,7 +158,7 @@ export class QuestClaimPopup {
         btnWrap.add(bg);
 
         const btnText = scene.add.text(0, -1, btnLabel, {
-            fontFamily: UI.FONT_MAIN, fontSize: '10px', color: '#ffffff',
+            fontFamily: UI.FONT_MAIN, fontSize: '12px', color: '#ffffff',
             stroke: '#000000', strokeThickness: 1,
         }).setOrigin(0.5);
         btnWrap.add(btnText);

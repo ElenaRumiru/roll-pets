@@ -2,8 +2,12 @@ import { t } from '../data/locales';
 
 export class NicknamePrompt {
     private overlay: HTMLDivElement;
+    private inputPlugin: Phaser.Input.InputPlugin | null;
 
-    constructor(onSubmit: (name: string) => void) {
+    constructor(onSubmit: (name: string) => void, inputPlugin?: Phaser.Input.InputPlugin) {
+        this.inputPlugin = inputPlugin ?? null;
+        if (this.inputPlugin) this.inputPlugin.enabled = false;
+
         this.overlay = document.createElement('div');
         Object.assign(this.overlay.style, {
             position: 'fixed',
@@ -16,11 +20,11 @@ export class NicknamePrompt {
 
         const box = document.createElement('div');
         Object.assign(box.style, {
-            background: 'rgba(30,30,50,0.95)',
+            background: 'rgba(0,0,0,0.7)',
             borderRadius: '12px',
             padding: '24px 32px',
             textAlign: 'center',
-            border: '2px solid #3a3a5c',
+            border: '2px solid rgba(255,255,255,0.15)',
         });
 
         const label = document.createElement('div');
@@ -38,8 +42,8 @@ export class NicknamePrompt {
         Object.assign(input.style, {
             width: '200px', padding: '8px 12px',
             fontSize: '16px', borderRadius: '8px',
-            border: '2px solid #555',
-            background: '#1a1a2e', color: '#ffffff',
+            border: '2px solid rgba(255,255,255,0.2)',
+            background: 'rgba(0,0,0,0.5)', color: '#ffffff',
             textAlign: 'center', outline: 'none',
             fontFamily: 'Arial Black, Arial, sans-serif',
         });
@@ -81,6 +85,7 @@ export class NicknamePrompt {
     }
 
     destroy(): void {
+        if (this.inputPlugin) this.inputPlugin.enabled = true;
         if (this.overlay.parentNode) {
             this.overlay.parentNode.removeChild(this.overlay);
         }

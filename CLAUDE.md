@@ -29,7 +29,7 @@ No test framework configured yet. TypeScript checking is done by Vite at build t
 
 **Composition over inheritance.** UI panels are built from small reusable components (Button, ProgressBar, FloatingText). No class inheritance chains.
 
-**Entry flow:** `index.html` → `src/main.ts` → `src/game/main.ts` (Phaser config, 836x470 16:9, Scale.FIT)
+**Entry flow:** `index.html` → `src/main.ts` (awaits `document.fonts.ready`) → `src/game/main.ts` (Phaser config, 1031x580 16:9, Scale.FIT)
 
 **Scene flow:** Boot → Main ↔ Collection / Progression / Shop
 
@@ -103,7 +103,9 @@ src/
 
 **Localization:** All user-facing text is stored in `data/locales/en.ts` as key-value pairs. Scenes use `t('roll_button')` instead of `'ROLL!'`. To add a language: copy `en.ts`, translate values (AI-ready), register in `index.ts`.
 
-**Resolution:** 836x470 (Poki-recommended 16:9). Phaser Scale.FIT fills the canvas on all devices.
+**Fonts:** Bundled Roboto `.woff2` in `public/assets/fonts/`. Two weights: **Roboto Black** (`UI.FONT_MAIN`) for headings/buttons and **Roboto Medium** (`UI.FONT_BODY`) for body text. Loaded via `@font-face` in `public/style.css` with `font-display: block`. Game startup awaits `document.fonts.ready` before creating the Phaser instance.
+
+**Resolution:** 1031x580 (Poki-recommended 16:9). Phaser Scale.FIT fills the canvas on all devices.
 
 **Testing:** Always use Playwright MCP to test the game. At the start of every session, navigate to `http://localhost:8080/` via Playwright to verify the dev server is running. Before launching Chrome, check if it's already open (Playwright will fail with a resource access error if Chrome is running). If it fails, ask the user to close Chrome or start the dev server. After every code change, reload the page in Playwright and take a screenshot to verify visuals. Use `browser_console_messages` to check for errors. Click UI elements (ROLL button, Collection, etc.) to test interactions.
 

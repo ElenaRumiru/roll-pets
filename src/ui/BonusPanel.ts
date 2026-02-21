@@ -5,30 +5,30 @@ import { t } from '../data/locales';
 import { addButtonFeedback } from './components/buttonFeedback';
 
 const ROW_W = BONUS_PANEL.w;
-const ICON_SZ = 51;
+const ICON_SZ = 63;
 const ACCENT_H = 1;
-const PAD = 4;
-const ICON_PAD = 7;
-export const OFFER_CARD_H = ICON_SZ + PAD * 2 + ACCENT_H + 10;
-const RADIUS = 10;
-const BTN_W = 78;
-const BTN_H = 24;
-const BTN_SHADOW = 1.5;
+const PAD = 5;
+const ICON_PAD = 9;
+export const OFFER_CARD_H = ICON_SZ + PAD * 2 + ACCENT_H + 12;
+const RADIUS = 12;
+const BTN_W = 96;
+const BTN_H = 30;
+const BTN_SHADOW = 2;
 const AD_COLOR = 0x7B2FBE;
 const AD_COLOR_DARK = 0x4A1A72;
 const AREA_LEFT = ICON_PAD + ICON_SZ + 4;
 const AREA_CX = AREA_LEFT + (ROW_W - AREA_LEFT - PAD) / 2;
 const CONTENT_TOP = ACCENT_H + 6;
 const CONTENT_CY = CONTENT_TOP + (OFFER_CARD_H - CONTENT_TOP) / 2;
-const TAB_W = 50;
-const TAB_H = 16;
-const TAB_R = 6;
+const TAB_W = 62;
+const TAB_H = 20;
+const TAB_R = 7;
 
 const BUFF_ICON: Record<CountBuff, string> = {
     lucky: 'ui_x2simple_mid', super: 'ui_x3wow_mid', epic: 'ui_x5wow_mid',
 };
-const BUFF_DESC: Record<CountBuff, string> = {
-    lucky: 'x2 chance', super: 'x3 chance', epic: 'x5 chance',
+const BUFF_DESC_KEY: Record<CountBuff, string> = {
+    lucky: 'buff_desc_lucky', super: 'buff_desc_super', epic: 'buff_desc_epic',
 };
 const BUFF_LABEL_KEY: Record<CountBuff, string> = {
     lucky: 'buff_lucky', super: 'buff_super', epic: 'buff_epic',
@@ -36,7 +36,7 @@ const BUFF_LABEL_KEY: Record<CountBuff, string> = {
 const TOOLTIP_KEYS: Record<CountBuff, string> = {
     lucky: 'tip_lucky', super: 'tip_super', epic: 'tip_epic',
 };
-const ICON_SIZES: Record<CountBuff, number> = { lucky: 49, super: 54, epic: 56 };
+const ICON_SIZES: Record<CountBuff, number> = { lucky: 60, super: 67, epic: 69 };
 
 export class BonusPanel extends GameObjects.Container {
     private card: GameObjects.Container;
@@ -62,9 +62,9 @@ export class BonusPanel extends GameObjects.Container {
 
         this.tooltipBg = scene.add.graphics().setDepth(200).setVisible(false);
         this.tooltipText = scene.add.text(0, 0, '', {
-            fontFamily: UI.FONT_MAIN, fontSize: '11px', color: '#ffffff',
+            fontFamily: UI.FONT_MAIN, fontSize: '14px', color: '#ffffff',
             stroke: '#000000', strokeThickness: UI.STROKE_THIN,
-            align: 'center', wordWrap: { width: 140 },
+            align: 'center', wordWrap: { width: 173 },
         }).setOrigin(0.5).setDepth(200).setVisible(false);
 
         this.card = scene.add.container(ROW_W + 10, 0);
@@ -94,14 +94,14 @@ export class BonusPanel extends GameObjects.Container {
             .setDisplaySize(ICON_SZ, ICON_SZ);
         this.card.add(this.icon);
 
-        this.label = scene.add.text(AREA_CX, CONTENT_TOP + 11.5, '', {
-            fontFamily: UI.FONT_MAIN, fontSize: '12px', color: '#ffffff',
+        this.label = scene.add.text(AREA_CX, CONTENT_TOP + 14, '', {
+            fontFamily: UI.FONT_MAIN, fontSize: '15px', color: '#ffffff',
             stroke: '#000000', strokeThickness: UI.STROKE_THIN,
         }).setOrigin(0.5, 0.5);
         this.card.add(this.label);
 
-        this.desc = scene.add.text(AREA_CX, CONTENT_TOP + 25.5, '', {
-            fontFamily: UI.FONT_MAIN, fontSize: '11px', color: '#ffffff',
+        this.desc = scene.add.text(AREA_CX, CONTENT_TOP + 31, '', {
+            fontFamily: UI.FONT_MAIN, fontSize: '14px', color: '#ffffff',
             stroke: '#000000', strokeThickness: 1,
         }).setOrigin(0.5, 0.5);
         this.card.add(this.desc);
@@ -113,7 +113,7 @@ export class BonusPanel extends GameObjects.Container {
         this.draw3DButton(btnBg);
         this.btnWrap.add(btnBg);
         const btnText = scene.add.text(0, -Math.floor(BTN_SHADOW / 2), `▶ ${t('buff_watch')}`, {
-            fontFamily: UI.FONT_MAIN, fontSize: '10px', color: '#ffffff',
+            fontFamily: UI.FONT_MAIN, fontSize: '12px', color: '#ffffff',
             stroke: '#000000', strokeThickness: 1,
         }).setOrigin(0.5, 0.5);
         this.btnWrap.add(btnText);
@@ -131,7 +131,7 @@ export class BonusPanel extends GameObjects.Container {
         this.timerTabBg = scene.add.graphics();
         this.timerTab.add(this.timerTabBg);
         this.timerText = scene.add.text(0, TAB_H / 2, '', {
-            fontFamily: UI.FONT_MAIN, fontSize: '10px', color: '#ffffff',
+            fontFamily: UI.FONT_MAIN, fontSize: '12px', color: '#ffffff',
             stroke: '#000000', strokeThickness: UI.STROKE_THIN,
         }).setOrigin(0.5, 0.5);
         this.timerTab.add(this.timerText);
@@ -149,7 +149,7 @@ export class BonusPanel extends GameObjects.Container {
 
         this.icon.setTexture(BUFF_ICON[type]).setDisplaySize(iconSize, iconSize).setY(iconY);
         this.label.setText(t(BUFF_LABEL_KEY[type]));
-        this.desc.setText(BUFF_DESC[type]).setColor(colorHex);
+        this.desc.setText(t(BUFF_DESC_KEY[type])).setColor(colorHex);
 
         this.bg.clear();
         this.bg.fillStyle(0x1a1a2e, 0.9);
@@ -159,7 +159,7 @@ export class BonusPanel extends GameObjects.Container {
         this.bg.lineStyle(1.5, color, 0.3);
         this.bg.strokeRoundedRect(0, 0, ROW_W, OFFER_CARD_H, RADIUS);
 
-        const sp = type === 'epic' ? 6 : 4;
+        const sp = type === 'epic' ? 7 : 5;
         this.glow.clear();
         this.glow.fillStyle(color, 0.25);
         this.glow.fillRoundedRect(-sp, -sp, ROW_W + sp * 2, OFFER_CARD_H + sp * 2, RADIUS + sp);
@@ -203,7 +203,7 @@ export class BonusPanel extends GameObjects.Container {
         if (offered) {
             const remaining = buffs.getOfferRemaining();
             const sec = Math.ceil(remaining / 1000);
-            this.timerText.setText(`${sec}s`);
+            this.timerText.setText(t('buff_timer', { n: sec }));
             if (sec !== this.lastSec && this.lastSec !== -1) {
                 this.scene.tweens.add({
                     targets: this.timerTab,

@@ -1,16 +1,17 @@
 import { GameObjects, Scene } from 'phaser';
 import { PetDef } from '../types';
 import { GRADE, getGradeForChance, getOddsString, UI } from '../core/config';
+import { t } from '../data/locales';
 
-const CARD_W = 88;
-const CARD_H = 100;
+const CARD_W = 109;
+const CARD_H = 123;
 
 export class PetCard extends GameObjects.Container {
     constructor(scene: Scene, x: number, y: number, pet: PetDef, found: boolean, isNew = false) {
         super(scene, x, y);
 
         const cfg = GRADE[getGradeForChance(pet.chance)];
-        const r = 10;
+        const r = 12;
 
         // Card background
         const bg = scene.add.graphics();
@@ -32,13 +33,13 @@ export class PetCard extends GameObjects.Container {
 
         // Pet image or question mark
         if (found) {
-            const img = scene.add.image(0, -14, pet.imageKey).setScale(0.30);
+            const img = scene.add.image(0, -17, pet.imageKey).setScale(0.37);
             this.add(img);
 
             if (isNew) {
-                const newBadge = scene.add.text(CARD_W / 2 - 8, -CARD_H / 2 + 6, 'NEW', {
+                const newBadge = scene.add.text(CARD_W / 2 - 8, -CARD_H / 2 + 6, t('new_pet'), {
                     fontFamily: UI.FONT_MAIN,
-                    fontSize: '9px',
+                    fontSize: '11px',
                     color: '#ffc107',
                     stroke: '#000000',
                     strokeThickness: 2,
@@ -46,25 +47,25 @@ export class PetCard extends GameObjects.Container {
                 this.add(newBadge);
             }
         } else {
-            const qmark = scene.add.text(0, -14, '?', {
+            const qmark = scene.add.text(0, -17, '?', {
                 fontFamily: UI.FONT_MAIN,
-                fontSize: '28px',
+                fontSize: '35px',
                 color: '#333344',
             }).setOrigin(0.5);
             this.add(qmark);
         }
 
         // Name + grade at bottom of card
-        const nameText = scene.add.text(0, CARD_H / 2 - 24, found ? pet.name : '???', {
+        const nameText = scene.add.text(0, CARD_H / 2 - 30, found ? t('pet_' + pet.id) : t('pet_unknown'), {
             fontFamily: UI.FONT_MAIN,
-            fontSize: '11px',
+            fontSize: '14px',
             color: found ? '#ffffff' : '#333344',
         }).setOrigin(0.5);
         this.add(nameText);
 
-        const oddsText = scene.add.text(0, CARD_H / 2 - 11, found ? getOddsString(pet.chance) : '???', {
+        const oddsText = scene.add.text(0, CARD_H / 2 - 14, found ? getOddsString(pet.chance) : '???', {
             fontFamily: UI.FONT_MAIN,
-            fontSize: '9px',
+            fontSize: '11px',
             color: found ? cfg.colorHex : '#333344',
         }).setOrigin(0.5);
         this.add(oddsText);

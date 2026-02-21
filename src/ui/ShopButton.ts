@@ -4,9 +4,9 @@ import { t } from '../data/locales';
 import { addButtonFeedback } from './components/buttonFeedback';
 
 const PANEL_W = BONUS_PANEL.w;
-const BG_H = 81;
-const TOTAL_H = 112;
-const RADIUS = 14;
+const BG_H = 100;
+const TOTAL_H = 138;
+const RADIUS = 17;
 
 export class ShopButton extends GameObjects.Container {
     constructor(scene: Scene, onClick: () => void) {
@@ -19,14 +19,14 @@ export class ShopButton extends GameObjects.Container {
         this.add(bg);
 
         // Shop icon — centered, overlaps dark panel top (wide 3:2 ratio)
-        const icon = scene.add.image(PANEL_W / 2, 42, 'ui_shop_mid')
-            .setDisplaySize(236, 157);
+        const icon = scene.add.image(PANEL_W / 2, 52, 'ui_shop_mid')
+            .setDisplaySize(291, 194);
         this.add(icon);
 
         // "Shop" label — centered in dark panel
-        const label = scene.add.text(PANEL_W / 2, TOTAL_H - BG_H / 2 + 17, t('shop_button'), {
+        const label = scene.add.text(PANEL_W / 2, TOTAL_H - BG_H / 2 + 21, t('shop_button'), {
             fontFamily: UI.FONT_MAIN,
-            fontSize: '18px',
+            fontSize: '22px',
             color: '#ffffff',
             stroke: '#000000',
             strokeThickness: UI.STROKE_MEDIUM,
@@ -34,7 +34,7 @@ export class ShopButton extends GameObjects.Container {
         this.add(label);
 
         this.setInteractive(
-            new Geom.Rectangle(-5, -25, PANEL_W + 10, TOTAL_H + 30),
+            new Geom.Rectangle(-6, -31, PANEL_W + 12, TOTAL_H + 37),
             Geom.Rectangle.Contains,
         );
         this.input!.cursor = 'pointer';

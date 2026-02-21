@@ -44,26 +44,26 @@ export class RightPanel extends GameObjects.Container {
         this.rollBg.on('pointerdown', () => this.handleRollClick());
         this.rollWrap.add(this.rollBg);
 
-        this.rollLabel = scene.add.text(0, -4, t('roll_button'), {
+        this.rollLabel = scene.add.text(0, -5, t('roll_button'), {
             fontFamily: UI.FONT_MAIN,
-            fontSize: '28px',
+            fontSize: '35px',
             color: '#ffffff',
             stroke: '#000000',
             strokeThickness: UI.STROKE_THICK,
         }).setOrigin(0.5);
         this.rollWrap.add(this.rollLabel);
 
-        this.spaceHint = scene.add.text(0, 36, 'SPACE', {
-            fontFamily: UI.FONT_BODY, fontSize: '10px', color: '#666666',
+        this.spaceHint = scene.add.text(0, 44, 'SPACE', {
+            fontFamily: UI.FONT_BODY, fontSize: '12px', color: '#666666',
         }).setOrigin(0.5);
         this.rollWrap.add(this.spaceHint);
 
         addButtonFeedback(scene, this.rollBg, { scaleTarget: this.rollWrap });
 
         // Autoroll toggle button (right of Roll, bottom-aligned)
-        const toggleX = ROLL_BTN.x + ROLL_BTN.width / 2 + AUTOROLL_TOGGLE.gap + AUTOROLL_TOGGLE.width / 2 - 7;
+        const toggleX = ROLL_BTN.x + ROLL_BTN.width / 2 + AUTOROLL_TOGGLE.gap + AUTOROLL_TOGGLE.width / 2 - 9;
         const rollBottom = ROLL_BTN.y + ROLL_BTN.height / 2;
-        const toggleY = rollBottom - AUTOROLL_TOGGLE.height / 2 - 10;
+        const toggleY = rollBottom - AUTOROLL_TOGGLE.height / 2 - 12;
         this.toggleImg = scene.add.image(toggleX, toggleY, 'ui_automod_off')
             .setDisplaySize(AUTOROLL_TOGGLE.width, AUTOROLL_TOGGLE.height)
             .setInteractive({ useHandCursor: true });
@@ -72,7 +72,7 @@ export class RightPanel extends GameObjects.Container {
         addButtonFeedback(scene, this.toggleImg);
 
         // Buff badges above roll button (almost touching top edge)
-        this.badges = new BuffBadges(scene, ROLL_BTN.x, ROLL_BTN.y - ROLL_BTN.height / 2 - 10);
+        this.badges = new BuffBadges(scene, ROLL_BTN.x, ROLL_BTN.y - ROLL_BTN.height / 2 - 12);
         this.add(this.badges);
 
         scene.add.existing(this);

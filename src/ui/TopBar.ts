@@ -4,7 +4,7 @@ import { ProgressBar } from './components/ProgressBar';
 import { t } from '../data/locales';
 
 const PANEL_W = LEFT_PANEL.w;
-const PANEL_H = 52;
+const PANEL_H = 64;
 const RADIUS = 10;
 
 export class TopBar extends GameObjects.Container {
@@ -14,7 +14,7 @@ export class TopBar extends GameObjects.Container {
     private xpLabel: GameObjects.Text;
 
     constructor(scene: Scene, onClick?: () => void) {
-        super(scene, LEFT_PANEL.x, 8);
+        super(scene, LEFT_PANEL.x, 10);
 
         // Semi-transparent black panel
         const bg = scene.add.graphics();
@@ -33,9 +33,9 @@ export class TopBar extends GameObjects.Container {
         }
 
         // Nickname (top row, prominent)
-        this.nicknameText = scene.add.text(10, 6, '', {
+        this.nicknameText = scene.add.text(12, 7, '', {
             fontFamily: UI.FONT_MAIN,
-            fontSize: '13px',
+            fontSize: '16px',
             color: '#ffffff',
             stroke: '#000000',
             strokeThickness: UI.STROKE_MEDIUM,
@@ -43,9 +43,9 @@ export class TopBar extends GameObjects.Container {
         this.add(this.nicknameText);
 
         // Level text (bottom-left)
-        this.levelText = scene.add.text(10, 28, '', {
+        this.levelText = scene.add.text(12, 35, '', {
             fontFamily: UI.FONT_MAIN,
-            fontSize: '11px',
+            fontSize: '14px',
             color: '#ffffff',
             stroke: '#000000',
             strokeThickness: UI.STROKE_THIN,
@@ -53,15 +53,15 @@ export class TopBar extends GameObjects.Container {
         this.add(this.levelText);
 
         // XP bar (bottom-right area)
-        const barX = 54;
-        const barW = 90;
-        this.xpBar = new ProgressBar(scene, barX, 36, barW, 14, 0x222244, 0x4caf50);
+        const barX = 67;
+        const barW = 111;
+        this.xpBar = new ProgressBar(scene, barX, 44, barW, 17, 0x222244, 0x4caf50);
         this.add(this.xpBar);
 
         // XP numbers overlay on bar
-        this.xpLabel = scene.add.text(barX + barW / 2, 36, '', {
+        this.xpLabel = scene.add.text(barX + barW / 2, 44, '', {
             fontFamily: UI.FONT_MAIN,
-            fontSize: '9px',
+            fontSize: '11px',
             color: '#ffffff',
             stroke: '#000000',
             strokeThickness: UI.STROKE_THIN,

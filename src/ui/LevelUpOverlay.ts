@@ -9,16 +9,16 @@ const CX = GAME_WIDTH / 2;
 const CY = GAME_HEIGHT / 2;
 const DEPTH = 500;          // above autoroll UI (105) and pause (1001 handled separately)
 
-const RING_OUTER = 34;
-const RING_INNER = 26;
+const RING_OUTER = 42;
+const RING_INNER = 32;
 const RING_COLOR = 0xffc107;
 
-const CARD_W = 110;
-const CARD_H = 142;
-const CARD_GAP = 16;
-const CARD_R = 10;
-const BTN_W = 90;
-const BTN_H = 28;
+const CARD_W = 136;
+const CARD_H = 175;
+const CARD_GAP = 20;
+const CARD_R = 12;
+const BTN_W = 111;
+const BTN_H = 35;
 const BTN_R = BTN_H / 2;
 const BTN_SHADOW = 2;
 
@@ -49,13 +49,13 @@ export class LevelUpOverlay {
         this.elements.push(container);
 
         // --- Double ring (top) ---
-        const ringY = -140;
+        const ringY = -173;
         this.buildDoubleRing(container, data.level, ringY);
 
         // --- "LEVEL UP!" title ---
         const titleY = ringY + RING_OUTER + 22;
         const title = this.scene.add.text(0, titleY, t('levelup_title'), {
-            fontFamily: UI.FONT_MAIN, fontSize: '26px',
+            fontFamily: UI.FONT_MAIN, fontSize: '32px',
             color: '#ffc107', stroke: '#000000', strokeThickness: UI.STROKE_THICK,
         }).setOrigin(0.5);
         container.add(title);
@@ -73,14 +73,14 @@ export class LevelUpOverlay {
         const gfx = this.scene.add.graphics();
         gfx.fillStyle(0x1a1a2e, 0.95);
         gfx.fillCircle(0, cy, RING_OUTER);
-        gfx.lineStyle(3, RING_COLOR, 1);
+        gfx.lineStyle(4, RING_COLOR, 1);
         gfx.strokeCircle(0, cy, RING_OUTER);
         gfx.lineStyle(2, RING_COLOR, 0.7);
         gfx.strokeCircle(0, cy, RING_INNER);
         container.add(gfx);
 
         const text = this.scene.add.text(0, cy, `${level}`, {
-            fontFamily: UI.FONT_MAIN, fontSize: '24px',
+            fontFamily: UI.FONT_MAIN, fontSize: '30px',
             color: '#ffc107', stroke: '#000000', strokeThickness: UI.STROKE_THICK,
         }).setOrigin(0.5);
         container.add(text);
@@ -95,47 +95,47 @@ export class LevelUpOverlay {
         titleY: number,
         onComplete: (chosenCoinAmount: number) => void,
     ): void {
-        let y = titleY + 28;
+        let y = titleY + 35;
 
         // Subtitle
         const subtitle = this.scene.add.text(0, y, t('levelup_new_egg_unlocked'), {
-            fontFamily: UI.FONT_MAIN, fontSize: '15px',
+            fontFamily: UI.FONT_MAIN, fontSize: '18px',
             color: '#ffffff', stroke: '#000000', strokeThickness: UI.STROKE_MEDIUM,
         }).setOrigin(0.5);
         container.add(subtitle);
-        y += 22;
+        y += 27;
 
         // Old egg → arrow → new egg
-        const eggY = y + 50;
-        const oldEgg = this.scene.add.image(-80, eggY, data.oldEggKey).setDisplaySize(90, 90);
+        const eggY = y + 62;
+        const oldEgg = this.scene.add.image(-99, eggY, data.oldEggKey).setDisplaySize(111, 111);
         container.add(oldEgg);
-        const arrow = this.scene.add.image(0, eggY, 'ui_arrow').setDisplaySize(28, 28).setRotation(-Math.PI / 2);
+        const arrow = this.scene.add.image(0, eggY, 'ui_arrow').setDisplaySize(35, 35).setRotation(-Math.PI / 2);
         container.add(arrow);
-        const newEgg = this.scene.add.image(80, eggY, data.eggKey).setDisplaySize(90, 90);
+        const newEgg = this.scene.add.image(99, eggY, data.eggKey).setDisplaySize(111, 111);
         container.add(newEgg);
-        y = eggY + 58;
+        y = eggY + 72;
 
         // Egg name
         const eggName = this.scene.add.text(0, y, t(getEggNameKey(data.eggKey)), {
-            fontFamily: UI.FONT_MAIN, fontSize: '18px',
+            fontFamily: UI.FONT_MAIN, fontSize: '22px',
             color: '#ffc107', stroke: '#000000', strokeThickness: UI.STROKE_MEDIUM,
         }).setOrigin(0.5);
         container.add(eggName);
-        y += 22;
+        y += 27;
 
         // Egg characteristic
         const odds = getEggMinOdds(data.level);
         const effect = this.scene.add.text(0, y, t('egg_effect').replace('{odds}', odds), {
-            fontFamily: UI.FONT_MAIN, fontSize: '13px',
+            fontFamily: UI.FONT_MAIN, fontSize: '16px',
             color: '#aaaaaa', stroke: '#000000', strokeThickness: UI.STROKE_THIN,
         }).setOrigin(0.5);
         container.add(effect);
-        y += 22;
+        y += 27;
 
         // Countdown
         let seconds = LEVELUP_CONFIG.eggCloseSeconds;
         const countdown = this.scene.add.text(0, y, this.fmtTapClose(seconds), {
-            fontFamily: UI.FONT_BODY, fontSize: '13px',
+            fontFamily: UI.FONT_BODY, fontSize: '16px',
             color: '#888888', stroke: '#000000', strokeThickness: 1,
         }).setOrigin(0.5);
         container.add(countdown);
@@ -168,15 +168,15 @@ export class LevelUpOverlay {
         const baseAmount = data.coinReward;
         const adAmount = baseAmount * LEVELUP_CONFIG.adCoinMultiplier;
 
-        let y = titleY + 48;
+        let y = titleY + 59;
 
         // Subtitle
         const subtitle = this.scene.add.text(0, y, t('levelup_rewards'), {
-            fontFamily: UI.FONT_MAIN, fontSize: '15px',
+            fontFamily: UI.FONT_MAIN, fontSize: '18px',
             color: '#ffffff', stroke: '#000000', strokeThickness: UI.STROKE_MEDIUM,
         }).setOrigin(0.5);
         container.add(subtitle);
-        y += 26;
+        y += 32;
 
         // Choice cards
         const cardsY = y;
@@ -229,20 +229,20 @@ export class LevelUpOverlay {
         container.add(cardBg);
 
         // Coin icon
-        const iconY = topY + 48;
-        const icon = this.scene.add.image(cx, iconY, 'ui_coin_md').setDisplaySize(34, 34);
+        const iconY = topY + 59;
+        const icon = this.scene.add.image(cx, iconY, 'ui_coin_md').setDisplaySize(42, 42);
         container.add(icon);
 
         // Amount
-        const amtText = this.scene.add.text(cx, iconY + 28, amountStr, {
-            fontFamily: UI.FONT_MAIN, fontSize: '16px',
+        const amtText = this.scene.add.text(cx, iconY + 35, amountStr, {
+            fontFamily: UI.FONT_MAIN, fontSize: '20px',
             color: '#ffc107', stroke: '#000000', strokeThickness: UI.STROKE_MEDIUM,
         }).setOrigin(0.5);
         container.add(amtText);
 
         // Badge ribbon (centered top)
         if (showBest) {
-            const rw = 52, rh = 18;
+            const rw = 64, rh = 22;
             const rx = cx;
             const ry = topY + 5;
             const ribbon = this.scene.add.graphics();
@@ -250,14 +250,14 @@ export class LevelUpOverlay {
             ribbon.fillRoundedRect(rx - rw / 2, ry, rw, rh, 3);
             container.add(ribbon);
             const bestTxt = this.scene.add.text(rx, ry + rh / 2, '+300%', {
-                fontFamily: UI.FONT_MAIN, fontSize: '11px',
+                fontFamily: UI.FONT_MAIN, fontSize: '14px',
                 color: '#ffffff', stroke: '#000000', strokeThickness: 1,
             }).setOrigin(0.5);
             container.add(bestTxt);
         }
 
         // Button
-        const btnY = topY + CARD_H - BTN_H / 2 - 10;
+        const btnY = topY + CARD_H - BTN_H / 2 - 12;
         const btnWrap = this.scene.add.container(cx, btnY);
         container.add(btnWrap);
 
@@ -277,7 +277,7 @@ export class LevelUpOverlay {
         btnWrap.add(bg);
 
         const btnText = this.scene.add.text(0, -1, btnLabel, {
-            fontFamily: UI.FONT_MAIN, fontSize: '11px',
+            fontFamily: UI.FONT_MAIN, fontSize: '14px',
             color: '#ffffff', stroke: '#000000', strokeThickness: 1,
         }).setOrigin(0.5);
         btnWrap.add(btnText);

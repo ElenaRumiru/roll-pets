@@ -4,9 +4,9 @@ import { t } from '../data/locales';
 import { addButtonFeedback } from './components/buttonFeedback';
 
 const PANEL_W = LEFT_PANEL.w;
-const BG_H = 81;
-const TOTAL_H = 112;
-const RADIUS = 14;
+const BG_H = 100;
+const TOTAL_H = 138;
+const RADIUS = 17;
 
 export class CollectionButton extends GameObjects.Container {
     private badgeGfx: GameObjects.Graphics;
@@ -22,14 +22,14 @@ export class CollectionButton extends GameObjects.Container {
         this.add(bg);
 
         // Book icon — large, centered, overlaps dark panel top
-        const icon = scene.add.image(PANEL_W / 2, 47, 'ui_collections')
-            .setDisplaySize(160, 133);
+        const icon = scene.add.image(PANEL_W / 2, 58, 'ui_collections')
+            .setDisplaySize(197, 164);
         this.add(icon);
 
         // "Collection" label — centered in dark panel
-        const label = scene.add.text(PANEL_W / 2, TOTAL_H - BG_H / 2 + 17, t('collection_button'), {
+        const label = scene.add.text(PANEL_W / 2, TOTAL_H - BG_H / 2 + 21, t('collection_button'), {
             fontFamily: UI.FONT_MAIN,
-            fontSize: '16px',
+            fontSize: '20px',
             color: '#ffffff',
             stroke: '#000000',
             strokeThickness: UI.STROKE_MEDIUM,
@@ -38,8 +38,8 @@ export class CollectionButton extends GameObjects.Container {
 
         // Notification badge (top-right corner of dark panel)
         const badgeX = PANEL_W - 2;
-        const badgeY = TOTAL_H - BG_H + 6;
-        const badgeR = 10;
+        const badgeY = TOTAL_H - BG_H + 7;
+        const badgeR = 12;
         this.badgeGfx = scene.add.graphics();
         this.badgeGfx.lineStyle(2, 0x000000, 1);
         this.badgeGfx.fillStyle(0xcc0000, 1);
@@ -49,7 +49,7 @@ export class CollectionButton extends GameObjects.Container {
 
         this.badgeText = scene.add.text(badgeX, badgeY - 1, '', {
             fontFamily: UI.FONT_MAIN,
-            fontSize: '11px',
+            fontSize: '14px',
             color: '#ffffff',
             stroke: '#000000',
             strokeThickness: 1,
@@ -60,7 +60,7 @@ export class CollectionButton extends GameObjects.Container {
         this.badgeText.setVisible(false);
 
         this.setInteractive(
-            new Geom.Rectangle(-5, -25, PANEL_W + 10, TOTAL_H + 30),
+            new Geom.Rectangle(-6, -31, PANEL_W + 12, TOTAL_H + 37),
             Geom.Rectangle.Contains,
         );
         this.input!.cursor = 'pointer';

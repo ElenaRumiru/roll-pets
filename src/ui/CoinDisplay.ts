@@ -1,8 +1,8 @@
 import { GameObjects, Scene } from 'phaser';
 import { GAME_WIDTH, COIN_HUD, UI } from '../core/config';
 
-const HUD_X = GAME_WIDTH - 40 - 17 - COIN_HUD.gap - COIN_HUD.w;
-const HUD_Y = 8;
+const HUD_X = GAME_WIDTH - 49 - 21 - COIN_HUD.gap - COIN_HUD.w;
+const HUD_Y = 10;
 const TEXT_LEFT = COIN_HUD.iconSize * 0.6 + 2;
 const TEXT_CENTER_X = TEXT_LEFT + (COIN_HUD.w - TEXT_LEFT) / 2;
 
@@ -26,7 +26,7 @@ export class CoinDisplay extends GameObjects.Container {
 
         this.label = scene.add.text(TEXT_CENTER_X, COIN_HUD.h / 2, '0', {
             fontFamily: UI.FONT_MAIN,
-            fontSize: '12px',
+            fontSize: '15px',
             color: '#ffffff',
             stroke: '#000000',
             strokeThickness: UI.STROKE_THIN,
@@ -42,10 +42,10 @@ export class CoinDisplay extends GameObjects.Container {
 
     showFloatingGain(amount: number, scene: Scene): void {
         if (amount <= 0) return;
-        const icon = scene.add.image(0, 0, 'ui_coin_sm').setDisplaySize(12, 12);
-        const txt = scene.add.text(9, 0, `+${this.formatNumber(amount)}`, {
+        const icon = scene.add.image(0, 0, 'ui_coin_sm').setDisplaySize(15, 15);
+        const txt = scene.add.text(11, 0, `+${this.formatNumber(amount)}`, {
             fontFamily: UI.FONT_MAIN,
-            fontSize: '11px',
+            fontSize: '14px',
             color: '#ffc107',
             stroke: '#000000',
             strokeThickness: 2,
@@ -59,7 +59,7 @@ export class CoinDisplay extends GameObjects.Container {
 
         scene.tweens.add({
             targets: container,
-            y: container.y - 24,
+            y: container.y - 30,
             alpha: 0,
             duration: 800,
             ease: 'Power2',

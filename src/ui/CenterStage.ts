@@ -40,18 +40,18 @@ export class CenterStage extends GameObjects.Container {
         for (let i = 0; i < 3; i++) {
             const pos = positions[i];
 
-            const nameText = scene.add.text(pos.x, pos.y + PET_OFFSET_Y - 92, '', {
+            const nameText = scene.add.text(pos.x, pos.y + PET_OFFSET_Y - 113, '', {
                 fontFamily: UI.FONT_MAIN,
-                fontSize: '18px',
+                fontSize: '22px',
                 color: '#ffffff',
                 stroke: '#000000',
                 strokeThickness: UI.STROKE_THICK,
             }).setOrigin(0.5).setAlpha(0);
             this.add(nameText);
 
-            const oddsText = scene.add.text(pos.x, pos.y + PET_OFFSET_Y - 74, '', {
+            const oddsText = scene.add.text(pos.x, pos.y + PET_OFFSET_Y - 91, '', {
                 fontFamily: UI.FONT_MAIN,
-                fontSize: '20px',
+                fontSize: '25px',
                 color: '#cccccc',
                 stroke: '#000000',
                 strokeThickness: UI.STROKE_THICK,
@@ -69,29 +69,29 @@ export class CenterStage extends GameObjects.Container {
 
         // Egg container
         this.eggContainer = scene.add.container(CX, CY).setAlpha(0).setDepth(101);
-        this.egg = scene.add.image(0, 0, 'egg_1').setDisplaySize(240, 240);
+        this.egg = scene.add.image(0, 0, 'egg_1').setDisplaySize(296, 296);
         this.eggContainer.add(this.egg);
 
         // Reveal elements (on top of overlay)
-        this.revealName = scene.add.text(CX, CY + 65, '', {
+        this.revealName = scene.add.text(CX, CY + 80, '', {
             fontFamily: UI.FONT_MAIN,
-            fontSize: '22px',
+            fontSize: '27px',
             color: '#ffffff',
             stroke: '#000000',
             strokeThickness: UI.STROKE_THICK,
         }).setOrigin(0.5).setAlpha(0).setDepth(103);
 
-        this.revealRarity = scene.add.text(CX, CY + 90, '', {
+        this.revealRarity = scene.add.text(CX, CY + 111, '', {
             fontFamily: UI.FONT_MAIN,
-            fontSize: '20px',
+            fontSize: '25px',
             color: '#ffffff',
             stroke: '#000000',
             strokeThickness: UI.STROKE_THICK,
         }).setOrigin(0.5).setAlpha(0).setDepth(103);
 
-        this.newBadge = scene.add.text(CX, CY - 135, t('new_pet'), {
+        this.newBadge = scene.add.text(CX, CY - 167, t('new_pet'), {
             fontFamily: UI.FONT_MAIN,
-            fontSize: '26px',
+            fontSize: '32px',
             color: '#ffc107',
             stroke: '#000000',
             strokeThickness: UI.STROKE_THICK,
@@ -100,15 +100,15 @@ export class CenterStage extends GameObjects.Container {
         // Rewards line: [EXP icon] +25  [COIN icon] +5 — single container, centered
         const expIcon = scene.add.image(0, 1, 'ui_exp_md');
         const expLabel = scene.add.text(0, 0, '', {
-            fontFamily: UI.FONT_MAIN, fontSize: '16px',
+            fontFamily: UI.FONT_MAIN, fontSize: '20px',
             color: '#88cc55', stroke: '#000000', strokeThickness: UI.STROKE_MEDIUM,
         }).setOrigin(0, 0.5);
-        const coinIcon = scene.add.image(0, 1, 'ui_coin_sm').setDisplaySize(17, 17);
+        const coinIcon = scene.add.image(0, 1, 'ui_coin_sm').setDisplaySize(21, 21);
         const coinLabel = scene.add.text(0, 0, '', {
-            fontFamily: UI.FONT_MAIN, fontSize: '16px',
+            fontFamily: UI.FONT_MAIN, fontSize: '20px',
             color: '#ffc107', stroke: '#000000', strokeThickness: UI.STROKE_MEDIUM,
         }).setOrigin(0, 0.5);
-        this.rewardsContainer = scene.add.container(CX, CY + 122,
+        this.rewardsContainer = scene.add.container(CX, CY + 150,
             [expIcon, expLabel, coinIcon, coinLabel]).setAlpha(0).setDepth(103);
 
         scene.add.existing(this);
@@ -152,8 +152,8 @@ export class CenterStage extends GameObjects.Container {
                 this.sendToBack(slot.image);
 
                 // Rhombus shadow under pet (behind image)
-                const sw = 92 * pos.scale;
-                const sh = 20 * pos.scale;
+                const sw = 113 * pos.scale;
+                const sh = 25 * pos.scale;
                 const sx = pos.x;
                 const sy = pos.y + PET_OFFSET_Y + 3;
                 slot.shadow = this.scene.add.graphics({ x: sx, y: sy });
@@ -171,14 +171,14 @@ export class CenterStage extends GameObjects.Container {
 
                 // Position text above the pet image top
                 const topY = slot.image.y - slot.image.displayHeight;
-                slot.nameText.setText(pet.name)
-                    .setPosition(pos.x, topY - 46)
+                slot.nameText.setText(t('pet_' + pet.id))
+                    .setPosition(pos.x, topY - 57)
                     .setColor('#ffffff')
                     .setStroke('#000000', UI.STROKE_THICK)
                     .setAlpha(1);
 
                 slot.oddsText.setText(getOddsString(pet.chance))
-                    .setPosition(pos.x, topY - 22)
+                    .setPosition(pos.x, topY - 27)
                     .setColor(cfg.colorHex)
                     .setStroke(cfg.outlineHex, cfg.strokeThickness || UI.STROKE_MEDIUM)
                     .setAlpha(1);
@@ -215,7 +215,7 @@ export class CenterStage extends GameObjects.Container {
                 // Shake
                 scene.tweens.add({
                     targets: this.eggContainer,
-                    x: CX - 5,
+                    x: CX - 6,
                     duration: 50,
                     yoyo: true,
                     repeat: 6,
@@ -254,18 +254,18 @@ export class CenterStage extends GameObjects.Container {
 
         // Pet image
         if (this.revealImage) { this.revealImage.destroy(); this.revealImage = null; }
-        this.revealImage = scene.add.image(CX, CY - 25, result.pet.imageKey)
+        this.revealImage = scene.add.image(CX, CY - 31, result.pet.imageKey)
             .setScale(0).setDepth(102);
 
         scene.tweens.add({
             targets: this.revealImage,
-            scale: 0.7,
+            scale: 0.86,
             duration: 300,
             ease: 'Back.easeOut',
         });
 
         // Name
-        this.revealName.setText(result.pet.name)
+        this.revealName.setText(t('pet_' + result.pet.id))
             .setColor('#ffffff')
             .setStroke('#000000', UI.STROKE_THICK)
             .setAlpha(1);
@@ -284,16 +284,16 @@ export class CenterStage extends GameObjects.Container {
 
         // Scale EXP icon to 16px height, preserving aspect
         const expTex = this.scene.textures.get('ui_exp_md').getSourceImage();
-        const expH = 16;
+        const expH = 20;
         const expW = Math.round(expTex.width * (expH / expTex.height));
         expIcon.setDisplaySize(expW, expH);
 
         expLabel.setText(`+${result.xpGained}`);
         coinLabel.setText(`+${result.coinsGained}`);
 
-        const gap = 3;
-        const sep = 12;
-        const coinH = 17;
+        const gap = 4;
+        const sep = 15;
+        const coinH = 21;
         const totalW = expW + gap + expLabel.width + sep + coinH + gap + coinLabel.width;
         let cx = -totalW / 2;
         expIcon.setX(cx + expW / 2);  cx += expW + gap;

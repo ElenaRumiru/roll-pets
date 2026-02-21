@@ -6,6 +6,7 @@ import { TOTAL_EGGS } from '../data/eggs';
 import { TOTAL_BACKGROUNDS } from '../data/backgrounds';
 import { AudioSystem } from '../systems/AudioSystem';
 import { GameManager } from '../core/GameManager';
+import { setLanguage } from '../data/locales';
 
 export class BootScene extends Scene {
     constructor() {
@@ -17,17 +18,17 @@ export class BootScene extends Scene {
         const cy = GAME_HEIGHT / 2;
 
         // Loading bar
-        this.add.rectangle(cx, cy, 300, 20).setStrokeStyle(2, 0xffffff);
-        const bar = this.add.rectangle(cx - 148, cy, 4, 16, 0xffffff);
+        this.add.rectangle(cx, cy, 370, 25).setStrokeStyle(2, 0xffffff);
+        const bar = this.add.rectangle(cx - 183, cy, 5, 20, 0xffffff);
 
-        this.add.text(cx, cy - 30, 'PETS GO Lite', {
+        this.add.text(cx, cy - 37, 'PETS GO Lite', {
             fontFamily: 'Arial Black',
-            fontSize: '24px',
+            fontSize: '30px',
             color: '#ffffff',
         }).setOrigin(0.5);
 
         this.load.on('progress', (value: number) => {
-            bar.width = 4 + 292 * value;
+            bar.width = 5 + 360 * value;
         });
 
         // Backgrounds (location_1 .. location_17)
@@ -82,7 +83,7 @@ export class BootScene extends Scene {
         // Pre-downscale roll button to avoid moiré (1927px → 680px via high-quality canvas resample)
         const img = this.textures.get('ui_roll').getSourceImage() as HTMLImageElement;
         const canvas = document.createElement('canvas');
-        const targetW = 680; // 2x display size for crisp rendering
+        const targetW = 838; // 2x display size for crisp rendering
         const targetH = Math.round(targetW * (img.height / img.width));
         canvas.width = targetW;
         canvas.height = targetH;
@@ -97,12 +98,12 @@ export class BootScene extends Scene {
         for (const key of ['ui_automod_on', 'ui_automod_off']) {
             const src = this.textures.get(key).getSourceImage() as HTMLImageElement;
             const c = document.createElement('canvas');
-            c.width = 188;  // 2x display width for crisp rendering
-            c.height = 116; // 2x display height
+            c.width = 232;  // 2x display width for crisp rendering
+            c.height = 144; // 2x display height
             const cx2 = c.getContext('2d')!;
             cx2.imageSmoothingEnabled = true;
             cx2.imageSmoothingQuality = 'high';
-            cx2.drawImage(src, 0, 0, 188, 116);
+            cx2.drawImage(src, 0, 0, 232, 144);
             this.textures.remove(key);
             this.textures.addCanvas(key, c);
         }
@@ -129,22 +130,22 @@ export class BootScene extends Scene {
         }
 
         // Pre-downscale shop icon for crisp rendering (original 1536x1024, ratio 3:2)
-        this.downscaleTexture('ui_shop', 'ui_shop_mid', 300, 200);
+        this.downscaleTexture('ui_shop', 'ui_shop_mid', 370, 247);
 
         // Pre-downscale buff icons → "mid" size (2x BonusPanel display: 102px / 112px)
-        this.downscaleTexture('ui_x2simple', 'ui_x2simple_mid', 102, 102);
-        this.downscaleTexture('ui_x3wow', 'ui_x3wow_mid', 102, 102);
-        this.downscaleTexture('ui_x5wow', 'ui_x5wow_mid', 112, 112);
+        this.downscaleTexture('ui_x2simple', 'ui_x2simple_mid', 126, 126);
+        this.downscaleTexture('ui_x3wow', 'ui_x3wow_mid', 126, 126);
+        this.downscaleTexture('ui_x5wow', 'ui_x5wow_mid', 138, 138);
 
         // Trim transparent pixels from coin icon and create size variants
         this.trimAndDownscaleCoin('ui_coin_raw', [
-            { key: 'ui_coin_lg', size: 64 },
-            { key: 'ui_coin_md', size: 44 },
-            { key: 'ui_coin_sm', size: 16 },
+            { key: 'ui_coin_lg', size: 80 },
+            { key: 'ui_coin_md', size: 54 },
+            { key: 'ui_coin_sm', size: 20 },
         ]);
 
         // Trim exp icon preserving aspect ratio (wide text, not square)
-        this.trimToHeight('ui_exp_raw', 'ui_exp_md', 36);
+        this.trimToHeight('ui_exp_raw', 'ui_exp_md', 44);
 
         const renderer = this.game.renderer;
         if (renderer instanceof Renderer.WebGL.WebGLRenderer) {
@@ -154,6 +155,7 @@ export class BootScene extends Scene {
         this.registry.set('gameManager', manager);
 
         const settings = manager.save.getData().settings;
+        setLanguage(settings.language);
         const audio = new AudioSystem(this.game.sound, settings.music, settings.volume, settings.sfx, settings.sfxVolume);
         this.registry.set('audio', audio);
         audio.startBGM();

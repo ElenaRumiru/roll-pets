@@ -3,7 +3,7 @@ import { PETS } from '../data/pets';
 import { getGradeForChance, getDefaultQuestState } from '../core/config';
 
 const SAVE_KEY = 'pets_go_lite_save';
-const CURRENT_VERSION = 13;
+const CURRENT_VERSION = 14;
 
 function getDefaults(): SaveData {
     return {
@@ -13,7 +13,7 @@ function getDefaults(): SaveData {
         coins: 0,
         collection: [],
         totalRolls: 0,
-        settings: { music: true, sfx: true, volume: 0.3, sfxVolume: 0.2 },
+        settings: { music: true, sfx: true, volume: 0.3, sfxVolume: 0.2, language: 'en' },
         buffs: { lucky: 0, super: 0, epic: 0, autorollEnabled: false, autorollRunning: false, queueIndex: 0 },
         rollLog: [],
         nickname: '',
@@ -96,6 +96,10 @@ function migrate(data: SaveData): SaveData {
     if (data.version === 12) {
         data.shop = { lastRefreshDate: '', offers: [] };
         data.version = 13;
+    }
+    if (data.version === 13) {
+        data.settings.language = data.settings.language ?? 'en';
+        data.version = 14;
     }
     return data;
 }

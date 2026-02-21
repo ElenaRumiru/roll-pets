@@ -1,7 +1,7 @@
 import { Grade, GradeConfig, QuestState } from '../types';
 
-export const GAME_WIDTH = 836;
-export const GAME_HEIGHT = 470;
+export const GAME_WIDTH = 1031;
+export const GAME_HEIGHT = 580;
 
 export const XP_BASE = 100;
 export const XP_MULTIPLIER = 1.15;
@@ -119,25 +119,25 @@ export const UI = {
     PANEL_BG: 0x1e1e32,
     PANEL_BG_ALPHA: 0.85,
     PANEL_BORDER: 0x3a3a5c,
-    FONT_MAIN: 'Arial Black',
-    FONT_BODY: 'Arial',
-    STROKE_THICK: 4,
-    STROKE_MEDIUM: 3,
+    FONT_MAIN: 'Roboto Black',
+    FONT_BODY: 'Roboto',
+    STROKE_THICK: 5,
+    STROKE_MEDIUM: 4,
     STROKE_THIN: 2,
-    CORNER_RADIUS: 12,
+    CORNER_RADIUS: 15,
 };
 
 // Pedestal positions (match bg_1.jpg layout)
 export const PEDESTAL = {
-    first:  { x: 421, y: 233, scale: 0.55 },
-    second: { x: 268, y: 270, scale: 0.45 },
-    third:  { x: 570, y: 291, scale: 0.40 },
+    first:  { x: 519, y: 288, scale: 0.68 },
+    second: { x: 330, y: 333, scale: 0.55 },
+    third:  { x: 703, y: 359, scale: 0.49 },
 };
 
 export const PET_OFFSET_Y = 0;
 
-export const ROLL_BTN = { x: 395, y: 435, width: 340, height: 74 };
-export const AUTOROLL_TOGGLE = { width: 94, height: 58, gap: 6 };
+export const ROLL_BTN = { x: 487, y: 537, width: 419, height: 91 };
+export const AUTOROLL_TOGGLE = { width: 116, height: 72, gap: 7 };
 
 export const BUFF_CONFIG = {
     lucky:    { multiplier: 2, rollsPerAd: 1, color: 0x27ae60, colorHex: '#27ae60' },
@@ -147,12 +147,12 @@ export const BUFF_CONFIG = {
     offer:    { duration: 15_000, cooldown: 5_000 },
 } as const;
 
-export const LEFT_PANEL = { x: 12, w: 155 };
+export const LEFT_PANEL = { x: 15, w: 191 };
 
 export const BONUS_PANEL = {
-    x: GAME_WIDTH - 143 - 12, y: 0,
-    w: 143, iconSize: 56, padding: 5,
-    gap: 7,
+    x: GAME_WIDTH - 176 - 15, y: 0,
+    w: 176, iconSize: 69, padding: 6,
+    gap: 9,
 };
 
 export const QUEST_CONFIG = {
@@ -180,7 +180,7 @@ export const AUTOROLL_INTERVAL = 500;
 
 export const ONBOARDING = {
     arrowY: ROLL_BTN.y - ROLL_BTN.height / 2 - 50,
-    bobDistance: 18,
+    bobDistance: 22,
     bobDuration: 600,
     idleTimeout: 10_000,
 };
@@ -212,7 +212,7 @@ export const LEVELUP_CONFIG = {
     coinAcceptSeconds: 10,
 };
 
-export const COIN_HUD = { w: 83, h: 29, iconSize: 31, gap: 8 };
+export const COIN_HUD = { w: 102, h: 36, iconSize: 38, gap: 10 };
 
 /** Convert pet chance (X from "1 in X") to display string */
 export function getOddsString(chance: number): string {

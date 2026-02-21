@@ -1,9 +1,7 @@
 import { Scene, GameObjects, Tweens } from 'phaser';
 
 interface FeedbackOptions {
-    hoverScale?: number;
     clickScale?: number;
-    hoverEffect?: boolean;
     clickEffect?: boolean;
     scaleTarget?: GameObjects.GameObject & { scaleX: number; scaleY: number; x: number; y: number };
     pivot?: { x: number; y: number };
@@ -16,9 +14,7 @@ export function addButtonFeedback(
     target: Scalable,
     opts?: FeedbackOptions,
 ): void {
-    const hover = opts?.hoverScale ?? 1.025;
     const click = opts?.clickScale ?? 0.95;
-    const doHover = opts?.hoverEffect !== false;
     const doClick = opts?.clickEffect !== false;
     const visual = opts?.scaleTarget ?? target;
     const pivot = opts?.pivot;
@@ -51,13 +47,9 @@ export function addButtonFeedback(
         });
     };
 
-    if (doHover) {
-        target.on('pointerover', () => scaleTo(hover, 80));
-        target.on('pointerout', () => scaleTo(1, 80));
-    }
     if (doClick) {
         target.on('pointerdown', () => scaleTo(click, 60));
-        target.on('pointerup', () => scaleTo(doHover ? hover : 1, 80));
+        target.on('pointerup', () => scaleTo(1, 80));
     }
 
     target.once('destroy', () => {

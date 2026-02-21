@@ -7,11 +7,11 @@ import { Button } from '../ui/components/Button';
 import { t } from '../data/locales';
 import { Grade } from '../types';
 
-const GRID_TOP = 134;
+const GRID_TOP = 165;
 const GRID_H = GAME_HEIGHT - GRID_TOP;
 const COLS = 8;
-const CARD_SX = 100;
-const CARD_SY = 112;
+const CARD_SX = 123;
+const CARD_SY = 138;
 
 export class CollectionScene extends Scene {
     private gridContainer!: Phaser.GameObjects.Container;
@@ -52,39 +52,39 @@ export class CollectionScene extends Scene {
         hdr.lineStyle(1, UI.PANEL_BORDER, 0.3);
         hdr.lineBetween(0, GRID_TOP, GAME_WIDTH, GRID_TOP);
 
-        new Button(this, 55, 25, 90, 32, `← ${t('collection_back')}`, 0x444455, () => {
+        new Button(this, 68, 31, 111, 39, `← ${t('collection_back')}`, 0x444455, () => {
             this.save.clearNewPets();
             this.scene.start('MainScene');
         });
 
-        this.add.text(GAME_WIDTH / 2, 16, t('collection_title'), {
+        this.add.text(GAME_WIDTH / 2, 20, t('collection_title'), {
             fontFamily: UI.FONT_MAIN,
-            fontSize: '24px',
+            fontSize: '30px',
             color: '#ffffff',
             stroke: '#000000',
             strokeThickness: UI.STROKE_MEDIUM,
         }).setOrigin(0.5);
 
-        this.add.text(GAME_WIDTH / 2, 42, t('collection_count', {
+        this.add.text(GAME_WIDTH / 2, 52, t('collection_count', {
             current: String(this.collection.size),
             total: String(TOTAL_PETS),
         }), {
             fontFamily: UI.FONT_MAIN,
-            fontSize: '13px',
+            fontSize: '16px',
             color: '#aaaaaa',
         }).setOrigin(0.5);
     }
 
     private createFilters(): void {
         const filters: (Grade | 'all')[] = ['all', ...GRADE_ORDER];
-        const btnW = 68;
-        const gap = 4;
+        const btnW = 84;
+        const gap = 5;
 
         // Row 1: All + first 6 grades (button + count under each)
         const row1 = filters.slice(0, 7);
         const row1W = row1.length * btnW + (row1.length - 1) * gap;
         const row1X = GAME_WIDTH / 2 - row1W / 2 + btnW / 2;
-        const y1 = 64;
+        const y1 = 79;
 
         row1.forEach((f, i) => {
             const x = row1X + i * (btnW + gap);
@@ -101,7 +101,7 @@ export class CollectionScene extends Scene {
         if (row2.length > 0) {
             const row2W = row2.length * btnW + (row2.length - 1) * gap;
             const row2X = GAME_WIDTH / 2 - row2W / 2 + btnW / 2;
-            const y2 = 106;
+            const y2 = 131;
 
             row2.forEach((f, i) => {
                 const x = row2X + i * (btnW + gap);
@@ -118,13 +118,13 @@ export class CollectionScene extends Scene {
     private addFilterCount(f: Grade | 'all', x: number, y: number): void {
         if (f === 'all') {
             this.add.text(x, y, `${this.collection.size}/${TOTAL_PETS}`, {
-                fontFamily: UI.FONT_MAIN, fontSize: '9px', color: '#aaaaaa',
+                fontFamily: UI.FONT_MAIN, fontSize: '11px', color: '#aaaaaa',
             }).setOrigin(0.5, 0);
         } else {
             const total = getPetsByGrade(f).length;
             const have = getPetsByGrade(f).filter(p => this.collection.has(p.id)).length;
             this.add.text(x, y, `${have}/${total}`, {
-                fontFamily: UI.FONT_MAIN, fontSize: '9px', color: GRADE[f].colorHex,
+                fontFamily: UI.FONT_MAIN, fontSize: '11px', color: GRADE[f].colorHex,
             }).setOrigin(0.5, 0);
         }
     }
@@ -148,14 +148,14 @@ export class CollectionScene extends Scene {
             const col = i % COLS;
             const row = Math.floor(i / COLS);
             const x = startX + col * CARD_SX;
-            const y = GRID_TOP + 60 + row * CARD_SY;
+            const y = GRID_TOP + 74 + row * CARD_SY;
             const found = this.collection.has(pet.id);
             const card = new PetCard(this, x, y, pet, found, found && this.newPetIds.has(pet.id));
             this.gridContainer.add(card);
         });
 
         const rows = Math.ceil(pets.length / COLS);
-        const contentH = 60 + rows * CARD_SY;
+        const contentH = 74 + rows * CARD_SY;
         this.maxScroll = Math.max(0, contentH - GRID_H);
         this.gridContainer.y = -this.scrollOffset;
     }

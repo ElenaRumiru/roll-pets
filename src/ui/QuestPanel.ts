@@ -5,16 +5,16 @@ import { t } from '../data/locales';
 import { addButtonFeedback } from './components/buttonFeedback';
 
 const PW = QUEST_PANEL.w;              // 143
-const PAD = 6;
-const HEADER_H = 28;
-const TEXT_H = 14;
-const GAP = 3;
-const BAR_W = 78;
-const BAR_H = 24;
+const PAD = 7;
+const HEADER_H = 35;
+const TEXT_H = 17;
+const GAP = 4;
+const BAR_W = 96;
+const BAR_H = 30;
 const BAR_R = BAR_H / 2;
 const ROW_H = TEXT_H + GAP + BAR_H;    // 41
-const ROW_GAP = 6;
-const RADIUS = 10;
+const ROW_GAP = 7;
+const RADIUS = 12;
 const BTN_SHADOW = 1.5;
 const DIAMOND = '\u25C6';
 
@@ -51,7 +51,7 @@ export class QuestPanel extends GameObjects.Container {
 
         // Header
         const header = scene.add.text(PW / 2, PAD + HEADER_H / 2, t('quest_title'), {
-            fontFamily: UI.FONT_MAIN, fontSize: '16px', color: '#ffffff',
+            fontFamily: UI.FONT_MAIN, fontSize: '20px', color: '#ffffff',
             stroke: '#000000', strokeThickness: UI.STROKE_MEDIUM,
         }).setOrigin(0.5);
         this.add(header);
@@ -67,7 +67,7 @@ export class QuestPanel extends GameObjects.Container {
     private createRow(scene: Scene, y: number, type: 'roll' | 'grade'): QuestRow {
         // Quest text
         const label = scene.add.text(PAD + 2, y + TEXT_H / 2, '', {
-            fontFamily: UI.FONT_MAIN, fontSize: '9px', color: '#ffffff',
+            fontFamily: UI.FONT_MAIN, fontSize: '11px', color: '#ffffff',
             stroke: '#000000', strokeThickness: 1,
         }).setOrigin(0, 0.5);
         this.add(label);
@@ -89,7 +89,7 @@ export class QuestPanel extends GameObjects.Container {
 
         // Progress text (centered on bar)
         const barText = scene.add.text(barX, barY, '', {
-            fontFamily: UI.FONT_MAIN, fontSize: '9px', color: '#ffffff',
+            fontFamily: UI.FONT_MAIN, fontSize: '11px', color: '#ffffff',
             stroke: '#000000', strokeThickness: 1,
         }).setOrigin(0.5);
         this.add(barText);
@@ -103,7 +103,7 @@ export class QuestPanel extends GameObjects.Container {
         claimWrap.add(claimBg);
 
         const claimText = scene.add.text(0, -Math.floor(BTN_SHADOW / 2), t('quest_claim'), {
-            fontFamily: UI.FONT_MAIN, fontSize: '10px', color: '#ffffff',
+            fontFamily: UI.FONT_MAIN, fontSize: '12px', color: '#ffffff',
             stroke: '#000000', strokeThickness: 1,
         }).setOrigin(0.5);
         claimWrap.add(claimText);

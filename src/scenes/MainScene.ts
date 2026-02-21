@@ -63,7 +63,7 @@ export class MainScene extends Scene {
                 this.topBar.setNickname(name);
                 this.leaderboard.updatePlayerEntry(name, this.getPlayerBestOdds(), 30);
                 if (this.manager.save.getData().totalRolls === 0) this.showArrowHint();
-            });
+            }, this.input);
         } else if (this.manager.save.getData().totalRolls === 0) {
             this.showArrowHint();
         }
@@ -115,7 +115,7 @@ export class MainScene extends Scene {
 
         // Position quest panel + bonus panel aligned with leaderboard
         const COMBINED_GAP = 6;
-        const leaderboardY = Math.round((GAME_HEIGHT - 165) / 2) - 18 - 20; // shifted 20px up for shop button
+        const leaderboardY = Math.round((GAME_HEIGHT - 204) / 2) - 22 - 25; // shifted 25px up for shop button
         this.questPanel.y = leaderboardY;
         this.bonusPanel.y = leaderboardY + this.questPanel.panelHeight + COMBINED_GAP;
 
@@ -180,6 +180,12 @@ export class MainScene extends Scene {
 
         // Initial UI update
         this.refreshUI();
+
+        // Re-open settings if language was just changed
+        if (this.registry.get('openSettings')) {
+            this.registry.remove('openSettings');
+            this.settingsPanel.show();
+        }
     }
 
     update(_time: number, delta: number): void {
@@ -399,14 +405,14 @@ export class MainScene extends Scene {
         bg.setInteractive();
         container.add(bg);
 
-        const title = this.add.text(GAME_WIDTH / 2, GAME_HEIGHT / 2 - 20, t('paused'), {
-            fontFamily: UI.FONT_MAIN, fontSize: '48px', color: '#ffffff',
+        const title = this.add.text(GAME_WIDTH / 2, GAME_HEIGHT / 2 - 25, t('paused'), {
+            fontFamily: UI.FONT_MAIN, fontSize: '59px', color: '#ffffff',
             stroke: '#000000', strokeThickness: UI.STROKE_THICK,
         }).setOrigin(0.5);
         container.add(title);
 
-        const hint = this.add.text(GAME_WIDTH / 2, GAME_HEIGHT / 2 + 30, t('press_esc'), {
-            fontFamily: UI.FONT_BODY, fontSize: '16px', color: '#aaaaaa',
+        const hint = this.add.text(GAME_WIDTH / 2, GAME_HEIGHT / 2 + 37, t('press_esc'), {
+            fontFamily: UI.FONT_BODY, fontSize: '20px', color: '#aaaaaa',
         }).setOrigin(0.5);
         container.add(hint);
 

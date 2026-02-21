@@ -6,12 +6,12 @@ import { Button } from '../ui/components/Button';
 import { t } from '../data/locales';
 import { ShopOffer, PetDef } from '../types';
 
-const HEADER_H = 60;
-const CARD_W = 114;
-const CARD_H = 130;
-const CARD_GAP = 14;
-const CARDS_Y = 215;
-const BUY_BTN_Y = CARDS_Y + CARD_H / 2 + 28;
+const HEADER_H = 74;
+const CARD_W = 141;
+const CARD_H = 160;
+const CARD_GAP = 17;
+const CARDS_Y = 265;
+const BUY_BTN_Y = CARDS_Y + CARD_H / 2 + 35;
 
 export class ShopScene extends Scene {
     private manager!: GameManager;
@@ -31,9 +31,9 @@ export class ShopScene extends Scene {
         this.createHeader();
         this.createTimer();
         this.emptyText = this.add.text(GAME_WIDTH / 2, CARDS_Y, t('shop_empty'), {
-            fontFamily: UI.FONT_MAIN, fontSize: '16px', color: '#666688', align: 'center',
+            fontFamily: UI.FONT_MAIN, fontSize: '20px', color: '#666688', align: 'center',
         }).setOrigin(0.5).setVisible(false);
-        new Button(this, GAME_WIDTH / 2, GAME_HEIGHT - 30, 180, 42,
+        new Button(this, GAME_WIDTH / 2, GAME_HEIGHT - 37, 222, 52,
             `\u25B6 ${t('shop_refresh')}`, 0x7b42c9, () => this.onRefresh());
         this.buildCards();
     }
@@ -44,23 +44,23 @@ export class ShopScene extends Scene {
         hdr.fillRect(0, 0, GAME_WIDTH, HEADER_H);
         hdr.lineStyle(1, UI.PANEL_BORDER, 0.3);
         hdr.lineBetween(0, HEADER_H, GAME_WIDTH, HEADER_H);
-        new Button(this, 55, 30, 90, 32, `\u2190 ${t('shop_back')}`, 0x444455, () => {
+        new Button(this, 68, 37, 111, 39, `\u2190 ${t('shop_back')}`, 0x444455, () => {
             this.scene.start('MainScene');
         });
-        this.add.text(GAME_WIDTH / 2, 30, t('shop_title'), {
-            fontFamily: UI.FONT_MAIN, fontSize: '24px', color: '#ffffff',
+        this.add.text(GAME_WIDTH / 2, 37, t('shop_title'), {
+            fontFamily: UI.FONT_MAIN, fontSize: '30px', color: '#ffffff',
             stroke: '#000000', strokeThickness: UI.STROKE_MEDIUM,
         }).setOrigin(0.5);
-        this.add.image(GAME_WIDTH - 100, 30, 'ui_coin_md').setDisplaySize(28, 28);
-        this.coinText = this.add.text(GAME_WIDTH - 82, 30, this.formatCoins(this.manager.progression.coins), {
-            fontFamily: UI.FONT_MAIN, fontSize: '14px', color: '#ffffff',
+        this.add.image(GAME_WIDTH - 123, 37, 'ui_coin_md').setDisplaySize(35, 35);
+        this.coinText = this.add.text(GAME_WIDTH - 101, 37, this.formatCoins(this.manager.progression.coins), {
+            fontFamily: UI.FONT_MAIN, fontSize: '17px', color: '#ffffff',
             stroke: '#000000', strokeThickness: UI.STROKE_THIN,
         }).setOrigin(0, 0.5);
     }
 
     private createTimer(): void {
-        this.timerText = this.add.text(GAME_WIDTH / 2, HEADER_H + 26, '', {
-            fontFamily: UI.FONT_BODY, fontSize: '13px', color: '#aaaaaa',
+        this.timerText = this.add.text(GAME_WIDTH / 2, HEADER_H + 32, '', {
+            fontFamily: UI.FONT_BODY, fontSize: '16px', color: '#aaaaaa',
         }).setOrigin(0.5);
         this.updateTimerText();
     }
@@ -82,7 +82,7 @@ export class ShopScene extends Scene {
 
     private createOfferCard(x: number, offer: ShopOffer, pet: PetDef): void {
         const cfg = GRADE[getGradeForChance(pet.chance)];
-        const r = 12;
+        const r = 15;
         const container = this.add.container(x, CARDS_Y);
 
         // Card bg
@@ -97,19 +97,19 @@ export class ShopScene extends Scene {
         container.add(bg);
 
         // Pet image
-        const img = this.add.image(0, -16, pet.imageKey).setScale(0.38);
+        const img = this.add.image(0, -20, pet.imageKey).setScale(0.47);
         container.add(img);
 
         // Name (native crisp font)
-        const name = this.add.text(0, CARD_H / 2 - 30, pet.name, {
-            fontFamily: UI.FONT_MAIN, fontSize: '14px', color: '#ffffff',
+        const name = this.add.text(0, CARD_H / 2 - 37, t('pet_' + pet.id), {
+            fontFamily: UI.FONT_MAIN, fontSize: '17px', color: '#ffffff',
             stroke: '#000000', strokeThickness: 2,
         }).setOrigin(0.5);
         container.add(name);
 
         // Odds
-        const odds = this.add.text(0, CARD_H / 2 - 14, getOddsString(pet.chance), {
-            fontFamily: UI.FONT_MAIN, fontSize: '11px', color: cfg.colorHex,
+        const odds = this.add.text(0, CARD_H / 2 - 17, getOddsString(pet.chance), {
+            fontFamily: UI.FONT_MAIN, fontSize: '14px', color: cfg.colorHex,
         }).setOrigin(0.5);
         container.add(odds);
 
@@ -118,8 +118,8 @@ export class ShopScene extends Scene {
         // Buy button
         const canAfford = this.manager.progression.coins >= offer.price;
         const btnColor = canAfford ? 0x27ae60 : 0x555566;
-        const btnW = 120;
-        const btnH = 38;
+        const btnW = 148;
+        const btnH = 47;
         const priceStr = this.formatCoins(offer.price);
         const btn = new Button(this, x, BUY_BTN_Y, btnW, btnH,
             priceStr, btnColor, () => this.onBuy(offer.petId, canAfford));
@@ -154,8 +154,8 @@ export class ShopScene extends Scene {
     }
 
     private showToast(message: string): void {
-        const toast = this.add.text(GAME_WIDTH / 2, GAME_HEIGHT / 2 + 60, message, {
-            fontFamily: UI.FONT_MAIN, fontSize: '16px', color: '#ff4444',
+        const toast = this.add.text(GAME_WIDTH / 2, GAME_HEIGHT / 2 + 74, message, {
+            fontFamily: UI.FONT_MAIN, fontSize: '20px', color: '#ff4444',
             stroke: '#000000', strokeThickness: UI.STROKE_MEDIUM,
         }).setOrigin(0.5).setDepth(10);
         this.tweens.add({

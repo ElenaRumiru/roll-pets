@@ -3,7 +3,7 @@ import { UI, LEFT_PANEL, GAME_HEIGHT, GRADE, getGradeForChance } from '../core/c
 import { t } from '../data/locales';
 
 const PANEL_W = LEFT_PANEL.w;
-const PANEL_H = 165;
+const PANEL_H = 204;
 const RADIUS = 10;
 
 const FAKE_ENTRIES = [
@@ -20,60 +20,60 @@ export class Leaderboard extends GameObjects.Container {
     private playerRankText: GameObjects.Text;
 
     constructor(scene: Scene) {
-        super(scene, LEFT_PANEL.x, Math.round((GAME_HEIGHT - PANEL_H) / 2) - 18);
+        super(scene, LEFT_PANEL.x, Math.round((GAME_HEIGHT - PANEL_H) / 2) - 22);
 
         const bg = scene.add.graphics();
         bg.fillStyle(0x000000, 0.75);
         bg.fillRoundedRect(0, 0, PANEL_W, PANEL_H, RADIUS);
         this.add(bg);
 
-        const title = scene.add.text(PANEL_W / 2, 10, t('leaderboard_title'), {
+        const title = scene.add.text(PANEL_W / 2, 12, t('leaderboard_title'), {
             fontFamily: UI.FONT_MAIN,
-            fontSize: '16px',
+            fontSize: '20px',
             color: '#ffffff',
             stroke: '#000000',
             strokeThickness: UI.STROKE_MEDIUM,
         }).setOrigin(0.5, 0);
         this.add(title);
 
-        const headerY = 34;
-        const hdr = scene.add.text(8, headerY, `#  ${t('leaderboard_player')}`, {
-            fontFamily: UI.FONT_MAIN, fontSize: '9px', color: '#ffffff',
+        const headerY = 42;
+        const hdr = scene.add.text(10, headerY, `#  ${t('leaderboard_player')}`, {
+            fontFamily: UI.FONT_MAIN, fontSize: '11px', color: '#ffffff',
             stroke: '#000000', strokeThickness: 1,
         });
         this.add(hdr);
-        const hdr2 = scene.add.text(PANEL_W - 8, headerY, t('leaderboard_grade'), {
-            fontFamily: UI.FONT_MAIN, fontSize: '9px', color: '#ffffff',
+        const hdr2 = scene.add.text(PANEL_W - 10, headerY, t('leaderboard_grade'), {
+            fontFamily: UI.FONT_MAIN, fontSize: '11px', color: '#ffffff',
             stroke: '#000000', strokeThickness: 1,
         }).setOrigin(1, 0);
         this.add(hdr2);
 
         const headerLine = scene.add.graphics();
         headerLine.lineStyle(1, 0xaaaaaa, 0.5);
-        headerLine.lineBetween(8, headerY + 16, PANEL_W - 8, headerY + 16);
+        headerLine.lineBetween(10, headerY + 20, PANEL_W - 10, headerY + 20);
         this.add(headerLine);
 
-        const rowStartY = headerY + 20;
-        const rowH = 16;
+        const rowStartY = headerY + 25;
+        const rowH = 20;
         FAKE_ENTRIES.forEach((entry, i) => {
             const y = rowStartY + i * rowH;
             const grade = getGradeForChance(entry.chance);
             const cfg = GRADE[grade];
 
-            const rank = scene.add.text(8, y, `${i + 1}.`, {
-                fontFamily: UI.FONT_MAIN, fontSize: '10px', color: '#ffffff',
+            const rank = scene.add.text(10, y, `${i + 1}.`, {
+                fontFamily: UI.FONT_MAIN, fontSize: '12px', color: '#ffffff',
                 stroke: '#000000', strokeThickness: 1,
             });
             this.add(rank);
 
-            const name = scene.add.text(24, y, entry.name, {
-                fontFamily: UI.FONT_MAIN, fontSize: '10px', color: '#ffffff',
+            const name = scene.add.text(30, y, entry.name, {
+                fontFamily: UI.FONT_MAIN, fontSize: '12px', color: '#ffffff',
                 stroke: '#000000', strokeThickness: 1,
             });
             this.add(name);
 
-            const odds = scene.add.text(PANEL_W - 8, y, entry.odds, {
-                fontFamily: UI.FONT_MAIN, fontSize: '10px', color: cfg.colorHex,
+            const odds = scene.add.text(PANEL_W - 10, y, entry.odds, {
+                fontFamily: UI.FONT_MAIN, fontSize: '12px', color: cfg.colorHex,
                 stroke: cfg.outlineHex, strokeThickness: cfg.strokeThickness || 1,
             }).setOrigin(1, 0);
             this.add(odds);
@@ -82,29 +82,29 @@ export class Leaderboard extends GameObjects.Container {
         const sepY = rowStartY + FAKE_ENTRIES.length * rowH + 3;
         const sep = scene.add.graphics();
         sep.lineStyle(1, 0x888888, 0.8);
-        sep.lineBetween(8, sepY, PANEL_W - 8, sepY);
+        sep.lineBetween(10, sepY, PANEL_W - 10, sepY);
         this.add(sep);
 
         const playerY = sepY + 5;
         const playerBg = scene.add.graphics();
         playerBg.fillStyle(0xffc107, 0.15);
-        playerBg.fillRoundedRect(4, playerY - 2, PANEL_W - 8, 18, 4);
+        playerBg.fillRoundedRect(5, playerY - 2, PANEL_W - 10, 22, 5);
         this.add(playerBg);
 
-        this.playerRankText = scene.add.text(8, playerY, '30.', {
-            fontFamily: UI.FONT_MAIN, fontSize: '10px', color: '#ffc107',
+        this.playerRankText = scene.add.text(10, playerY, '30.', {
+            fontFamily: UI.FONT_MAIN, fontSize: '12px', color: '#ffc107',
             stroke: '#000000', strokeThickness: 1,
         });
         this.add(this.playerRankText);
 
-        this.playerNameText = scene.add.text(28, playerY, '', {
-            fontFamily: UI.FONT_MAIN, fontSize: '10px', color: '#ffc107',
+        this.playerNameText = scene.add.text(35, playerY, '', {
+            fontFamily: UI.FONT_MAIN, fontSize: '12px', color: '#ffc107',
             stroke: '#000000', strokeThickness: 1,
         });
         this.add(this.playerNameText);
 
-        this.playerOddsText = scene.add.text(PANEL_W - 8, playerY, '1/500', {
-            fontFamily: UI.FONT_MAIN, fontSize: '10px', color: '#ffc107',
+        this.playerOddsText = scene.add.text(PANEL_W - 10, playerY, '1/500', {
+            fontFamily: UI.FONT_MAIN, fontSize: '12px', color: '#ffc107',
             stroke: '#000000', strokeThickness: 1,
         }).setOrigin(1, 0);
         this.add(this.playerOddsText);

@@ -11,10 +11,10 @@ interface Badge {
     tooltipKey: string;
 }
 
-const BADGE_W = 68;
-const BADGE_H = 20;
-const BADGE_R = 5;
-const BADGE_GAP = 4;
+const BADGE_W = 84;
+const BADGE_H = 25;
+const BADGE_R = 6;
+const BADGE_GAP = 5;
 
 const TOOLTIP_KEYS: Record<string, string> = {
     lucky: 'tip_lucky',
@@ -46,12 +46,12 @@ export class BuffBadges extends GameObjects.Container {
         this.tooltipBg = scene.add.graphics().setDepth(200);
         this.tooltipText = scene.add.text(0, 0, '', {
             fontFamily: UI.FONT_MAIN,
-            fontSize: '11px',
+            fontSize: '14px',
             color: '#ffffff',
             stroke: '#000000',
             strokeThickness: UI.STROKE_THIN,
             align: 'center',
-            wordWrap: { width: 130 },
+            wordWrap: { width: 160 },
         }).setOrigin(0.5).setDepth(200);
         this.tooltipBg.setVisible(false);
         this.tooltipText.setVisible(false);
@@ -71,7 +71,7 @@ export class BuffBadges extends GameObjects.Container {
 
         const txt = scene.add.text(0, 0, '', {
             fontFamily: UI.FONT_MAIN,
-            fontSize: '11px',
+            fontSize: '14px',
             color: '#ffffff',
             stroke: '#000000',
             strokeThickness: UI.STROKE_THIN,
@@ -100,13 +100,13 @@ export class BuffBadges extends GameObjects.Container {
     private showTooltip(badge: GameObjects.Container, localeKey: string): void {
         const text = t(localeKey);
         this.tooltipText.setText(text);
-        const padX = 14;
-        const padY = 12;
+        const padX = 17;
+        const padY = 15;
         const tw = this.tooltipText.width + padX * 2;
         const th = this.tooltipText.height + padY * 2;
         // Position above the badge
         const worldX = this.x + badge.x;
-        const worldY = this.y - BADGE_H - 35;
+        const worldY = this.y - BADGE_H - 43;
         this.tooltipText.setPosition(worldX, worldY);
         this.tooltipBg.clear();
         this.tooltipBg.fillStyle(0x000000, 0.85);

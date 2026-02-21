@@ -57,7 +57,7 @@ export interface SaveData {
     coins: number;
     collection: string[];
     totalRolls: number;
-    settings: { music: boolean; sfx: boolean; volume: number; sfxVolume: number };
+    settings: { music: boolean; sfx: boolean; volume: number; sfxVolume: number; language: string };
     buffs: BuffState;
     rollLog: RollLogEntry[];
     nickname: string;
