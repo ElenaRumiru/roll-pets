@@ -45,15 +45,15 @@ export class RightPanel extends GameObjects.Container {
         this.rollWrap.add(this.rollBg);
 
         this.rollLabel = scene.add.text(0, -5, t('roll_button'), {
-            fontFamily: UI.FONT_MAIN,
-            fontSize: '35px',
+            fontFamily: UI.FONT_STROKE,
+            fontSize: '30px',
             color: '#ffffff',
             stroke: '#000000',
             strokeThickness: UI.STROKE_THICK,
         }).setOrigin(0.5);
         this.rollWrap.add(this.rollLabel);
 
-        this.spaceHint = scene.add.text(0, 44, 'SPACE', {
+        this.spaceHint = scene.add.text(0, 40, 'SPACE', {
             fontFamily: UI.FONT_BODY, fontSize: '12px', color: '#666666',
         }).setOrigin(0.5);
         this.rollWrap.add(this.spaceHint);

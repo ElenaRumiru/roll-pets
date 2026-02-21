@@ -103,7 +103,7 @@ src/
 
 **Localization:** All user-facing text is stored in `data/locales/en.ts` as key-value pairs. Scenes use `t('roll_button')` instead of `'ROLL!'`. To add a language: copy `en.ts`, translate values (AI-ready), register in `index.ts`.
 
-**Fonts:** Bundled Roboto `.woff2` in `public/assets/fonts/`. Two weights: **Roboto Black** (`UI.FONT_MAIN`) for headings/buttons and **Roboto Medium** (`UI.FONT_BODY`) for body text. Loaded via `@font-face` in `public/style.css` with `font-display: block`. Game startup awaits `document.fonts.ready` before creating the Phaser instance.
+**Fonts:** Bundled Rubik variable `.woff2` in `public/assets/fonts/Rubik.woff2` (~115 KB, single file, all weights). Three font constants via `@font-face` in `public/style.css`: **Rubik Black 900** (`UI.FONT_MAIN`) for headings without stroke, **Rubik Medium 500** (`UI.FONT_STROKE`) for text with outline/stroke, **Rubik Light 300** (`UI.FONT_BODY`) for body text. `font-display: block` prevents FOUT. Game startup awaits `document.fonts.ready` before creating the Phaser instance.
 
 **Resolution:** 1031x580 (Poki-recommended 16:9). Phaser Scale.FIT fills the canvas on all devices.
 

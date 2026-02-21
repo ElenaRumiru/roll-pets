@@ -91,7 +91,7 @@ export const en: Record<string, string> = {
     'collection_button': 'Collections',
 
     // Leaderboard & Nickname
-    'leaderboard_title': 'TOP Players',
+    'leaderboard_title': 'TOP',
     'nickname_prompt': 'Enter your name',
     'nickname_ok': 'OK',
     'bonus_get': 'GET',
@@ -100,7 +100,7 @@ export const en: Record<string, string> = {
     'buff_free': 'FREE',
     'default_nickname': 'Player',
     'leaderboard_player': 'PLAYER',
-    'leaderboard_grade': 'GRADE',
+    'leaderboard_grade': 'RARITY',
 
     // Pause
     'paused': 'PAUSED',

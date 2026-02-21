@@ -60,7 +60,6 @@ export class MainScene extends Scene {
         if (!nickname) {
             new NicknamePrompt((name: string) => {
                 this.manager.save.setNickname(name);
-                this.topBar.setNickname(name);
                 this.leaderboard.updatePlayerEntry(name, this.getPlayerBestOdds(), 30);
                 if (this.manager.save.getData().totalRolls === 0) this.showArrowHint();
             }, this.input);
@@ -82,8 +81,6 @@ export class MainScene extends Scene {
             this.manager.saveState();
             this.scene.start('ProgressionScene');
         });
-        this.topBar.setNickname(this.manager.save.getNickname() || t('default_nickname'));
-
         this.leaderboard = new Leaderboard(this);
         this.centerStage = new CenterStage(this);
         this.levelUpOverlay = new LevelUpOverlay(this, this.centerStage.getOverlay());
@@ -349,7 +346,6 @@ export class MainScene extends Scene {
     }
 
     private onNicknameChanged(name: string): void {
-        this.topBar.setNickname(name);
         this.leaderboard.updatePlayerEntry(name, this.getPlayerBestOdds(), 30);
     }
 
@@ -406,7 +402,7 @@ export class MainScene extends Scene {
         container.add(bg);
 
         const title = this.add.text(GAME_WIDTH / 2, GAME_HEIGHT / 2 - 25, t('paused'), {
-            fontFamily: UI.FONT_MAIN, fontSize: '59px', color: '#ffffff',
+            fontFamily: UI.FONT_STROKE, fontSize: '59px', color: '#ffffff',
             stroke: '#000000', strokeThickness: UI.STROKE_THICK,
         }).setOrigin(0.5);
         container.add(title);

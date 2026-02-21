@@ -4,11 +4,10 @@ import { ProgressBar } from './components/ProgressBar';
 import { t } from '../data/locales';
 
 const PANEL_W = LEFT_PANEL.w;
-const PANEL_H = 64;
+const PANEL_H = 42;
 const RADIUS = 10;
 
 export class TopBar extends GameObjects.Container {
-    private nicknameText: GameObjects.Text;
     private levelText: GameObjects.Text;
     private xpBar: ProgressBar;
     private xpLabel: GameObjects.Text;
@@ -32,19 +31,9 @@ export class TopBar extends GameObjects.Container {
             this.on('pointerdown', onClick);
         }
 
-        // Nickname (top row, prominent)
-        this.nicknameText = scene.add.text(12, 7, '', {
-            fontFamily: UI.FONT_MAIN,
-            fontSize: '16px',
-            color: '#ffffff',
-            stroke: '#000000',
-            strokeThickness: UI.STROKE_MEDIUM,
-        });
-        this.add(this.nicknameText);
-
-        // Level text (bottom-left)
-        this.levelText = scene.add.text(12, 35, '', {
-            fontFamily: UI.FONT_MAIN,
+        // Level text (top row)
+        this.levelText = scene.add.text(12, 12, '', {
+            fontFamily: UI.FONT_STROKE,
             fontSize: '14px',
             color: '#ffffff',
             stroke: '#000000',
@@ -52,15 +41,15 @@ export class TopBar extends GameObjects.Container {
         });
         this.add(this.levelText);
 
-        // XP bar (bottom-right area)
+        // XP bar
         const barX = 67;
         const barW = 111;
-        this.xpBar = new ProgressBar(scene, barX, 44, barW, 17, 0x222244, 0x4caf50);
+        this.xpBar = new ProgressBar(scene, barX, 30, barW, 17, 0x222244, 0x4caf50);
         this.add(this.xpBar);
 
         // XP numbers overlay on bar
-        this.xpLabel = scene.add.text(barX + barW / 2, 44, '', {
-            fontFamily: UI.FONT_MAIN,
+        this.xpLabel = scene.add.text(barX + barW / 2, 30, '', {
+            fontFamily: UI.FONT_STROKE,
             fontSize: '11px',
             color: '#ffffff',
             stroke: '#000000',
@@ -69,10 +58,6 @@ export class TopBar extends GameObjects.Container {
         this.add(this.xpLabel);
 
         scene.add.existing(this);
-    }
-
-    setNickname(name: string): void {
-        this.nicknameText.setText(name);
     }
 
     updateDisplay(level: number, xpProgress: number, xp: number, xpNeeded: number): void {

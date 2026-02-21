@@ -3,10 +3,10 @@ import { UI, GAME_HEIGHT, LEFT_PANEL } from '../core/config';
 import { t } from '../data/locales';
 import { addButtonFeedback } from './components/buttonFeedback';
 
-const PANEL_W = LEFT_PANEL.w;
-const BG_H = 100;
-const TOTAL_H = 138;
-const RADIUS = 17;
+const PANEL_W = 128;
+const BG_H = 67;
+const TOTAL_H = 93;
+const RADIUS = 14;
 
 export class CollectionButton extends GameObjects.Container {
     private badgeGfx: GameObjects.Graphics;
@@ -21,15 +21,15 @@ export class CollectionButton extends GameObjects.Container {
         bg.fillRoundedRect(0, TOTAL_H - BG_H, PANEL_W, BG_H, RADIUS);
         this.add(bg);
 
-        // Book icon — large, centered, overlaps dark panel top
-        const icon = scene.add.image(PANEL_W / 2, 58, 'ui_collections')
-            .setDisplaySize(197, 164);
+        // Book icon — centered, overlaps dark panel top
+        const icon = scene.add.image(PANEL_W / 2, 39, 'ui_collections')
+            .setDisplaySize(132, 110);
         this.add(icon);
 
         // "Collection" label — centered in dark panel
-        const label = scene.add.text(PANEL_W / 2, TOTAL_H - BG_H / 2 + 21, t('collection_button'), {
-            fontFamily: UI.FONT_MAIN,
-            fontSize: '20px',
+        const label = scene.add.text(PANEL_W / 2, TOTAL_H - BG_H / 2 + 14, t('collection_button'), {
+            fontFamily: UI.FONT_STROKE,
+            fontSize: '17px',
             color: '#ffffff',
             stroke: '#000000',
             strokeThickness: UI.STROKE_MEDIUM,
@@ -48,7 +48,7 @@ export class CollectionButton extends GameObjects.Container {
         this.add(this.badgeGfx);
 
         this.badgeText = scene.add.text(badgeX, badgeY - 1, '', {
-            fontFamily: UI.FONT_MAIN,
+            fontFamily: UI.FONT_STROKE,
             fontSize: '14px',
             color: '#ffffff',
             stroke: '#000000',
@@ -60,7 +60,7 @@ export class CollectionButton extends GameObjects.Container {
         this.badgeText.setVisible(false);
 
         this.setInteractive(
-            new Geom.Rectangle(-6, -31, PANEL_W + 12, TOTAL_H + 37),
+            new Geom.Rectangle(-6, -21, PANEL_W + 12, TOTAL_H + 27),
             Geom.Rectangle.Contains,
         );
         this.input!.cursor = 'pointer';

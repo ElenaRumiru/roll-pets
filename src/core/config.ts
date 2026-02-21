@@ -119,10 +119,11 @@ export const UI = {
     PANEL_BG: 0x1e1e32,
     PANEL_BG_ALPHA: 0.85,
     PANEL_BORDER: 0x3a3a5c,
-    FONT_MAIN: 'Roboto Black',
-    FONT_BODY: 'Roboto',
-    STROKE_THICK: 5,
-    STROKE_MEDIUM: 4,
+    FONT_MAIN: 'Rubik Black',
+    FONT_STROKE: 'Rubik',
+    FONT_BODY: 'Rubik Light',
+    STROKE_THICK: 4,
+    STROKE_MEDIUM: 3,
     STROKE_THIN: 2,
     CORNER_RADIUS: 15,
 };
@@ -136,8 +137,8 @@ export const PEDESTAL = {
 
 export const PET_OFFSET_Y = 0;
 
-export const ROLL_BTN = { x: 487, y: 537, width: 419, height: 91 };
-export const AUTOROLL_TOGGLE = { width: 116, height: 72, gap: 7 };
+export const ROLL_BTN = { x: 487, y: 537, width: 377, height: 82 };
+export const AUTOROLL_TOGGLE = { width: 99, height: 61, gap: 7 };
 
 export const BUFF_CONFIG = {
     lucky:    { multiplier: 2, rollsPerAd: 1, color: 0x27ae60, colorHex: '#27ae60' },
@@ -164,7 +165,7 @@ export const QUEST_CONFIG = {
     },
 };
 
-export const QUEST_PANEL = { x: BONUS_PANEL.x, w: BONUS_PANEL.w };
+export const QUEST_PANEL = { x: GAME_WIDTH - 143 - 15, w: 143 };
 
 export function getDefaultQuestState(): QuestState {
     const d = new Date();

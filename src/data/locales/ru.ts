@@ -91,7 +91,7 @@ export const ru: Record<string, string> = {
     'collection_button': 'Коллекция',
 
     // Leaderboard & Nickname
-    'leaderboard_title': 'ТОП РЕЙТИНГ',
+    'leaderboard_title': 'ТОП',
     'nickname_prompt': 'Введите имя',
     'nickname_ok': 'OK',
     'bonus_get': 'ВЗЯТЬ',
@@ -100,7 +100,7 @@ export const ru: Record<string, string> = {
     'buff_free': 'БЕСПЛАТНО',
     'default_nickname': 'Игрок',
     'leaderboard_player': 'ИГРОК',
-    'leaderboard_grade': 'ГРЕЙД',
+    'leaderboard_grade': 'РЕДКОСТЬ',
 
     // Pause
     'paused': 'ПАУЗА',

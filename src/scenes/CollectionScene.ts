@@ -58,8 +58,8 @@ export class CollectionScene extends Scene {
         });
 
         this.add.text(GAME_WIDTH / 2, 20, t('collection_title'), {
-            fontFamily: UI.FONT_MAIN,
-            fontSize: '30px',
+            fontFamily: UI.FONT_STROKE,
+            fontSize: '25px',
             color: '#ffffff',
             stroke: '#000000',
             strokeThickness: UI.STROKE_MEDIUM,

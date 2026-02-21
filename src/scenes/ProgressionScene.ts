@@ -57,7 +57,7 @@ export class ProgressionScene extends Scene {
         });
 
         const title = this.add.text(GAME_WIDTH / 2, 31, t('progression_title'), {
-            fontFamily: UI.FONT_MAIN, fontSize: '27px',
+            fontFamily: UI.FONT_STROKE, fontSize: '23px',
             color: '#ffffff', stroke: '#000000', strokeThickness: UI.STROKE_MEDIUM,
         }).setOrigin(0.5).setDepth(10);
     }
@@ -123,7 +123,7 @@ export class ProgressionScene extends Scene {
 
         // Level number above
         this.trackContainer.add(this.add.text(x, TRACK_Y - r - 27, `${m.level}`, {
-            fontFamily: UI.FONT_MAIN, fontSize: '35px',
+            fontFamily: UI.FONT_STROKE, fontSize: '35px',
             color: reached ? '#ffffff' : '#777777',
             stroke: '#000000', strokeThickness: UI.STROKE_THICK,
         }).setOrigin(0.5));
@@ -132,7 +132,7 @@ export class ProgressionScene extends Scene {
         const labelY = TRACK_Y + r + 17;
         if (isEgg) {
             this.trackContainer.add(this.add.text(x, labelY, t('progression_new_egg'), {
-                fontFamily: UI.FONT_MAIN, fontSize: '20px',
+                fontFamily: UI.FONT_STROKE, fontSize: '20px',
                 color: reached ? '#ffffff' : '#777777',
                 stroke: '#000000', strokeThickness: UI.STROKE_MEDIUM,
             }).setOrigin(0.5));
@@ -147,7 +147,7 @@ export class ProgressionScene extends Scene {
             }
         } else {
             this.trackContainer.add(this.add.text(x, labelY, `+${m.coinAmount}`, {
-                fontFamily: UI.FONT_MAIN, fontSize: '20px',
+                fontFamily: UI.FONT_STROKE, fontSize: '20px',
                 color: reached ? '#ffc107' : '#777777',
                 stroke: '#000000', strokeThickness: UI.STROKE_MEDIUM,
             }).setOrigin(0.5));

@@ -48,12 +48,12 @@ export class ShopScene extends Scene {
             this.scene.start('MainScene');
         });
         this.add.text(GAME_WIDTH / 2, 37, t('shop_title'), {
-            fontFamily: UI.FONT_MAIN, fontSize: '30px', color: '#ffffff',
+            fontFamily: UI.FONT_STROKE, fontSize: '25px', color: '#ffffff',
             stroke: '#000000', strokeThickness: UI.STROKE_MEDIUM,
         }).setOrigin(0.5);
         this.add.image(GAME_WIDTH - 123, 37, 'ui_coin_md').setDisplaySize(35, 35);
         this.coinText = this.add.text(GAME_WIDTH - 101, 37, this.formatCoins(this.manager.progression.coins), {
-            fontFamily: UI.FONT_MAIN, fontSize: '17px', color: '#ffffff',
+            fontFamily: UI.FONT_STROKE, fontSize: '17px', color: '#ffffff',
             stroke: '#000000', strokeThickness: UI.STROKE_THIN,
         }).setOrigin(0, 0.5);
     }
@@ -102,7 +102,7 @@ export class ShopScene extends Scene {
 
         // Name (native crisp font)
         const name = this.add.text(0, CARD_H / 2 - 37, t('pet_' + pet.id), {
-            fontFamily: UI.FONT_MAIN, fontSize: '17px', color: '#ffffff',
+            fontFamily: UI.FONT_STROKE, fontSize: '17px', color: '#ffffff',
             stroke: '#000000', strokeThickness: 2,
         }).setOrigin(0.5);
         container.add(name);
@@ -155,7 +155,7 @@ export class ShopScene extends Scene {
 
     private showToast(message: string): void {
         const toast = this.add.text(GAME_WIDTH / 2, GAME_HEIGHT / 2 + 74, message, {
-            fontFamily: UI.FONT_MAIN, fontSize: '20px', color: '#ff4444',
+            fontFamily: UI.FONT_STROKE, fontSize: '20px', color: '#ff4444',
             stroke: '#000000', strokeThickness: UI.STROKE_MEDIUM,
         }).setOrigin(0.5).setDepth(10);
         this.tweens.add({

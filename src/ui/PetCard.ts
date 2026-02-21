@@ -38,7 +38,7 @@ export class PetCard extends GameObjects.Container {
 
             if (isNew) {
                 const newBadge = scene.add.text(CARD_W / 2 - 8, -CARD_H / 2 + 6, t('new_pet'), {
-                    fontFamily: UI.FONT_MAIN,
+                    fontFamily: UI.FONT_STROKE,
                     fontSize: '11px',
                     color: '#ffc107',
                     stroke: '#000000',

@@ -34,7 +34,7 @@ export class Button extends GameObjects.Container {
         this.add(this.bg);
 
         this.label = scene.add.text(0, -Math.floor(SHADOW_OFFSET / 2), text, {
-            fontFamily: UI.FONT_MAIN,
+            fontFamily: UI.FONT_STROKE,
             fontSize: `${Math.max(12, Math.floor(height * 0.38))}px`,
             color: '#ffffff',
             stroke: '#000000',

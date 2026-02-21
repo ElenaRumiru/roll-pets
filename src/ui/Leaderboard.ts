@@ -28,8 +28,8 @@ export class Leaderboard extends GameObjects.Container {
         this.add(bg);
 
         const title = scene.add.text(PANEL_W / 2, 12, t('leaderboard_title'), {
-            fontFamily: UI.FONT_MAIN,
-            fontSize: '20px',
+            fontFamily: UI.FONT_STROKE,
+            fontSize: '17px',
             color: '#ffffff',
             stroke: '#000000',
             strokeThickness: UI.STROKE_MEDIUM,
@@ -38,12 +38,12 @@ export class Leaderboard extends GameObjects.Container {
 
         const headerY = 42;
         const hdr = scene.add.text(10, headerY, `#  ${t('leaderboard_player')}`, {
-            fontFamily: UI.FONT_MAIN, fontSize: '11px', color: '#ffffff',
+            fontFamily: UI.FONT_STROKE, fontSize: '11px', color: '#ffffff',
             stroke: '#000000', strokeThickness: 1,
         });
         this.add(hdr);
         const hdr2 = scene.add.text(PANEL_W - 10, headerY, t('leaderboard_grade'), {
-            fontFamily: UI.FONT_MAIN, fontSize: '11px', color: '#ffffff',
+            fontFamily: UI.FONT_STROKE, fontSize: '11px', color: '#ffffff',
             stroke: '#000000', strokeThickness: 1,
         }).setOrigin(1, 0);
         this.add(hdr2);
@@ -61,19 +61,19 @@ export class Leaderboard extends GameObjects.Container {
             const cfg = GRADE[grade];
 
             const rank = scene.add.text(10, y, `${i + 1}.`, {
-                fontFamily: UI.FONT_MAIN, fontSize: '12px', color: '#ffffff',
+                fontFamily: UI.FONT_STROKE, fontSize: '12px', color: '#ffffff',
                 stroke: '#000000', strokeThickness: 1,
             });
             this.add(rank);
 
             const name = scene.add.text(30, y, entry.name, {
-                fontFamily: UI.FONT_MAIN, fontSize: '12px', color: '#ffffff',
+                fontFamily: UI.FONT_STROKE, fontSize: '12px', color: '#ffffff',
                 stroke: '#000000', strokeThickness: 1,
             });
             this.add(name);
 
             const odds = scene.add.text(PANEL_W - 10, y, entry.odds, {
-                fontFamily: UI.FONT_MAIN, fontSize: '12px', color: cfg.colorHex,
+                fontFamily: UI.FONT_STROKE, fontSize: '12px', color: cfg.colorHex,
                 stroke: cfg.outlineHex, strokeThickness: cfg.strokeThickness || 1,
             }).setOrigin(1, 0);
             this.add(odds);
@@ -92,19 +92,19 @@ export class Leaderboard extends GameObjects.Container {
         this.add(playerBg);
 
         this.playerRankText = scene.add.text(10, playerY, '30.', {
-            fontFamily: UI.FONT_MAIN, fontSize: '12px', color: '#ffc107',
+            fontFamily: UI.FONT_STROKE, fontSize: '12px', color: '#ffc107',
             stroke: '#000000', strokeThickness: 1,
         });
         this.add(this.playerRankText);
 
         this.playerNameText = scene.add.text(35, playerY, '', {
-            fontFamily: UI.FONT_MAIN, fontSize: '12px', color: '#ffc107',
+            fontFamily: UI.FONT_STROKE, fontSize: '12px', color: '#ffc107',
             stroke: '#000000', strokeThickness: 1,
         });
         this.add(this.playerNameText);
 
         this.playerOddsText = scene.add.text(PANEL_W - 10, playerY, '1/500', {
-            fontFamily: UI.FONT_MAIN, fontSize: '12px', color: '#ffc107',
+            fontFamily: UI.FONT_STROKE, fontSize: '12px', color: '#ffc107',
             stroke: '#000000', strokeThickness: 1,
         }).setOrigin(1, 0);
         this.add(this.playerOddsText);

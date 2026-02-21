@@ -37,7 +37,7 @@ export class QuestClaimPopup {
         // Shared tooltip (above everything)
         this.tooltipBg = scene.add.graphics().setDepth(1001).setVisible(false);
         this.tooltipText = scene.add.text(0, 0, '', {
-            fontFamily: UI.FONT_MAIN, fontSize: '11px', color: '#ffffff',
+            fontFamily: UI.FONT_STROKE, fontSize: '11px', color: '#ffffff',
             stroke: '#000000', strokeThickness: UI.STROKE_THIN,
             align: 'center', wordWrap: { width: 150 },
         }).setOrigin(0.5).setDepth(1001).setVisible(false);
@@ -58,7 +58,7 @@ export class QuestClaimPopup {
         // Title
         const titleY = cy - POPUP_H / 2 + 25;
         const title = scene.add.text(cx, titleY, t('quest_complete'), {
-            fontFamily: UI.FONT_MAIN, fontSize: '17px', color: '#ffffff',
+            fontFamily: UI.FONT_STROKE, fontSize: '17px', color: '#ffffff',
             stroke: '#000000', strokeThickness: UI.STROKE_MEDIUM,
         }).setOrigin(0.5);
         this.container.add(title);
@@ -66,7 +66,7 @@ export class QuestClaimPopup {
         // Subtitle
         const subY = titleY + 22;
         const sub = scene.add.text(cx, subY, t('quest_choose'), {
-            fontFamily: UI.FONT_MAIN, fontSize: '14px', color: '#aaaaaa',
+            fontFamily: UI.FONT_STROKE, fontSize: '14px', color: '#aaaaaa',
             stroke: '#000000', strokeThickness: 1,
         }).setOrigin(0.5);
         this.container.add(sub);
@@ -125,14 +125,14 @@ export class QuestClaimPopup {
             ? t('quest_rolls_plural', { count: String(count) })
             : t('quest_rolls', { count: String(count) });
         const label = scene.add.text(cx, iconY + ICON_SZ / 2 + 15, countText, {
-            fontFamily: UI.FONT_MAIN, fontSize: '15px', color: '#ffffff',
+            fontFamily: UI.FONT_STROKE, fontSize: '15px', color: '#ffffff',
             stroke: '#000000', strokeThickness: UI.STROKE_THIN,
         }).setOrigin(0.5);
         this.container.add(label);
 
         // Buff name below count
         const nameLabel = scene.add.text(cx, label.y + 17, buffName, {
-            fontFamily: UI.FONT_MAIN, fontSize: '11px', color: '#aaaaaa',
+            fontFamily: UI.FONT_STROKE, fontSize: '11px', color: '#aaaaaa',
             stroke: '#000000', strokeThickness: 1,
         }).setOrigin(0.5);
         this.container.add(nameLabel);
@@ -158,7 +158,7 @@ export class QuestClaimPopup {
         btnWrap.add(bg);
 
         const btnText = scene.add.text(0, -1, btnLabel, {
-            fontFamily: UI.FONT_MAIN, fontSize: '12px', color: '#ffffff',
+            fontFamily: UI.FONT_STROKE, fontSize: '12px', color: '#ffffff',
             stroke: '#000000', strokeThickness: 1,
         }).setOrigin(0.5);
         btnWrap.add(btnText);

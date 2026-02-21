@@ -11,10 +11,10 @@ interface Badge {
     tooltipKey: string;
 }
 
-const BADGE_W = 84;
-const BADGE_H = 25;
-const BADGE_R = 6;
-const BADGE_GAP = 5;
+const BADGE_W = 67;
+const BADGE_H = 20;
+const BADGE_R = 5;
+const BADGE_GAP = 4;
 
 const TOOLTIP_KEYS: Record<string, string> = {
     lucky: 'tip_lucky',
@@ -45,8 +45,8 @@ export class BuffBadges extends GameObjects.Container {
         // Shared tooltip
         this.tooltipBg = scene.add.graphics().setDepth(200);
         this.tooltipText = scene.add.text(0, 0, '', {
-            fontFamily: UI.FONT_MAIN,
-            fontSize: '14px',
+            fontFamily: UI.FONT_STROKE,
+            fontSize: '12px',
             color: '#ffffff',
             stroke: '#000000',
             strokeThickness: UI.STROKE_THIN,
@@ -70,8 +70,8 @@ export class BuffBadges extends GameObjects.Container {
         c.add(bg);
 
         const txt = scene.add.text(0, 0, '', {
-            fontFamily: UI.FONT_MAIN,
-            fontSize: '14px',
+            fontFamily: UI.FONT_STROKE,
+            fontSize: '11px',
             color: '#ffffff',
             stroke: '#000000',
             strokeThickness: UI.STROKE_THIN,

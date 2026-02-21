@@ -41,7 +41,7 @@ export class CenterStage extends GameObjects.Container {
             const pos = positions[i];
 
             const nameText = scene.add.text(pos.x, pos.y + PET_OFFSET_Y - 113, '', {
-                fontFamily: UI.FONT_MAIN,
+                fontFamily: UI.FONT_STROKE,
                 fontSize: '22px',
                 color: '#ffffff',
                 stroke: '#000000',
@@ -50,7 +50,7 @@ export class CenterStage extends GameObjects.Container {
             this.add(nameText);
 
             const oddsText = scene.add.text(pos.x, pos.y + PET_OFFSET_Y - 91, '', {
-                fontFamily: UI.FONT_MAIN,
+                fontFamily: UI.FONT_STROKE,
                 fontSize: '25px',
                 color: '#cccccc',
                 stroke: '#000000',
@@ -74,7 +74,7 @@ export class CenterStage extends GameObjects.Container {
 
         // Reveal elements (on top of overlay)
         this.revealName = scene.add.text(CX, CY + 80, '', {
-            fontFamily: UI.FONT_MAIN,
+            fontFamily: UI.FONT_STROKE,
             fontSize: '27px',
             color: '#ffffff',
             stroke: '#000000',
@@ -82,7 +82,7 @@ export class CenterStage extends GameObjects.Container {
         }).setOrigin(0.5).setAlpha(0).setDepth(103);
 
         this.revealRarity = scene.add.text(CX, CY + 111, '', {
-            fontFamily: UI.FONT_MAIN,
+            fontFamily: UI.FONT_STROKE,
             fontSize: '25px',
             color: '#ffffff',
             stroke: '#000000',
@@ -90,7 +90,7 @@ export class CenterStage extends GameObjects.Container {
         }).setOrigin(0.5).setAlpha(0).setDepth(103);
 
         this.newBadge = scene.add.text(CX, CY - 167, t('new_pet'), {
-            fontFamily: UI.FONT_MAIN,
+            fontFamily: UI.FONT_STROKE,
             fontSize: '32px',
             color: '#ffc107',
             stroke: '#000000',
@@ -100,12 +100,12 @@ export class CenterStage extends GameObjects.Container {
         // Rewards line: [EXP icon] +25  [COIN icon] +5 — single container, centered
         const expIcon = scene.add.image(0, 1, 'ui_exp_md');
         const expLabel = scene.add.text(0, 0, '', {
-            fontFamily: UI.FONT_MAIN, fontSize: '20px',
+            fontFamily: UI.FONT_STROKE, fontSize: '20px',
             color: '#88cc55', stroke: '#000000', strokeThickness: UI.STROKE_MEDIUM,
         }).setOrigin(0, 0.5);
         const coinIcon = scene.add.image(0, 1, 'ui_coin_sm').setDisplaySize(21, 21);
         const coinLabel = scene.add.text(0, 0, '', {
-            fontFamily: UI.FONT_MAIN, fontSize: '20px',
+            fontFamily: UI.FONT_STROKE, fontSize: '20px',
             color: '#ffc107', stroke: '#000000', strokeThickness: UI.STROKE_MEDIUM,
         }).setOrigin(0, 0.5);
         this.rewardsContainer = scene.add.container(CX, CY + 150,

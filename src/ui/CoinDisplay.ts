@@ -25,7 +25,7 @@ export class CoinDisplay extends GameObjects.Container {
         this.add(icon);
 
         this.label = scene.add.text(TEXT_CENTER_X, COIN_HUD.h / 2, '0', {
-            fontFamily: UI.FONT_MAIN,
+            fontFamily: UI.FONT_STROKE,
             fontSize: '15px',
             color: '#ffffff',
             stroke: '#000000',
@@ -44,7 +44,7 @@ export class CoinDisplay extends GameObjects.Container {
         if (amount <= 0) return;
         const icon = scene.add.image(0, 0, 'ui_coin_sm').setDisplaySize(15, 15);
         const txt = scene.add.text(11, 0, `+${this.formatNumber(amount)}`, {
-            fontFamily: UI.FONT_MAIN,
+            fontFamily: UI.FONT_STROKE,
             fontSize: '14px',
             color: '#ffc107',
             stroke: '#000000',

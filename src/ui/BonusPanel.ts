@@ -62,7 +62,7 @@ export class BonusPanel extends GameObjects.Container {
 
         this.tooltipBg = scene.add.graphics().setDepth(200).setVisible(false);
         this.tooltipText = scene.add.text(0, 0, '', {
-            fontFamily: UI.FONT_MAIN, fontSize: '14px', color: '#ffffff',
+            fontFamily: UI.FONT_STROKE, fontSize: '14px', color: '#ffffff',
             stroke: '#000000', strokeThickness: UI.STROKE_THIN,
             align: 'center', wordWrap: { width: 173 },
         }).setOrigin(0.5).setDepth(200).setVisible(false);
@@ -95,13 +95,13 @@ export class BonusPanel extends GameObjects.Container {
         this.card.add(this.icon);
 
         this.label = scene.add.text(AREA_CX, CONTENT_TOP + 14, '', {
-            fontFamily: UI.FONT_MAIN, fontSize: '15px', color: '#ffffff',
+            fontFamily: UI.FONT_STROKE, fontSize: '15px', color: '#ffffff',
             stroke: '#000000', strokeThickness: UI.STROKE_THIN,
         }).setOrigin(0.5, 0.5);
         this.card.add(this.label);
 
         this.desc = scene.add.text(AREA_CX, CONTENT_TOP + 31, '', {
-            fontFamily: UI.FONT_MAIN, fontSize: '14px', color: '#ffffff',
+            fontFamily: UI.FONT_STROKE, fontSize: '14px', color: '#ffffff',
             stroke: '#000000', strokeThickness: 1,
         }).setOrigin(0.5, 0.5);
         this.card.add(this.desc);
@@ -113,7 +113,7 @@ export class BonusPanel extends GameObjects.Container {
         this.draw3DButton(btnBg);
         this.btnWrap.add(btnBg);
         const btnText = scene.add.text(0, -Math.floor(BTN_SHADOW / 2), `▶ ${t('buff_watch')}`, {
-            fontFamily: UI.FONT_MAIN, fontSize: '12px', color: '#ffffff',
+            fontFamily: UI.FONT_STROKE, fontSize: '12px', color: '#ffffff',
             stroke: '#000000', strokeThickness: 1,
         }).setOrigin(0.5, 0.5);
         this.btnWrap.add(btnText);
@@ -131,7 +131,7 @@ export class BonusPanel extends GameObjects.Container {
         this.timerTabBg = scene.add.graphics();
         this.timerTab.add(this.timerTabBg);
         this.timerText = scene.add.text(0, TAB_H / 2, '', {
-            fontFamily: UI.FONT_MAIN, fontSize: '12px', color: '#ffffff',
+            fontFamily: UI.FONT_STROKE, fontSize: '12px', color: '#ffffff',
             stroke: '#000000', strokeThickness: UI.STROKE_THIN,
         }).setOrigin(0.5, 0.5);
         this.timerTab.add(this.timerText);
