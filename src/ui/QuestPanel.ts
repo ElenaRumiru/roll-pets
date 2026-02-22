@@ -23,6 +23,9 @@ const BAR_BG = 0x333333;
 const CLAIM_COLOR = 0x4CAF50;
 const CLAIM_DARK = 0x2E7D32;
 
+// Left-aligned: bar starts at PAD, centered within its own width
+const BAR_CX = PAD + BAR_W / 2;
+
 interface QuestRow {
     label: GameObjects.Text;
     barBg: GameObjects.Graphics;
@@ -49,11 +52,11 @@ export class QuestPanel extends GameObjects.Container {
         bg.fillRoundedRect(0, 0, PW, totalH, RADIUS);
         this.add(bg);
 
-        // Header
-        const header = scene.add.text(PW / 2, PAD + HEADER_H / 2, t('quest_title'), {
+        // Header — left-aligned
+        const header = scene.add.text(PAD, PAD + HEADER_H / 2, t('quest_title'), {
             fontFamily: UI.FONT_STROKE, fontSize: '17px', color: '#ffffff',
             stroke: '#000000', strokeThickness: UI.STROKE_MEDIUM,
-        }).setOrigin(0.5);
+        }).setOrigin(0, 0.5);
         this.add(header);
 
         // Rows
@@ -65,14 +68,14 @@ export class QuestPanel extends GameObjects.Container {
     }
 
     private createRow(scene: Scene, y: number, type: 'roll' | 'grade'): QuestRow {
-        // Quest text
+        // Quest text — left-aligned
         const label = scene.add.text(PAD + 2, y + TEXT_H / 2, '', {
             fontFamily: UI.FONT_STROKE, fontSize: '11px', color: '#ffffff',
             stroke: '#000000', strokeThickness: 1,
         }).setOrigin(0, 0.5);
         this.add(label);
 
-        const barX = PW / 2;
+        const barX = BAR_CX;
         const barY = y + TEXT_H + GAP + BAR_H / 2;
 
         // Progress bar bg with outline
@@ -103,8 +106,8 @@ export class QuestPanel extends GameObjects.Container {
         claimWrap.add(claimBg);
 
         const claimText = scene.add.text(0, -Math.floor(BTN_SHADOW / 2), t('quest_claim'), {
-            fontFamily: UI.FONT_STROKE, fontSize: '12px', color: '#ffffff',
-            stroke: '#000000', strokeThickness: 1,
+            fontFamily: UI.FONT_STROKE, fontSize: '13px', color: '#ffffff',
+            stroke: '#000000', strokeThickness: 2,
         }).setOrigin(0.5);
         claimWrap.add(claimText);
 

@@ -49,7 +49,8 @@ export class RightPanel extends GameObjects.Container {
             fontSize: '30px',
             color: '#ffffff',
             stroke: '#000000',
-            strokeThickness: UI.STROKE_THICK,
+            strokeThickness: 6,
+            shadow: { offsetX: 2, offsetY: 2, color: '#000000', blur: 4, fill: true },
         }).setOrigin(0.5);
         this.rollWrap.add(this.rollLabel);
 

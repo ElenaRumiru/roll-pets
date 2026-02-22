@@ -158,8 +158,8 @@ export class QuestClaimPopup {
         btnWrap.add(bg);
 
         const btnText = scene.add.text(0, -1, btnLabel, {
-            fontFamily: UI.FONT_STROKE, fontSize: '12px', color: '#ffffff',
-            stroke: '#000000', strokeThickness: 1,
+            fontFamily: UI.FONT_STROKE, fontSize: '13px', color: '#ffffff',
+            stroke: '#000000', strokeThickness: 2,
         }).setOrigin(0.5);
         btnWrap.add(btnText);
 

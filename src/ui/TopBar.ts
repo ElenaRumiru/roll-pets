@@ -4,8 +4,11 @@ import { ProgressBar } from './components/ProgressBar';
 import { t } from '../data/locales';
 
 const PANEL_W = LEFT_PANEL.w;
-const PANEL_H = 42;
+const PANEL_H = 32;
 const RADIUS = 10;
+const BAR_X = 67;
+const BAR_W = 111;
+const BAR_H = 17;
 
 export class TopBar extends GameObjects.Container {
     private levelText: GameObjects.Text;
@@ -31,24 +34,24 @@ export class TopBar extends GameObjects.Container {
             this.on('pointerdown', onClick);
         }
 
-        // Level text (top row)
-        this.levelText = scene.add.text(12, 12, '', {
+        const cy = PANEL_H / 2;
+
+        // Level text (left side, vertically centered)
+        this.levelText = scene.add.text(12, cy, '', {
             fontFamily: UI.FONT_STROKE,
             fontSize: '14px',
             color: '#ffffff',
             stroke: '#000000',
             strokeThickness: UI.STROKE_THIN,
-        });
+        }).setOrigin(0, 0.5);
         this.add(this.levelText);
 
-        // XP bar
-        const barX = 67;
-        const barW = 111;
-        this.xpBar = new ProgressBar(scene, barX, 30, barW, 17, 0x222244, 0x4caf50);
+        // XP bar (right side, vertically centered)
+        this.xpBar = new ProgressBar(scene, BAR_X, cy + 1, BAR_W, BAR_H, 0x222244, 0x4caf50);
         this.add(this.xpBar);
 
         // XP numbers overlay on bar
-        this.xpLabel = scene.add.text(barX + barW / 2, 30, '', {
+        this.xpLabel = scene.add.text(BAR_X + BAR_W / 2, cy + 1, '', {
             fontFamily: UI.FONT_STROKE,
             fontSize: '11px',
             color: '#ffffff',

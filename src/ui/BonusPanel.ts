@@ -113,8 +113,8 @@ export class BonusPanel extends GameObjects.Container {
         this.draw3DButton(btnBg);
         this.btnWrap.add(btnBg);
         const btnText = scene.add.text(0, -Math.floor(BTN_SHADOW / 2), `▶ ${t('buff_watch')}`, {
-            fontFamily: UI.FONT_STROKE, fontSize: '12px', color: '#ffffff',
-            stroke: '#000000', strokeThickness: 1,
+            fontFamily: UI.FONT_STROKE, fontSize: '13px', color: '#ffffff',
+            stroke: '#000000', strokeThickness: 2,
         }).setOrigin(0.5, 0.5);
         this.btnWrap.add(btnText);
         this.btnWrap.setSize(BTN_W, BTN_H + BTN_SHADOW);

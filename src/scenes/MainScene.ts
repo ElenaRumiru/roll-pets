@@ -112,7 +112,7 @@ export class MainScene extends Scene {
 
         // Position quest panel + bonus panel aligned with leaderboard
         const COMBINED_GAP = 6;
-        const leaderboardY = Math.round((GAME_HEIGHT - 204) / 2) - 22 - 25; // shifted 25px up for shop button
+        const leaderboardY = Math.round((GAME_HEIGHT - 175) / 2) - 22 - 25; // shifted 25px up for shop button
         this.questPanel.y = leaderboardY;
         this.bonusPanel.y = leaderboardY + this.questPanel.panelHeight + COMBINED_GAP;
 
