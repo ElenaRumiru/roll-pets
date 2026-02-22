@@ -137,11 +137,11 @@ export const PEDESTAL = {
 
 export const PET_OFFSET_Y = 0;
 
-export const ROLL_BTN = { x: 487, y: 537, width: 377, height: 82 };
+export const ROLL_BTN = { x: 487, y: 532, width: 305, height: 67 };
 export const AUTOROLL_TOGGLE = { width: 99, height: 61, gap: 7 };
 
 export const BUFF_CONFIG = {
-    lucky:    { multiplier: 2, rollsPerAd: 1, color: 0x27ae60, colorHex: '#27ae60' },
+    lucky:    { multiplier: 2, rollsPerAd: 1, color: 0x78C828, colorHex: '#78C828' },
     super:    { multiplier: 3, rollsPerAd: 1, color: 0x3498db, colorHex: '#3498db' },
     epic:     { multiplier: 5, rollsPerAd: 1, color: 0xffc107, colorHex: '#ffc107' },
     autoroll: { color: 0xff9d43, colorHex: '#ff9d43' },
@@ -151,9 +151,9 @@ export const BUFF_CONFIG = {
 export const LEFT_PANEL = { x: 15, w: 191 };
 
 export const BONUS_PANEL = {
-    x: GAME_WIDTH - 176 - 15, y: 0,
-    w: 176, iconSize: 69, padding: 6,
-    gap: 9,
+    x: GAME_WIDTH - 150 - 15, y: 0,
+    w: 150, iconSize: 59, padding: 5,
+    gap: 8,
 };
 
 export const QUEST_CONFIG = {
@@ -165,7 +165,7 @@ export const QUEST_CONFIG = {
     },
 };
 
-export const QUEST_PANEL = { x: GAME_WIDTH - 143 - 15, w: 143 };
+export const QUEST_PANEL = { x: GAME_WIDTH - 135 - 15, w: 135 };
 
 export function getDefaultQuestState(): QuestState {
     const d = new Date();

@@ -49,7 +49,7 @@ export class BootScene extends Scene {
         this.load.audio('sfx_new_pet', 'assets/audio/sfx_new_pet.mp3');
 
         // UI assets
-        this.load.image('ui_roll', 'assets/ui/button_black_outline_shadow_width130.png');
+        this.load.image('ui_roll', 'assets/ui/roll.png');
         this.load.image('ui_collections', 'assets/ui/collections.png');
         this.load.image('ui_x2chance', 'assets/ui/x2chance.png');
         this.load.image('ui_x3chance', 'assets/ui/x3chance.png');
@@ -80,20 +80,6 @@ export class BootScene extends Scene {
     }
 
     create(): void {
-        // Pre-downscale roll button to avoid moiré (1927px → 680px via high-quality canvas resample)
-        const img = this.textures.get('ui_roll').getSourceImage() as HTMLImageElement;
-        const canvas = document.createElement('canvas');
-        const targetW = 838; // 2x display size for crisp rendering
-        const targetH = Math.round(targetW * (img.height / img.width));
-        canvas.width = targetW;
-        canvas.height = targetH;
-        const ctx = canvas.getContext('2d')!;
-        ctx.imageSmoothingEnabled = true;
-        ctx.imageSmoothingQuality = 'high';
-        ctx.drawImage(img, 0, 0, targetW, targetH);
-        this.textures.remove('ui_roll');
-        this.textures.addCanvas('ui_roll', canvas);
-
         // Pre-downscale autoroll toggle images to avoid moiré at 94×58 display size
         for (const key of ['ui_automod_on', 'ui_automod_off']) {
             const src = this.textures.get(key).getSourceImage() as HTMLImageElement;

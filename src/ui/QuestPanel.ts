@@ -5,12 +5,12 @@ import { t } from '../data/locales';
 import { addButtonFeedback } from './components/buttonFeedback';
 
 const PW = QUEST_PANEL.w;              // 143
-const PAD = 7;
-const HEADER_H = 35;
+const PAD = 2;
+const HEADER_H = 36;
 const TEXT_H = 17;
 const GAP = 4;
 const BAR_W = 78;
-const BAR_H = 30;
+const BAR_H = 26;
 const BAR_R = BAR_H / 2;
 const ROW_H = TEXT_H + GAP + BAR_H;    // 41
 const ROW_GAP = 7;
@@ -19,12 +19,12 @@ const BTN_SHADOW = 1.5;
 const DIAMOND = '\u25C6';
 
 const BG_ALPHA = 0.75;
-const BAR_BG = 0x333333;
-const CLAIM_COLOR = 0x4CAF50;
-const CLAIM_DARK = 0x2E7D32;
+const BAR_BG = 0x222244;
+const CLAIM_COLOR = 0x78C828;
+const CLAIM_DARK = 0x4E8A18;
 
-// Left-aligned: bar starts at PAD, centered within its own width
-const BAR_CX = PAD + BAR_W / 2;
+// Centered
+const BAR_CX = PW / 2;
 
 interface QuestRow {
     label: GameObjects.Text;
@@ -42,21 +42,23 @@ export class QuestPanel extends GameObjects.Container {
     private rows: QuestRow[] = [];
 
     constructor(scene: Scene, private onClaim: (type: 'roll' | 'grade') => void) {
-        const totalH = PAD + HEADER_H + ROW_H + ROW_GAP + ROW_H + PAD;
+        const totalH = PAD + HEADER_H + ROW_H + ROW_GAP + ROW_H + 12;
         super(scene, QUEST_PANEL.x, 0);
         this.panelHeight = totalH;
 
         // Background
         const bg = scene.add.graphics();
-        bg.fillStyle(0x000000, BG_ALPHA);
+        bg.fillStyle(0x111122, BG_ALPHA);
         bg.fillRoundedRect(0, 0, PW, totalH, RADIUS);
+        bg.lineStyle(2, 0xffffff, 0.2);
+        bg.strokeRoundedRect(0, 0, PW, totalH, RADIUS);
         this.add(bg);
 
-        // Header — left-aligned
-        const header = scene.add.text(PAD, PAD + HEADER_H / 2, t('quest_title'), {
+        // Header — centered
+        const header = scene.add.text(PW / 2, PAD + HEADER_H / 2, t('quest_title'), {
             fontFamily: UI.FONT_STROKE, fontSize: '17px', color: '#ffffff',
             stroke: '#000000', strokeThickness: UI.STROKE_MEDIUM,
-        }).setOrigin(0, 0.5);
+        }).setOrigin(0.5);
         this.add(header);
 
         // Rows
@@ -68,11 +70,11 @@ export class QuestPanel extends GameObjects.Container {
     }
 
     private createRow(scene: Scene, y: number, type: 'roll' | 'grade'): QuestRow {
-        // Quest text — left-aligned
-        const label = scene.add.text(PAD + 2, y + TEXT_H / 2, '', {
-            fontFamily: UI.FONT_STROKE, fontSize: '11px', color: '#ffffff',
+        // Quest text — centered
+        const label = scene.add.text(PW / 2, y + TEXT_H / 2, '', {
+            fontFamily: UI.FONT_STROKE, fontSize: '13px', color: '#ffffff',
             stroke: '#000000', strokeThickness: 1,
-        }).setOrigin(0, 0.5);
+        }).setOrigin(0.5, 0.5);
         this.add(label);
 
         const barX = BAR_CX;
@@ -80,9 +82,9 @@ export class QuestPanel extends GameObjects.Container {
 
         // Progress bar bg with outline
         const barBg = scene.add.graphics();
-        barBg.fillStyle(BAR_BG, 1);
+        barBg.fillStyle(BAR_BG, 0.5);
         barBg.fillRoundedRect(barX - BAR_W / 2, barY - BAR_H / 2, BAR_W, BAR_H, BAR_R);
-        barBg.lineStyle(1.5, 0x666666, 0.6);
+        barBg.lineStyle(2, 0x000000, 0.3);
         barBg.strokeRoundedRect(barX - BAR_W / 2, barY - BAR_H / 2, BAR_W, BAR_H, BAR_R);
         this.add(barBg);
 
@@ -93,7 +95,7 @@ export class QuestPanel extends GameObjects.Container {
         // Progress text (centered on bar)
         const barText = scene.add.text(barX, barY, '', {
             fontFamily: UI.FONT_STROKE, fontSize: '11px', color: '#ffffff',
-            stroke: '#000000', strokeThickness: 1,
+            stroke: '#000000', strokeThickness: UI.STROKE_THIN,
         }).setOrigin(0.5);
         this.add(barText);
 
@@ -146,6 +148,12 @@ export class QuestPanel extends GameObjects.Container {
             const r = Math.min(BAR_R - 1, fillW / 2);
             row.barFill.fillStyle(color, 1);
             row.barFill.fillRoundedRect(fx, fy, fillW, BAR_H - 4, r);
+            // Highlight strip (matches ProgressBar style)
+            if (fillW > 4) {
+                const hr = fillW >= BAR_H - 4 ? { tl: r - 1, tr: r - 1, bl: 0, br: 0 } : 0;
+                row.barFill.fillStyle(0xffffff, 0.2);
+                row.barFill.fillRoundedRect(fx + 1, fy + 1, fillW - 2, (BAR_H - 6) * 0.4, hr);
+            }
         }
         row.barText.setText(`${current}/${target}`);
     }

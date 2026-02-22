@@ -114,6 +114,7 @@ export class MainScene extends Scene {
         const COMBINED_GAP = 6;
         const leaderboardY = Math.round((GAME_HEIGHT - 175) / 2) - 22 - 25; // shifted 25px up for shop button
         this.questPanel.y = leaderboardY;
+        this.leaderboard.y = leaderboardY;
         this.bonusPanel.y = leaderboardY + this.questPanel.panelHeight + COMBINED_GAP;
 
         // Audio (singleton from registry)

@@ -16,12 +16,14 @@ export class TopBar extends GameObjects.Container {
     private xpLabel: GameObjects.Text;
 
     constructor(scene: Scene, onClick?: () => void) {
-        super(scene, LEFT_PANEL.x, 10);
+        super(scene, LEFT_PANEL.x, 15);
 
         // Semi-transparent black panel
         const bg = scene.add.graphics();
-        bg.fillStyle(0x000000, 0.75);
+        bg.fillStyle(0x111122, 0.75);
         bg.fillRoundedRect(0, 0, PANEL_W, PANEL_H, RADIUS);
+        bg.lineStyle(2, 0xffffff, 0.2);
+        bg.strokeRoundedRect(0, 0, PANEL_W, PANEL_H, RADIUS);
         this.add(bg);
 
         // Make entire panel clickable
@@ -47,7 +49,7 @@ export class TopBar extends GameObjects.Container {
         this.add(this.levelText);
 
         // XP bar (right side, vertically centered)
-        this.xpBar = new ProgressBar(scene, BAR_X, cy + 1, BAR_W, BAR_H, 0x222244, 0x4caf50);
+        this.xpBar = new ProgressBar(scene, BAR_X, cy + 1, BAR_W, BAR_H, 0x222244, 0x78C828);
         this.add(this.xpBar);
 
         // XP numbers overlay on bar

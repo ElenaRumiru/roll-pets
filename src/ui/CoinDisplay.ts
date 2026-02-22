@@ -2,7 +2,7 @@ import { GameObjects, Scene } from 'phaser';
 import { GAME_WIDTH, COIN_HUD, UI } from '../core/config';
 
 const HUD_X = GAME_WIDTH - 49 - 21 - COIN_HUD.gap - COIN_HUD.w;
-const HUD_Y = 10;
+const HUD_Y = 15;
 const TEXT_LEFT = COIN_HUD.iconSize * 0.6 + 2;
 const TEXT_CENTER_X = TEXT_LEFT + (COIN_HUD.w - TEXT_LEFT) / 2;
 
@@ -13,8 +13,10 @@ export class CoinDisplay extends GameObjects.Container {
         super(scene, HUD_X, HUD_Y);
 
         const bg = scene.add.graphics();
-        bg.fillStyle(0x000000, 0.75);
+        bg.fillStyle(0x111122, 0.75);
         bg.fillRoundedRect(0, 0, COIN_HUD.w, COIN_HUD.h, COIN_HUD.h / 2);
+        bg.lineStyle(2, 0xffffff, 0.2);
+        bg.strokeRoundedRect(0, 0, COIN_HUD.w, COIN_HUD.h, COIN_HUD.h / 2);
         this.add(bg);
 
         const icon = scene.add.image(

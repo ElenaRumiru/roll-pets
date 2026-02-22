@@ -15,8 +15,8 @@ const BTN_R = BTN_H / 2;
 const BTN_SHADOW = 2;
 const ICON_SZ = 49;
 
-const FREE_COLOR = 0x4CAF50;
-const FREE_DARK = 0x2E7D32;
+const FREE_COLOR = 0x78C828;
+const FREE_DARK = 0x4E8A18;
 const AD_COLOR = 0x7B2FBE;
 const AD_DARK = 0x4A1A72;
 

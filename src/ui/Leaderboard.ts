@@ -23,11 +23,13 @@ export class Leaderboard extends GameObjects.Container {
         super(scene, LEFT_PANEL.x, Math.round((GAME_HEIGHT - PANEL_H) / 2) - 22);
 
         const bg = scene.add.graphics();
-        bg.fillStyle(0x000000, 0.75);
+        bg.fillStyle(0x111122, 0.75);
         bg.fillRoundedRect(0, 0, PANEL_W, PANEL_H, RADIUS);
+        bg.lineStyle(2, 0xffffff, 0.2);
+        bg.strokeRoundedRect(0, 0, PANEL_W, PANEL_H, RADIUS);
         this.add(bg);
 
-        const title = scene.add.text(PANEL_W / 2, 10, t('leaderboard_title'), {
+        const title = scene.add.text(PANEL_W / 2, 9, t('leaderboard_title'), {
             fontFamily: UI.FONT_STROKE,
             fontSize: '15px',
             color: '#ffffff',

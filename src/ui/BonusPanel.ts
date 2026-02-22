@@ -5,14 +5,14 @@ import { t } from '../data/locales';
 import { addButtonFeedback } from './components/buttonFeedback';
 
 const ROW_W = BONUS_PANEL.w;
-const ICON_SZ = 63;
+const ICON_SZ = 54;
 const ACCENT_H = 1;
-const PAD = 5;
-const ICON_PAD = 9;
-export const OFFER_CARD_H = ICON_SZ + PAD * 2 + ACCENT_H + 12;
-const RADIUS = 12;
-const BTN_W = 96;
-const BTN_H = 30;
+const PAD = 4;
+const ICON_PAD = 8;
+export const OFFER_CARD_H = ICON_SZ + PAD * 2 + ACCENT_H + 10;
+const RADIUS = 10;
+const BTN_W = 82;
+const BTN_H = 26;
 const BTN_SHADOW = 2;
 const AD_COLOR = 0x7B2FBE;
 const AD_COLOR_DARK = 0x4A1A72;
@@ -20,9 +20,9 @@ const AREA_LEFT = ICON_PAD + ICON_SZ + 4;
 const AREA_CX = AREA_LEFT + (ROW_W - AREA_LEFT - PAD) / 2;
 const CONTENT_TOP = ACCENT_H + 6;
 const CONTENT_CY = CONTENT_TOP + (OFFER_CARD_H - CONTENT_TOP) / 2;
-const TAB_W = 62;
-const TAB_H = 20;
-const TAB_R = 7;
+const TAB_W = 53;
+const TAB_H = 17;
+const TAB_R = 6;
 
 const BUFF_ICON: Record<CountBuff, string> = {
     lucky: 'ui_x2simple_mid', super: 'ui_x3wow_mid', epic: 'ui_x5wow_mid',
@@ -36,11 +36,10 @@ const BUFF_LABEL_KEY: Record<CountBuff, string> = {
 const TOOLTIP_KEYS: Record<CountBuff, string> = {
     lucky: 'tip_lucky', super: 'tip_super', epic: 'tip_epic',
 };
-const ICON_SIZES: Record<CountBuff, number> = { lucky: 60, super: 67, epic: 69 };
+const ICON_SIZES: Record<CountBuff, number> = { lucky: 51, super: 57, epic: 59 };
 
 export class BonusPanel extends GameObjects.Container {
     private card: GameObjects.Container;
-    private glow: GameObjects.Graphics;
     private bg: GameObjects.Graphics;
     private icon: GameObjects.Image;
     private label: GameObjects.Text;
@@ -52,7 +51,6 @@ export class BonusPanel extends GameObjects.Container {
     private currentType: CountBuff = 'lucky';
     private wasOfferActive = false;
     private lastSec = -1;
-    private glowTween: Phaser.Tweens.Tween | null = null;
     private tooltipBg: GameObjects.Graphics;
     private tooltipText: GameObjects.Text;
     private longPressTimer: Phaser.Time.TimerEvent | null = null;
@@ -67,14 +65,8 @@ export class BonusPanel extends GameObjects.Container {
             align: 'center', wordWrap: { width: 173 },
         }).setOrigin(0.5).setDepth(200).setVisible(false);
 
-        this.card = scene.add.container(ROW_W + 10, 0);
+        this.card = scene.add.container(ROW_W + 20, 0);
         this.add(this.card);
-
-        const glowWrap = scene.add.container(ROW_W / 2, OFFER_CARD_H / 2);
-        this.card.add(glowWrap);
-        this.glow = scene.add.graphics();
-        this.glow.setPosition(-ROW_W / 2, -OFFER_CARD_H / 2).setVisible(false);
-        glowWrap.add(this.glow);
 
         this.bg = scene.add.graphics();
         this.card.add(this.bg);
@@ -90,24 +82,24 @@ export class BonusPanel extends GameObjects.Container {
         this.card.on('pointerup', () => this.cancelTooltip());
         this.card.on('pointerout', () => this.cancelTooltip());
 
-        this.icon = scene.add.image(ICON_PAD + ICON_SZ / 2, CONTENT_CY, BUFF_ICON.lucky)
+        this.icon = scene.add.image(ICON_PAD + ICON_SZ / 2 - 2, CONTENT_CY, BUFF_ICON.lucky)
             .setDisplaySize(ICON_SZ, ICON_SZ);
         this.card.add(this.icon);
 
-        this.label = scene.add.text(AREA_CX, CONTENT_TOP + 14, '', {
+        this.label = scene.add.text(AREA_CX - 3, CONTENT_TOP + 14, '', {
             fontFamily: UI.FONT_STROKE, fontSize: '15px', color: '#ffffff',
             stroke: '#000000', strokeThickness: UI.STROKE_THIN,
         }).setOrigin(0.5, 0.5);
         this.card.add(this.label);
 
-        this.desc = scene.add.text(AREA_CX, CONTENT_TOP + 31, '', {
-            fontFamily: UI.FONT_STROKE, fontSize: '14px', color: '#ffffff',
+        this.desc = scene.add.text(AREA_CX - 3, CONTENT_TOP + 27, '', {
+            fontFamily: UI.FONT_STROKE, fontSize: '11px', color: '#ffffff',
             stroke: '#000000', strokeThickness: 1,
         }).setOrigin(0.5, 0.5);
         this.card.add(this.desc);
 
         const btnCY = OFFER_CARD_H - PAD - BTN_H / 2 - BTN_SHADOW + 1;
-        this.btnWrap = scene.add.container(AREA_CX, btnCY);
+        this.btnWrap = scene.add.container(AREA_CX - 2, btnCY);
         this.card.add(this.btnWrap);
         const btnBg = scene.add.graphics();
         this.draw3DButton(btnBg);
@@ -156,19 +148,8 @@ export class BonusPanel extends GameObjects.Container {
         this.bg.fillRoundedRect(0, 0, ROW_W, OFFER_CARD_H, RADIUS);
         this.bg.fillStyle(color, 0.7);
         this.bg.fillRoundedRect(0, 0, ROW_W, ACCENT_H, { tl: RADIUS, tr: RADIUS, bl: 0, br: 0 });
-        this.bg.lineStyle(1.5, color, 0.3);
+        this.bg.lineStyle(2, color, 0.6);
         this.bg.strokeRoundedRect(0, 0, ROW_W, OFFER_CARD_H, RADIUS);
-
-        const sp = type === 'epic' ? 7 : 5;
-        this.glow.clear();
-        this.glow.fillStyle(color, 0.25);
-        this.glow.fillRoundedRect(-sp, -sp, ROW_W + sp * 2, OFFER_CARD_H + sp * 2, RADIUS + sp);
-        this.glow.setVisible(true);
-        if (this.glowTween) this.glowTween.destroy();
-        this.glowTween = this.scene.tweens.add({
-            targets: this.glow, alpha: { from: 0.3, to: 0.8 },
-            duration: type === 'epic' ? 1200 : 2500, yoyo: true, repeat: -1, ease: 'Sine.easeInOut',
-        });
 
         this.drawTimerTab(color);
     }
@@ -190,7 +171,7 @@ export class BonusPanel extends GameObjects.Container {
             this.configureCard(buffs.getCurrentOffer());
             this.lastSec = -1;
             this.timerTab.setVisible(true);
-            this.card.x = ROW_W + 10;
+            this.card.x = ROW_W + 20;
             this.scene.tweens.add({
                 targets: this.card, x: 0, duration: 300, ease: 'Back.easeOut',
                 onComplete: () => { this.btnWrap.setInteractive({ useHandCursor: true }); },
@@ -223,12 +204,11 @@ export class BonusPanel extends GameObjects.Container {
     private slideOut(direction: 'left' | 'right'): void {
         this.btnWrap.disableInteractive();
         this.timerTab.setVisible(false);
-        const targetX = direction === 'left' ? -(ROW_W + 10) : ROW_W + 10;
+        const targetX = direction === 'left' ? -(ROW_W + 20) : ROW_W + 20;
         this.scene.tweens.add({
             targets: this.card, x: targetX, duration: 300, ease: 'Cubic.easeIn',
             onComplete: () => {
-                this.glow.setVisible(false);
-                this.card.x = ROW_W + 10;
+                this.card.x = ROW_W + 20;
             },
         });
     }

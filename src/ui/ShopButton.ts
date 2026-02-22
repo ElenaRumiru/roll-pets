@@ -10,12 +10,14 @@ const RADIUS = 14;
 
 export class ShopButton extends GameObjects.Container {
     constructor(scene: Scene, onClick: () => void) {
-        super(scene, GAME_WIDTH - PANEL_W - 15, GAME_HEIGHT - TOTAL_H - 8);
+        super(scene, GAME_WIDTH - PANEL_W - 15, GAME_HEIGHT - TOTAL_H - 15);
 
         // Dark panel (lower portion)
         const bg = scene.add.graphics();
-        bg.fillStyle(0x000000, 0.55);
+        bg.fillStyle(0x111122, 0.55);
         bg.fillRoundedRect(0, TOTAL_H - BG_H, PANEL_W, BG_H, RADIUS);
+        bg.lineStyle(2, 0xffffff, 0.2);
+        bg.strokeRoundedRect(0, TOTAL_H - BG_H, PANEL_W, BG_H, RADIUS);
         this.add(bg);
 
         // Shop icon — centered, overlaps dark panel top

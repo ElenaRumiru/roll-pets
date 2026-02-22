@@ -38,9 +38,9 @@ export const en: Record<string, string> = {
     'pet_unknown': '???',
 
     // Buffs
-    'buff_lucky': 'Lucky Roll',
-    'buff_super': 'Super Roll',
-    'buff_epic': 'Epic Roll',
+    'buff_lucky': '1 Lucky Roll',
+    'buff_super': '1 Super Roll',
+    'buff_epic': '1 Epic Roll',
     'buff_autoroll': 'Auto Roll',
     'buff_watch_ad': 'Watch Ad',
     'buff_epic_ready': 'READY!',

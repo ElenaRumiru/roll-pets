@@ -38,9 +38,9 @@ export const ru: Record<string, string> = {
     'pet_unknown': '???',
 
     // Buffs
-    'buff_lucky': 'Удачный',
-    'buff_super': 'Супер',
-    'buff_epic': 'Эпик',
+    'buff_lucky': '1 Удачный ролл',
+    'buff_super': '1 Супер ролл',
+    'buff_epic': '1 Эпик ролл',
     'buff_autoroll': 'Авто Ролл',
     'buff_watch_ad': 'Смотреть',
     'buff_epic_ready': 'ГОТОВ!',

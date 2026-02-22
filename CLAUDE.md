@@ -107,6 +107,10 @@ src/
 
 **Resolution:** 1031x580 (Poki-recommended 16:9). Phaser Scale.FIT fills the canvas on all devices.
 
+**Safe zone:** 15px from all screen edges for HUD elements. Left/right margins use `LEFT_PANEL.x = 15` and `GAME_WIDTH - w - 15`. Top margin = 15px (TopBar, CoinDisplay, SettingsButton). Bottom margin = 15px (CollectionButton, ShopButton, Roll button bottom edge, Autoroll toggle).
+
+**UI color theme:** All main-screen panel backgrounds use `0x111122` (bluish dark) with white outline `lineStyle(2, 0xffffff, 0.2)`. Accent green color is `0x78C828` (lime, matching Roll button image) — used for XP bar, CLAIM/FREE buttons, Lucky buff, quest progress bars. Progress bars follow ProgressBar component style: `0x222244` bg at 0.5 alpha, black outline, fill with white highlight strip.
+
 **Testing:** Always use Playwright MCP to test the game. At the start of every session, navigate to `http://localhost:8080/` via Playwright to verify the dev server is running. Before launching Chrome, check if it's already open (Playwright will fail with a resource access error if Chrome is running). If it fails, ask the user to close Chrome or start the dev server. After every code change, reload the page in Playwright and take a screenshot to verify visuals. Use `browser_console_messages` to check for errors. Click UI elements (ROLL button, Collection, etc.) to test interactions.
 
 ## Key Constraints
@@ -165,11 +169,11 @@ When official docs are not enough, **search the wider internet**: Reddit, YouTub
 - Manual refresh via rewarded ad: regenerates all offers from current uncollected pool.
 - Purchase flow: click buy → coins deducted via `GameManager.purchasePet()` → pet added to collection → card removed → remaining cards re-center. "Not enough coins" toast on failed attempt.
 - Scene transition follows CollectionScene pattern (stop autoroll, save state, scene.start).
-- ShopButton positioned bottom-right, aligned with BonusPanel/QuestPanel width (143px).
+- ShopButton positioned bottom-right (118px wide).
 - Events: `shop-purchase` emitted on successful buy.
 
 **Daily Quests:** Two repeating quests that reset at UTC midnight. Managed by `QuestSystem` (pure TS), UI in `QuestPanel` + `QuestClaimPopup`. Save version 13.
 - Quest 1 (Roll): targets [3, 5, 10], loops at 10. Reward: 1x Lucky (free) / 5x Lucky (ad).
 - Quest 2 (Grade): sequence [Uncommon, Improved], loops at Improved. Accepts target grade or higher. Reward: 1x Super (free) / 3x Super (ad).
-- Claim flow: progress bar → CLAIM button → popup with two card choices (free green / ad purple) → buff granted.
+- Claim flow: progress bar → CLAIM button → popup with two card choices (free lime / ad purple) → buff granted.
 - Events: `quests-changed` emitted on progress/claim/reset. Daily reset checked on load, each roll, and periodic 60s timer.

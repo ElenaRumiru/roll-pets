@@ -4,11 +4,13 @@ import { addButtonFeedback } from './components/buttonFeedback';
 
 export class SettingsButton extends GameObjects.Container {
     constructor(scene: Scene, onPress: () => void) {
-        super(scene, GAME_WIDTH - 49, 28);
+        super(scene, GAME_WIDTH - 49, 33);
 
         const bg = scene.add.graphics();
-        bg.fillStyle(0x000000, 0.75);
+        bg.fillStyle(0x111122, 0.75);
         bg.fillCircle(0, 0, 20);
+        bg.lineStyle(2, 0xffffff, 0.2);
+        bg.strokeCircle(0, 0, 20);
         this.add(bg);
 
         const icon = scene.add.text(0, 1, '\u2699', {
