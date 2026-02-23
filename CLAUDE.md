@@ -143,6 +143,7 @@ All design documents are in `documentation/`:
 - `ABOUT_WEB_GAME_REQUIREMENTS.md` — Market analysis, portal requirements (Poki/CrazyGames/Yandex), monetization economics
 - `_PETS GO!_ (1).pdf` — Original game reference
 - `Таблицы _PETS GO_.xlsx` — Pet data tables
+- `balance/` — Generated CSV tables (run `node documentation/balance/generate_balance.js`): pet stats, grade distribution, XP curve, roll probabilities, buff economics, golden path simulation
 
 ## Research Protocol
 
@@ -156,7 +157,7 @@ When official docs are not enough, **search the wider internet**: Reddit, YouTub
 
 **100 pets** distributed: Common(28), Uncommon(24), Improved(14), Rare(12), Valuable(8), Elite(5), Epic(4), Heroic(2), Mythic(1), Ancient(1), Legendary(1). New pets reuse existing 30 sprites via shared `imageKey`.
 
-**Roll algorithm:** Sequential check from rarest to most common, `checkChance = min(1, luckMultiplier / pet.chance)`. First pet to pass = result, fallback = most common in pool. Buff multipliers stack multiplicatively: Lucky x2, Super x3, Epic x5 (max x30).
+**Roll algorithm:** Sequential check from rarest to most common, `checkChance = min(1, luckMultiplier / pet.chance)`. First pet to pass = result, fallback = most common in pool. Buff multipliers stack multiplicatively: Lucky x2, Super x3, Epic x5 (max x30). Charges per ad watch: Lucky 25, Super 12, Epic 5 (configured in `BUFF_CONFIG.rollsPerAd`).
 
 **Eggs:** Dynamic filter via `getEggFilterForLevel(level)` — each visual tier (1–17) removes one common pet from the pool. XP curve: base 100, multiplier 1.15x per level. New pet = +25% XP bar, duplicate = +0.5-10% based on grade.
 
@@ -182,7 +183,7 @@ When official docs are not enough, **search the wider internet**: Reddit, YouTub
 - Events: `shop-purchase` emitted on successful buy.
 
 **Daily Quests:** Two repeating quests that reset at UTC midnight. Managed by `QuestSystem` (pure TS), UI in `QuestPanel` + `QuestClaimPopup`. Save version 13.
-- Quest 1 (Roll): targets [3, 5, 10], loops at 10. Reward: 1x Lucky (free) / 5x Lucky (ad).
-- Quest 2 (Grade): sequence [Uncommon, Improved], loops at Improved. Accepts target grade or higher. Reward: 1x Super (free) / 3x Super (ad).
-- Claim flow: progress bar → CLAIM button → popup with two card choices (free lime / ad purple) → buff granted.
+- Quest 1 (Roll): targets [3, 5, 10], loops at 10. Reward: 5x Lucky (free) / 25x Lucky (ad).
+- Quest 2 (Grade): sequence [Uncommon, Improved], loops at Improved. Accepts target grade or higher. Reward: 3x Super (free) / 12x Super (ad).
+- Claim flow: progress bar → CLAIM button → popup with two card choices (free lime / ad purple) → buff granted. Tap outside popup to dismiss without claiming (CLAIM button stays active).
 - Events: `quests-changed` emitted on progress/claim/reset. Daily reset checked on load, each roll, and periodic 60s timer.

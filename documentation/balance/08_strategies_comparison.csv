@@ -1,0 +1,6 @@
+﻿Strategy,Mult,Rolls/hour,Coins/hour (vet),XP%/hour (vet),Coins in 1h,Coins in 4h,Coins in 8h,Coins in 12h,Coins in 24h,Rolls in 1h,Rolls in 4h,Rolls in 8h,Rolls in 12h,Rolls in 24h,P(Rare+)/roll,P(Epic+)/roll,Rare+ hits in 8h
+Autoroll (overnight/AFK),1,7200.0,7892.87,3941.6236%,7.89K,31.57K,63.14K,94.71K,189.43K,7.20K,28.80K,57.60K,86.40K,172.80K,0.1008%,5.270e-7,58
+Manual rolling (1/sec),1,3600.0,3946.44,1970.8118%,3.95K,15.79K,31.57K,47.36K,94.71K,3.60K,14.40K,28.80K,43.20K,86.40K,0.1008%,5.270e-7,29
+Autoroll + quest buffs,1-2,7200.0,7957.07,3973.2425%,7.96K,31.83K,63.66K,95.48K,190.97K,7.20K,28.80K,57.60K,86.40K,172.80K,0.1008%,5.270e-7,58
+Lucky-only hunting (x2),2,72.0,85.35,42.5781%,85,341,683,1.02K,2.05K,72,288,576,864,1.73K,0.2014%,1.054e-6,1
+Full buff stack (x30),30,24.8,55.45,27.2341%,55,222,444,665,1.33K,25,99,199,298,596,2.9836%,1.581e-5,6

@@ -1,0 +1,6 @@
+﻿Quest,Target,Reward (free),Reward (ad),Buff mult,E[coins uplift per buff use] (vet),Value: free vs ad,Optimal choice
+Roll Quest (cycle 1),3 rolls,1x Lucky,5x Lucky,x2,0.0892,Free: 0.0892 coins uplift / Ad: 0.4458 coins uplift,Ad gives 5x value for ~30s investment
+Roll Quest (cycle 2),5 rolls,1x Lucky,5x Lucky,x2,0.0892,Free: 0.0892 / Ad: 0.4458,Ad if you want rare pets; Free if impatient
+Roll Quest (cycle 3+),10 rolls,1x Lucky,5x Lucky,x2,0.0892,Free: 0.0892 / Ad: 0.4458,Loops at 10; always claim for buffs
+Grade Quest (cycle 1),1x Uncommon+,1x Super,3x Super,x3,0.1718,Free: 0.1718 / Ad: 0.5154,Very easy to complete; Ad is great value
+Grade Quest (cycle 2+),1x Improved+,1x Super,3x Super,x3,0.1718,Free: 0.1718 / Ad: 0.5154,Harder; may take many rolls at low level

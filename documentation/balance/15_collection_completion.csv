@@ -1,0 +1,17 @@
+﻿Collection %,Pets collected,Hardest uncollected grade,Est. rolls needed (from 0),Est. autoroll time,Est. rolls for next pet,Notes
+10%,10,Common,192,2min,25,
+20%,20,Common,609,5min,59,
+28%,28,Common,1.25K,10min,102,All Commons
+30%,30,Uncommon,1.49K,12min,129,
+40%,40,Uncommon,4.13K,34min,411,
+50%,50,Uncommon,10.79K,1.5h,880,
+52%,52,Uncommon,12.67K,1.8h,959,All Commons + Uncommons
+60%,60,Improved,25.81K,3.6h,2.51K,
+68%,68,Improved,54.77K,7.6h,4.50K,+ All Improved
+70%,70,Rare,64.58K,9.0h,5.00K,
+80%,80,Rare,262.63K,1.5 days,36.01K,
+82%,82,Rare,346.64K,2.0 days,44.00K,+ All Rare
+90%,90,Valuable,1.43M,8.3 days,270.00K,
+96%,96,Elite,5.13M,29.7 days,1.20M,Everything except top 4 (Heroic+)
+99%,99,Elite,12.93M,74.8 days,3.50M,
+100%,100,Elite,17.43M,100.9 days,4.50M,Full collection (incl. Legendary)

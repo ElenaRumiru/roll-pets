@@ -1,0 +1,12 @@
+﻿Source/Sink,Type,Amount per event,Frequency,Coins per hour (autoroll vet),Notes
+Roll coins (duplicate),SOURCE,1.10/roll,7200 rolls/h,7893,Main income for veterans
+Level-up coins (free),SOURCE,500 (at lv50),1 per 183 rolls,19708,level * 10 coins; 0 if egg changes
+Level-up coins (ad x3),SOURCE,1500 (at lv50),1 per 183 rolls,59124,Requires watching ad
+Quest reward (Lucky buff),SOURCE (indirect),0 coins,Every 10 rolls,0,Lucky buff increases rare pet chance but not direct coins
+Shop purchase (Common),SINK,4-186 coins,Manual,Variable,Price = chance * 2; cheapest: Cat = 4 coins
+Shop purchase (Uncommon),SINK,200-1960 coins,Manual,Variable,
+Shop purchase (Improved),SINK,2K-9.6K coins,Manual,Variable,
+Shop purchase (Rare),SINK,10K-96K coins,Manual,Variable,
+Shop purchase (Valuable),SINK,100K-960K coins,Manual,Variable,
+Shop purchase (Elite),SINK,1M-9M coins,Manual,Variable,Extremely expensive — months of autoroll
+Shop purchase (Epic+),SINK,10M+ coins,Manual,Variable,Practically unaffordable through normal play
