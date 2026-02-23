@@ -38,9 +38,9 @@ export const en: Record<string, string> = {
     'pet_unknown': '???',
 
     // Buffs
-    'buff_lucky': '1 Lucky Roll',
-    'buff_super': '1 Super Roll',
-    'buff_epic': '1 Epic Roll',
+    'buff_lucky': '{count} Lucky Rolls',
+    'buff_super': '{count} Super Rolls',
+    'buff_epic': '{count} Epic Rolls',
     'buff_autoroll': 'Auto Roll',
     'buff_watch_ad': 'Watch Ad',
     'buff_epic_ready': 'READY!',
@@ -90,8 +90,17 @@ export const en: Record<string, string> = {
     'ads_badge': 'ADs',
     'collection_button': 'Collections',
 
+    // Leagues
+    'league_bronze': 'Bronze',
+    'league_silver': 'Silver',
+    'league_gold': 'Gold',
+    'league_diamond': 'Diamond',
+    'league_master': 'Master',
+
     // Leaderboard & Nickname
     'leaderboard_title': 'TOP',
+    'leaderboard_scene_title': 'Leaderboard',
+    'leaderboard_back': 'Back',
     'nickname_prompt': 'Enter your name',
     'nickname_ok': 'OK',
     'bonus_get': 'GET',
@@ -133,6 +142,10 @@ export const en: Record<string, string> = {
     'levelup_tap_close': 'Tap to close ({seconds})',
     'levelup_auto_accept': 'Auto-accept in {seconds}s',
     'levelup_best': 'BEST',
+
+    // League Promotion
+    'league_promo_title': 'LEAGUE PROMOTION!',
+    'league_promo_subtitle': 'New League: {league}',
 
     // Shop
     'shop_title': 'Shop',

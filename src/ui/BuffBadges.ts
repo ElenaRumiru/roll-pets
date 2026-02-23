@@ -2,6 +2,7 @@ import { GameObjects, Scene } from 'phaser';
 import { UI, BUFF_CONFIG } from '../core/config';
 import { BuffSystem } from '../systems/BuffSystem';
 import { t } from '../data/locales';
+import { fitText } from './components/fitText';
 
 interface Badge {
     container: GameObjects.Container;
@@ -20,7 +21,6 @@ const TOOLTIP_KEYS: Record<string, string> = {
     lucky: 'tip_lucky',
     super: 'tip_super',
     epic: 'tip_epic',
-    auto: 'tip_autoroll',
 };
 
 export class BuffBadges extends GameObjects.Container {
@@ -40,7 +40,6 @@ export class BuffBadges extends GameObjects.Container {
         this.createBadge(scene, 'lucky', BUFF_CONFIG.lucky.color);
         this.createBadge(scene, 'super', BUFF_CONFIG.super.color);
         this.createBadge(scene, 'epic',  BUFF_CONFIG.epic.color);
-        this.createBadge(scene, 'auto',  BUFF_CONFIG.autoroll.color);
 
         // Shared tooltip
         this.tooltipBg = scene.add.graphics().setDepth(200);
@@ -129,8 +128,6 @@ export class BuffBadges extends GameObjects.Container {
         this.setBadge('super', t('badge_super'), buffs.getCount('super'));
         this.setBadge('epic',  t('badge_epic'),  buffs.getCount('epic'));
 
-        this.setBadgeRaw('auto', t('badge_auto'), buffs.isAutorollEnabled());
-
         this.layoutBadges();
     }
 
@@ -142,7 +139,10 @@ export class BuffBadges extends GameObjects.Container {
         const badge = this.badges.find(b => b.key === key);
         if (!badge) return;
         badge.container.setVisible(visible);
-        if (visible) badge.text.setText(text);
+        if (visible) {
+            badge.text.setText(text);
+            fitText(badge.text, BADGE_W - 4, 11);
+        }
     }
 
     private layoutBadges(): void {

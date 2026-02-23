@@ -2,6 +2,7 @@ import { GameObjects, Scene } from 'phaser';
 import { PetDef } from '../types';
 import { GRADE, getGradeForChance, getOddsString, UI } from '../core/config';
 import { t } from '../data/locales';
+import { fitText } from './components/fitText';
 
 const CARD_W = 109;
 const CARD_H = 123;
@@ -61,6 +62,7 @@ export class PetCard extends GameObjects.Container {
             fontSize: '14px',
             color: found ? '#ffffff' : '#333344',
         }).setOrigin(0.5);
+        fitText(nameText, CARD_W - 8, 14);
         this.add(nameText);
 
         const oddsText = scene.add.text(0, CARD_H / 2 - 14, found ? getOddsString(pet.chance) : '???', {

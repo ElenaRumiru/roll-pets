@@ -1,6 +1,6 @@
 import { PetDef } from '../types';
 
-function splitmix32(a: number): () => number {
+export function splitmix32(a: number): () => number {
     return () => {
         a |= 0;
         a = (a + 0x9e3779b9) | 0;
@@ -12,7 +12,7 @@ function splitmix32(a: number): () => number {
     };
 }
 
-function sfc32(a: number, b: number, c: number, d: number): () => number {
+export function sfc32(a: number, b: number, c: number, d: number): () => number {
     return () => {
         a |= 0; b |= 0; c |= 0; d |= 0;
         const t = ((a + b) | 0) + d | 0;

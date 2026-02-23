@@ -2,6 +2,7 @@ import { GameObjects, Geom, Scene } from 'phaser';
 import { UI, GAME_HEIGHT, LEFT_PANEL } from '../core/config';
 import { t } from '../data/locales';
 import { addButtonFeedback } from './components/buttonFeedback';
+import { fitText } from './components/fitText';
 
 const PANEL_W = 128;
 const BG_H = 67;
@@ -36,6 +37,7 @@ export class CollectionButton extends GameObjects.Container {
             stroke: '#000000',
             strokeThickness: UI.STROKE_MEDIUM,
         }).setOrigin(0.5);
+        fitText(label, PANEL_W - 8, 17);
         this.add(label);
 
         // Notification badge (top-right corner of dark panel)

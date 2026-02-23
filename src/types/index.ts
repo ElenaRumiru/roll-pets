@@ -50,6 +50,11 @@ export interface LevelUpData {
     coinReward: number;
 }
 
+export interface LeaguePromotionData {
+    tier: LeagueTier;
+    coinReward: number;
+}
+
 export interface SaveData {
     version: number;
     level: number;
@@ -95,4 +100,23 @@ export interface ShopOffer {
 export interface ShopState {
     lastRefreshDate: string;
     offers: ShopOffer[];
+}
+
+// ── Leaderboard / Leagues ──
+
+export type LeagueTier = 'bronze' | 'silver' | 'gold' | 'diamond' | 'master';
+
+export interface LeagueConfig {
+    tier: LeagueTier;
+    label: string;       // locale key, e.g. 'league_bronze'
+    color: number;       // Phaser hex tint
+    colorHex: string;    // CSS hex for text
+    minChance: number;   // inclusive lower bound
+    maxChance: number;   // exclusive upper bound
+}
+
+export interface LeaderboardEntry {
+    name: string;
+    chance: number;      // best pet's chance value
+    isPlayer: boolean;
 }

@@ -1,18 +1,16 @@
 import { GameObjects, Scene } from 'phaser';
 import { GAME_WIDTH, GAME_HEIGHT, UI, LEVELUP_CONFIG } from '../core/config';
-import { LevelUpData } from '../types';
-import { getEggNameKey, getEggMinOdds } from '../data/eggs';
+import { LeaguePromotionData } from '../types';
+import { LEAGUES } from '../data/leaderboard';
 import { t } from '../data/locales';
 import { addButtonFeedback } from './components/buttonFeedback';
 import { fitText } from './components/fitText';
 
 const CX = GAME_WIDTH / 2;
 const CY = GAME_HEIGHT / 2;
-const DEPTH = 500;          // above autoroll UI (105) and pause (1001 handled separately)
+const DEPTH = 500;
 
-const RING_OUTER = 42;
-const RING_INNER = 32;
-const RING_COLOR = 0xffc107;
+const ICON_H = 100;
 
 const CARD_W = 136;
 const CARD_H = 175;
@@ -28,20 +26,23 @@ const FREE_DARK = 0x4E8A18;
 const AD_COLOR = 0x7B2FBE;
 const AD_DARK = 0x4A1A72;
 
-export class LevelUpOverlay {
+export class LeaguePromotionOverlay {
     private scene: Scene;
     private elements: GameObjects.GameObject[] = [];
     private timer: Phaser.Time.TimerEvent | null = null;
     private freeBtnText: GameObjects.Text | null = null;
 
-    constructor(scene: Scene, _overlay: GameObjects.Rectangle) {
+    constructor(scene: Scene) {
         this.scene = scene;
     }
 
-    show(data: LevelUpData, onComplete: (chosenCoinAmount: number) => void): void {
+    show(data: LeaguePromotionData, onComplete: (chosenCoinAmount: number) => void): void {
         this.cleanup();
 
-        // Fullscreen dark blocker — blocks ALL clicks behind it
+        const league = LEAGUES.find(l => l.tier === data.tier)!;
+        const baseAmount = data.coinReward;
+        const adAmount = baseAmount * LEVELUP_CONFIG.adCoinMultiplier;
+
         const blocker = this.scene.add.rectangle(CX, CY, GAME_WIDTH, GAME_HEIGHT, 0x000000, 0.75)
             .setDepth(DEPTH).setInteractive();
         this.elements.push(blocker);
@@ -49,141 +50,42 @@ export class LevelUpOverlay {
         const container = this.scene.add.container(CX, CY).setDepth(DEPTH + 1).setScale(0);
         this.elements.push(container);
 
-        // --- Double ring (top) ---
-        const ringY = -173;
-        this.buildDoubleRing(container, data.level, ringY);
+        // Rating icon
+        const iconY = -170;
+        const icon = this.scene.add.image(0, iconY, 'ui_rating');
+        const aspectRatio = icon.width / icon.height;
+        icon.setDisplaySize(ICON_H * aspectRatio, ICON_H);
+        container.add(icon);
 
-        // --- "LEVEL UP!" title ---
-        const titleY = ringY + RING_OUTER + 30;
-        const title = this.scene.add.text(0, titleY, t('levelup_title'), {
-            fontFamily: UI.FONT_STROKE, fontSize: '32px',
-            color: '#ffc107', stroke: '#000000', strokeThickness: UI.STROKE_THICK,
+        // Title
+        const titleY = iconY + ICON_H / 2 + 26;
+        const title = this.scene.add.text(0, titleY, t('league_promo_title'), {
+            fontFamily: UI.FONT_STROKE, fontSize: '28px',
+            color: league.colorHex, stroke: '#000000', strokeThickness: UI.STROKE_THICK,
         }).setOrigin(0.5);
+        fitText(title, 400, 28);
         container.add(title);
 
-        if (data.eggChanged) {
-            this.buildEggVariant(container, blocker, data, titleY, onComplete);
-        } else {
-            this.buildCoinVariant(container, data, titleY, onComplete);
-        }
-
-        this.scene.tweens.add({ targets: container, scale: 1, duration: 300, ease: 'Back.easeOut' });
-    }
-
-    private buildDoubleRing(container: GameObjects.Container, level: number, cy: number): void {
-        const gfx = this.scene.add.graphics();
-        gfx.fillStyle(0x1a1a2e, 0.95);
-        gfx.fillCircle(0, cy, RING_OUTER);
-        gfx.lineStyle(4, RING_COLOR, 1);
-        gfx.strokeCircle(0, cy, RING_OUTER);
-        gfx.lineStyle(2, RING_COLOR, 0.7);
-        gfx.strokeCircle(0, cy, RING_INNER);
-        container.add(gfx);
-
-        const text = this.scene.add.text(0, cy, `${level}`, {
-            fontFamily: UI.FONT_STROKE, fontSize: '30px',
-            color: '#ffc107', stroke: '#000000', strokeThickness: UI.STROKE_THICK,
-        }).setOrigin(0.5);
-        container.add(text);
-    }
-
-    // ─── EGG VARIANT ────────────────────────────────────────
-
-    private buildEggVariant(
-        container: GameObjects.Container,
-        blocker: GameObjects.Rectangle,
-        data: LevelUpData,
-        titleY: number,
-        onComplete: (chosenCoinAmount: number) => void,
-    ): void {
-        let y = titleY + 35;
-
-        // Subtitle
-        const subtitle = this.scene.add.text(0, y, t('levelup_new_egg_unlocked'), {
-            fontFamily: UI.FONT_STROKE, fontSize: '18px',
+        // Subtitle — league name
+        const subY = titleY + 35;
+        const subText = t('league_promo_subtitle').replace('{league}', t(league.label));
+        const subtitle = this.scene.add.text(0, subY, subText, {
+            fontFamily: UI.FONT_STROKE, fontSize: '20px',
             color: '#ffffff', stroke: '#000000', strokeThickness: UI.STROKE_MEDIUM,
         }).setOrigin(0.5);
+        fitText(subtitle, 350, 20);
         container.add(subtitle);
-        y += 27;
 
-        // Old egg → arrow → new egg
-        const eggY = y + 62;
-        const oldEgg = this.scene.add.image(-99, eggY, data.oldEggKey).setDisplaySize(111, 111);
-        container.add(oldEgg);
-        const arrow = this.scene.add.image(0, eggY, 'ui_arrow').setDisplaySize(35, 35).setRotation(-Math.PI / 2);
-        container.add(arrow);
-        const newEgg = this.scene.add.image(99, eggY, data.eggKey).setDisplaySize(111, 111);
-        container.add(newEgg);
-        y = eggY + 72;
-
-        // Egg name
-        const eggName = this.scene.add.text(0, y, t(getEggNameKey(data.eggKey)), {
-            fontFamily: UI.FONT_STROKE, fontSize: '22px',
-            color: '#ffc107', stroke: '#000000', strokeThickness: UI.STROKE_MEDIUM,
-        }).setOrigin(0.5);
-        fitText(eggName, 300, 22);
-        container.add(eggName);
-        y += 27;
-
-        // Egg characteristic
-        const odds = getEggMinOdds(data.level);
-        const effect = this.scene.add.text(0, y, t('egg_effect').replace('{odds}', odds), {
+        // Rewards subtitle
+        const rewardsY = subY + 29;
+        const rewardsSub = this.scene.add.text(0, rewardsY, t('levelup_rewards'), {
             fontFamily: UI.FONT_STROKE, fontSize: '16px',
             color: '#aaaaaa', stroke: '#000000', strokeThickness: UI.STROKE_THIN,
         }).setOrigin(0.5);
-        container.add(effect);
-        y += 27;
-
-        // Countdown
-        let seconds = LEVELUP_CONFIG.eggCloseSeconds;
-        const countdown = this.scene.add.text(0, y, this.fmtTapClose(seconds), {
-            fontFamily: UI.FONT_BODY, fontSize: '16px',
-            color: '#888888', stroke: '#000000', strokeThickness: 1,
-        }).setOrigin(0.5);
-        fitText(countdown, 350, 16);
-        container.add(countdown);
-
-        this.timer = this.scene.time.addEvent({
-            delay: 1000, repeat: seconds - 1,
-            callback: () => {
-                seconds--;
-                countdown.setText(this.fmtTapClose(seconds));
-                fitText(countdown, 350, 16);
-                if (seconds <= 0) this.close(() => onComplete(0));
-            },
-        });
-
-        // Tap-to-close on the blocker
-        blocker.on('pointerdown', () => this.close(() => onComplete(0)));
-    }
-
-    private fmtTapClose(s: number): string {
-        return t('levelup_tap_close').replace('{seconds}', String(s));
-    }
-
-    // ─── COINS VARIANT ──────────────────────────────────────
-
-    private buildCoinVariant(
-        container: GameObjects.Container,
-        data: LevelUpData,
-        titleY: number,
-        onComplete: (chosenCoinAmount: number) => void,
-    ): void {
-        const baseAmount = data.coinReward;
-        const adAmount = baseAmount * LEVELUP_CONFIG.adCoinMultiplier;
-
-        let y = titleY + 59;
-
-        // Subtitle
-        const subtitle = this.scene.add.text(0, y, t('levelup_rewards'), {
-            fontFamily: UI.FONT_STROKE, fontSize: '18px',
-            color: '#ffffff', stroke: '#000000', strokeThickness: UI.STROKE_MEDIUM,
-        }).setOrigin(0.5);
-        container.add(subtitle);
-        y += 32;
+        container.add(rewardsSub);
 
         // Choice cards
-        const cardsY = y;
+        const cardsY = rewardsY + 22;
         const leftX = -CARD_GAP / 2 - CARD_W / 2;
         const rightX = CARD_GAP / 2 + CARD_W / 2;
 
@@ -194,17 +96,14 @@ export class LevelUpOverlay {
             this.close(() => onComplete(amount));
         };
 
-        // Free card — pass initial label with countdown
         let seconds = LEVELUP_CONFIG.coinAcceptSeconds;
         const freeLabel = `${t('quest_free')} (${seconds})`;
-        this.buildChoiceCard(container, leftX, cardsY, `+${baseAmount}`,
+        this.buildChoiceCard(container, leftX, cardsY, `+${this.formatCoins(baseAmount)}`,
             FREE_COLOR, FREE_DARK, freeLabel, false, () => choose(baseAmount));
 
-        // Ad card
-        this.buildChoiceCard(container, rightX, cardsY, `+${adAmount}`,
+        this.buildChoiceCard(container, rightX, cardsY, `+${this.formatCoins(adAmount)}`,
             AD_COLOR, AD_DARK, t('quest_watch'), true, () => choose(adAmount));
 
-        // Timer — updates the FREE button text with countdown
         this.timer = this.scene.time.addEvent({
             delay: 1000, repeat: seconds - 1,
             callback: () => {
@@ -216,6 +115,8 @@ export class LevelUpOverlay {
                 if (seconds <= 0) choose(baseAmount);
             },
         });
+
+        this.scene.tweens.add({ targets: container, scale: 1, duration: 300, ease: 'Back.easeOut' });
     }
 
     private buildChoiceCard(
@@ -233,19 +134,17 @@ export class LevelUpOverlay {
         cardBg.strokeRoundedRect(cx - CARD_W / 2, topY, CARD_W, CARD_H, CARD_R);
         container.add(cardBg);
 
-        // Coin icon
         const iconY = topY + 59;
         const icon = this.scene.add.image(cx, iconY, 'ui_coin_md').setDisplaySize(42, 42);
         container.add(icon);
 
-        // Amount
         const amtText = this.scene.add.text(cx, iconY + 35, amountStr, {
             fontFamily: UI.FONT_STROKE, fontSize: '20px',
             color: '#ffc107', stroke: '#000000', strokeThickness: UI.STROKE_MEDIUM,
         }).setOrigin(0.5);
+        fitText(amtText, CARD_W - 16, 20);
         container.add(amtText);
 
-        // Badge ribbon (centered top)
         if (showBest) {
             const rw = 64, rh = 22;
             const rx = cx;
@@ -261,7 +160,6 @@ export class LevelUpOverlay {
             container.add(bestTxt);
         }
 
-        // Button
         const btnY = topY + CARD_H - BTN_H / 2 - 12;
         const btnWrap = this.scene.add.container(cx, btnY);
         container.add(btnWrap);
@@ -288,7 +186,6 @@ export class LevelUpOverlay {
         fitText(btnText, BTN_W - 10, 14);
         btnWrap.add(btnText);
 
-        // Save reference to FREE button text for countdown updates
         if (!showBest) this.freeBtnText = btnText;
 
         btnWrap.setSize(BTN_W, BTN_H + BTN_SHADOW);
@@ -297,7 +194,12 @@ export class LevelUpOverlay {
         addButtonFeedback(this.scene, btnWrap);
     }
 
-    // ─── SHARED HELPERS ─────────────────────────────────────
+    private formatCoins(n: number): string {
+        if (n >= 1_000_000_000) return `${(n / 1_000_000_000).toFixed(1)}B`;
+        if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
+        if (n >= 10_000) return `${(n / 1_000).toFixed(1)}K`;
+        return n.toLocaleString('en-US');
+    }
 
     private close(onDone: () => void): void {
         if (this.timer) { this.timer.destroy(); this.timer = null; }

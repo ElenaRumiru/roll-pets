@@ -3,6 +3,7 @@ import { UI, BONUS_PANEL, BUFF_CONFIG } from '../core/config';
 import { BuffSystem, CountBuff } from '../systems/BuffSystem';
 import { t } from '../data/locales';
 import { addButtonFeedback } from './components/buttonFeedback';
+import { fitText } from './components/fitText';
 
 const ROW_W = BONUS_PANEL.w;
 const ICON_SZ = 54;
@@ -87,7 +88,7 @@ export class BonusPanel extends GameObjects.Container {
         this.card.add(this.icon);
 
         this.label = scene.add.text(AREA_CX - 3, CONTENT_TOP + 14, '', {
-            fontFamily: UI.FONT_STROKE, fontSize: '15px', color: '#ffffff',
+            fontFamily: UI.FONT_STROKE, fontSize: '13px', color: '#ffffff',
             stroke: '#000000', strokeThickness: UI.STROKE_THIN,
         }).setOrigin(0.5, 0.5);
         this.card.add(this.label);
@@ -108,6 +109,7 @@ export class BonusPanel extends GameObjects.Container {
             fontFamily: UI.FONT_STROKE, fontSize: '13px', color: '#ffffff',
             stroke: '#000000', strokeThickness: 2,
         }).setOrigin(0.5, 0.5);
+        fitText(btnText, BTN_W - 8, 13);
         this.btnWrap.add(btnText);
         this.btnWrap.setSize(BTN_W, BTN_H + BTN_SHADOW);
         this.btnWrap.setInteractive({ useHandCursor: true });
@@ -140,7 +142,8 @@ export class BonusPanel extends GameObjects.Container {
         const iconY = type === 'epic' ? CONTENT_CY + 2 : CONTENT_CY;
 
         this.icon.setTexture(BUFF_ICON[type]).setDisplaySize(iconSize, iconSize).setY(iconY);
-        this.label.setText(t(BUFF_LABEL_KEY[type]));
+        this.label.setText(t(BUFF_LABEL_KEY[type], { count: BUFF_CONFIG[type].rollsPerAd }));
+        fitText(this.label, ROW_W - AREA_LEFT - PAD - 4, 13);
         this.desc.setText(t(BUFF_DESC_KEY[type])).setColor(colorHex);
 
         this.bg.clear();

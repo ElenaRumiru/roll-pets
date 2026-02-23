@@ -5,6 +5,7 @@ import { MainScene } from '../scenes/MainScene';
 import { CollectionScene } from '../scenes/CollectionScene';
 import { ProgressionScene } from '../scenes/ProgressionScene';
 import { ShopScene } from '../scenes/ShopScene';
+import { LeaderboardScene } from '../scenes/LeaderboardScene';
 
 const config: Phaser.Types.Core.GameConfig = {
     type: AUTO,
@@ -23,6 +24,7 @@ const config: Phaser.Types.Core.GameConfig = {
         CollectionScene,
         ProgressionScene,
         ShopScene,
+        LeaderboardScene,
     ],
 };
 

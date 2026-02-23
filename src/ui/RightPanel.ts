@@ -4,6 +4,7 @@ import { BuffBadges } from './BuffBadges';
 import { BuffSystem } from '../systems/BuffSystem';
 import { t } from '../data/locales';
 import { addButtonFeedback } from './components/buttonFeedback';
+import { fitText } from './components/fitText';
 
 export class RightPanel extends GameObjects.Container {
     private rollWrap: GameObjects.Container;
@@ -52,6 +53,7 @@ export class RightPanel extends GameObjects.Container {
             strokeThickness: 6,
             shadow: { offsetX: 2, offsetY: 2, color: '#000000', blur: 4, fill: true },
         }).setOrigin(0.5);
+        fitText(this.rollLabel, ROLL_BTN.width - 25, 30);
         this.rollWrap.add(this.rollLabel);
 
         this.spaceHint = scene.add.text(0, 40, 'SPACE', {
@@ -95,19 +97,19 @@ export class RightPanel extends GameObjects.Container {
 
     setRolling(rolling: boolean): void {
         if (this.autorollRunning) {
-            this.rollLabel.setText(t('roll_stop'));
+            this.setRollLabel(t('roll_stop'));
         } else if (this.autorollEnabled) {
-            this.rollLabel.setText(t('roll_auto'));
+            this.setRollLabel(t('roll_auto'));
         } else if (rolling) {
             this.rollWrap.scene.tweens.killTweensOf(this.rollWrap);
             this.rollWrap.setScale(1);
             this.rollBg.setAlpha(0.5);
             this.rollBg.disableInteractive();
-            this.rollLabel.setText(t('rolling'));
+            this.setRollLabel(t('rolling'));
         } else {
             this.rollBg.setAlpha(1);
             this.rollBg.setInteractive({ useHandCursor: true });
-            this.rollLabel.setText(t('roll_button'));
+            this.setRollLabel(t('roll_button'));
         }
     }
 
@@ -124,19 +126,24 @@ export class RightPanel extends GameObjects.Container {
 
         // Update roll button label based on state
         if (this.autorollRunning) {
-            this.rollLabel.setText(t('roll_stop'));
+            this.setRollLabel(t('roll_stop'));
             this.rollBg.setAlpha(1);
             this.rollBg.setInteractive({ useHandCursor: true });
         } else if (this.autorollEnabled) {
-            this.rollLabel.setText(t('roll_auto'));
+            this.setRollLabel(t('roll_auto'));
             this.rollBg.setAlpha(1);
             this.rollBg.setInteractive({ useHandCursor: true });
         } else if (wasEnabled || wasRunning) {
             // Was in autoroll mode, now back to normal
-            this.rollLabel.setText(t('roll_button'));
+            this.setRollLabel(t('roll_button'));
             this.rollBg.setAlpha(1);
             this.rollBg.setInteractive({ useHandCursor: true });
         }
         // else: normal state, don't overwrite "Hatching..." during a roll
+    }
+
+    private setRollLabel(text: string): void {
+        this.rollLabel.setText(text);
+        fitText(this.rollLabel, ROLL_BTN.width - 25, 30);
     }
 }

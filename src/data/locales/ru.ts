@@ -38,9 +38,9 @@ export const ru: Record<string, string> = {
     'pet_unknown': '???',
 
     // Buffs
-    'buff_lucky': '1 Удачный ролл',
-    'buff_super': '1 Супер ролл',
-    'buff_epic': '1 Эпик ролл',
+    'buff_lucky': '{count} Удачных роллов',
+    'buff_super': '{count} Супер роллов',
+    'buff_epic': '{count} Эпик роллов',
     'buff_autoroll': 'Авто Ролл',
     'buff_watch_ad': 'Смотреть',
     'buff_epic_ready': 'ГОТОВ!',
@@ -91,7 +91,16 @@ export const ru: Record<string, string> = {
     'collection_button': 'Коллекция',
 
     // Leaderboard & Nickname
+    // Leagues
+    'league_bronze': 'Бронза',
+    'league_silver': 'Серебро',
+    'league_gold': 'Золото',
+    'league_diamond': 'Алмаз',
+    'league_master': 'Мастер',
+
     'leaderboard_title': 'ТОП',
+    'leaderboard_scene_title': 'Рейтинг',
+    'leaderboard_back': 'Назад',
     'nickname_prompt': 'Введите имя',
     'nickname_ok': 'OK',
     'bonus_get': 'ВЗЯТЬ',
@@ -133,6 +142,10 @@ export const ru: Record<string, string> = {
     'levelup_tap_close': 'Нажми чтобы закрыть ({seconds})',
     'levelup_auto_accept': 'Автовыбор через {seconds}с',
     'levelup_best': 'ЛУЧШЕЕ',
+
+    // League Promotion
+    'league_promo_title': 'ПОВЫШЕНИЕ ЛИГИ!',
+    'league_promo_subtitle': 'Новая лига: {league}',
 
     // Shop
     'shop_title': 'Магазин',

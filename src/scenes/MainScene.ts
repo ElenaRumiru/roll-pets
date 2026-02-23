@@ -1,10 +1,11 @@
 import { Scene } from 'phaser';
-import { GAME_WIDTH, GAME_HEIGHT, AUTOROLL_INTERVAL, xpForLevel, UI, getOddsString, ONBOARDING, LEVELUP_CONFIG } from '../core/config';
+import { GAME_WIDTH, GAME_HEIGHT, AUTOROLL_INTERVAL, xpForLevel, UI, ONBOARDING, LEVELUP_CONFIG } from '../core/config';
 import { EventBus } from '../core/EventBus';
 import { GameManager } from '../core/GameManager';
 import { TopBar } from '../ui/TopBar';
 import { CenterStage } from '../ui/CenterStage';
 import { LevelUpOverlay } from '../ui/LevelUpOverlay';
+import { LeaguePromotionOverlay } from '../ui/LeaguePromotionOverlay';
 import { RightPanel } from '../ui/RightPanel';
 import { CollectionButton } from '../ui/CollectionButton';
 import { ShopButton } from '../ui/ShopButton';
@@ -18,7 +19,7 @@ import { Leaderboard } from '../ui/Leaderboard';
 import { NicknamePrompt } from '../ui/NicknamePrompt';
 import { ArrowHint } from '../ui/ArrowHint';
 import { PETS } from '../data/pets';
-import { PetDef, RollResult, LevelUpData } from '../types';
+import { PetDef, RollResult, LevelUpData, LeaguePromotionData } from '../types';
 import { PlatformSDK } from '../platform/PlatformSDK';
 import { AudioSystem } from '../systems/AudioSystem';
 import { t } from '../data/locales';
@@ -45,7 +46,9 @@ export class MainScene extends Scene {
     private arrowHint: ArrowHint | null = null;
     private idleTimer = 0;
     private levelUpOverlay!: LevelUpOverlay;
+    private leaguePromoOverlay!: LeaguePromotionOverlay;
     private pendingLevelUp: LevelUpData | null = null;
+    private pendingLeaguePromo: LeaguePromotionData | null = null;
 
     constructor() {
         super('MainScene');
@@ -60,7 +63,7 @@ export class MainScene extends Scene {
         if (!nickname) {
             new NicknamePrompt((name: string) => {
                 this.manager.save.setNickname(name);
-                this.leaderboard.updatePlayerEntry(name, this.getPlayerBestOdds(), 30);
+                this.updateLeaderboard();
                 if (this.manager.save.getData().totalRolls === 0) this.showArrowHint();
             }, this.input);
         } else if (this.manager.save.getData().totalRolls === 0) {
@@ -81,9 +84,15 @@ export class MainScene extends Scene {
             this.manager.saveState();
             this.scene.start('ProgressionScene');
         });
-        this.leaderboard = new Leaderboard(this);
+        this.leaderboard = new Leaderboard(this, () => {
+            this.manager.buffs.stopAutoroll();
+            this.manager.isRolling = false;
+            this.manager.saveState();
+            this.scene.start('LeaderboardScene');
+        });
         this.centerStage = new CenterStage(this);
         this.levelUpOverlay = new LevelUpOverlay(this, this.centerStage.getOverlay());
+        this.leaguePromoOverlay = new LeaguePromotionOverlay(this);
 
         this.rightPanel = new RightPanel(
             this,
@@ -135,6 +144,7 @@ export class MainScene extends Scene {
         EventBus.on('roll-requested', this.onRollRequested, this);
         EventBus.on('roll-complete', this.onRollComplete, this);
         EventBus.on('level-up', this.onLevelUp, this);
+        EventBus.on('league-promotion', this.onLeaguePromotion, this);
         EventBus.on('buff-activated', this.onBuffActivated, this);
         EventBus.on('buffs-changed', this.onBuffsChanged, this);
         EventBus.on('autoroll-stop', this.onAutorollStop, this);
@@ -280,6 +290,8 @@ export class MainScene extends Scene {
                         this.finishLevelUp(data);
                     }
                 });
+            } else if (this.pendingLeaguePromo) {
+                this.showLeaguePromo();
             } else {
                 this.manager.finishRoll();
                 this.rightPanel.setRolling(false);
@@ -316,8 +328,14 @@ export class MainScene extends Scene {
     private finishLevelUp(data: LevelUpData): void {
         this.centerStage.setEggImage(data.eggKey);
         this.bgImage.setTexture(data.bgKey);
+
+        // Chain to league promotion if pending
+        if (this.pendingLeaguePromo) {
+            this.showLeaguePromo();
+            return;
+        }
+
         this.centerStage.setKeepOverlay(false);
-        // Fade the CenterStage hatch overlay back (was kept visible for level-up)
         if (!this.manager.buffs.isAutorollActive()) {
             this.tweens.add({
                 targets: this.centerStage.getOverlay(),
@@ -335,6 +353,58 @@ export class MainScene extends Scene {
         this.centerStage.setKeepOverlay(true);
     }
 
+    private onLeaguePromotion(data: LeaguePromotionData): void {
+        this.pendingLeaguePromo = data;
+        this.centerStage.setKeepOverlay(true);
+    }
+
+    private showLeaguePromo(): void {
+        const data = this.pendingLeaguePromo!;
+        this.pendingLeaguePromo = null;
+        this.leaguePromoOverlay.show(data, (chosenCoinAmount: number) => {
+            this.handleLeaguePromoCoinChoice(data, chosenCoinAmount);
+        });
+    }
+
+    private handleLeaguePromoCoinChoice(data: LeaguePromotionData, chosenAmount: number): void {
+        const baseAmount = data.coinReward;
+        const adAmount = baseAmount * LEVELUP_CONFIG.adCoinMultiplier;
+
+        if (chosenAmount === adAmount) {
+            const sdk = this.registry.get('platformSDK') as PlatformSDK | undefined;
+            if (sdk) {
+                sdk.showRewardedBreak().then((success: boolean) => {
+                    const finalAmount = success ? adAmount : baseAmount;
+                    this.manager.claimLeaguePromoCoins(finalAmount);
+                    this.coinDisplay.showFloatingGain(finalAmount, this);
+                    this.finishLeaguePromo();
+                });
+            } else {
+                this.manager.claimLeaguePromoCoins(adAmount);
+                this.coinDisplay.showFloatingGain(adAmount, this);
+                this.finishLeaguePromo();
+            }
+        } else {
+            this.manager.claimLeaguePromoCoins(baseAmount);
+            this.coinDisplay.showFloatingGain(baseAmount, this);
+            this.finishLeaguePromo();
+        }
+    }
+
+    private finishLeaguePromo(): void {
+        this.centerStage.setKeepOverlay(false);
+        if (!this.manager.buffs.isAutorollActive()) {
+            this.tweens.add({
+                targets: this.centerStage.getOverlay(),
+                fillAlpha: 0,
+                duration: 250,
+            });
+        }
+        this.manager.finishRoll();
+        this.rightPanel.setRolling(false);
+        this.refreshUI();
+    }
+
     private onBuffActivated(_buff: string): void {
         this.refreshUI();
         this.bonusPanel.onOfferAccepted();
@@ -346,8 +416,8 @@ export class MainScene extends Scene {
         }
     }
 
-    private onNicknameChanged(name: string): void {
-        this.leaderboard.updatePlayerEntry(name, this.getPlayerBestOdds(), 30);
+    private onNicknameChanged(_name: string): void {
+        this.updateLeaderboard();
     }
 
     private onQuestsChanged(): void {
@@ -373,6 +443,7 @@ export class MainScene extends Scene {
                     this.questPopup = null;
                 }
             },
+            () => { this.questPopup = null; },
         );
     }
 
@@ -432,11 +503,17 @@ export class MainScene extends Scene {
             .slice(0, 3);
     }
 
-    private getPlayerBestOdds(): string {
+    private getPlayerBestChance(): number {
         const collected = PETS.filter(p => this.manager.progression.collection.has(p.id));
-        if (collected.length === 0) return '1/2';
-        const best = collected.reduce((a, b) => a.chance > b.chance ? a : b);
-        return getOddsString(best.chance);
+        if (collected.length === 0) return 2;
+        return collected.reduce((a, b) => a.chance > b.chance ? a : b).chance;
+    }
+
+    private updateLeaderboard(): void {
+        const nickname = this.manager.save.getNickname() || t('default_nickname');
+        const bestChance = this.getPlayerBestChance();
+        const { entries, playerRank, league } = this.manager.leaderboard.getEntries(nickname, bestChance);
+        this.leaderboard.updateDisplay(entries, playerRank, league);
     }
 
     private refreshUI(): void {
@@ -446,8 +523,7 @@ export class MainScene extends Scene {
         this.coinDisplay.updateCoins(p.coins);
         this.collectionBtn.updateCount(this.manager.save.getNewPets().length);
 
-        const nickname = this.manager.save.getNickname() || t('default_nickname');
-        this.leaderboard.updatePlayerEntry(nickname, this.getPlayerBestOdds(), 30);
+        this.updateLeaderboard();
 
         const topPets = this.getTopPets();
         this.centerStage.updatePedestals(topPets);
@@ -474,6 +550,7 @@ export class MainScene extends Scene {
         EventBus.off('roll-requested', this.onRollRequested, this);
         EventBus.off('roll-complete', this.onRollComplete, this);
         EventBus.off('level-up', this.onLevelUp, this);
+        EventBus.off('league-promotion', this.onLeaguePromotion, this);
         EventBus.off('buff-activated', this.onBuffActivated, this);
         EventBus.off('buffs-changed', this.onBuffsChanged, this);
         EventBus.off('autoroll-stop', this.onAutorollStop, this);

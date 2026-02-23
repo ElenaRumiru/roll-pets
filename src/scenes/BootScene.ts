@@ -68,6 +68,7 @@ export class BootScene extends Scene {
         this.load.image('ui_coin_raw', 'assets/ui/coin.png');
         this.load.image('ui_exp_raw', 'assets/ui/exp.png');
         this.load.image('ui_shop', 'assets/ui/shop_icon.png');
+        this.load.image('ui_rating', 'assets/ui/Rating_icon.png');
 
         // Pet images (deduplicate — multiple pets share sprites)
         const loadedKeys = new Set<string>();

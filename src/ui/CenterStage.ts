@@ -4,6 +4,7 @@ import { PetDef, RollResult } from '../types';
 import { AudioSystem } from '../systems/AudioSystem';
 import { IdleWobbleFX } from './IdleWobbleFX';
 import { t } from '../data/locales';
+import { fitText } from './components/fitText';
 
 const CX = GAME_WIDTH / 2;
 const CY = GAME_HEIGHT / 2;
@@ -155,7 +156,7 @@ export class CenterStage extends GameObjects.Container {
                 const sw = 113 * pos.scale;
                 const sh = 25 * pos.scale;
                 const sx = pos.x;
-                const sy = pos.y + PET_OFFSET_Y + 3;
+                const sy = pos.y + 3;
                 slot.shadow = this.scene.add.graphics({ x: sx, y: sy });
                 slot.shadow.fillStyle(0x000000, 0.15);
                 slot.shadow.beginPath();
@@ -176,6 +177,7 @@ export class CenterStage extends GameObjects.Container {
                     .setColor('#ffffff')
                     .setStroke('#000000', UI.STROKE_THICK)
                     .setAlpha(1);
+                fitText(slot.nameText, 200, 22);
 
                 slot.oddsText.setText(getOddsString(pet.chance))
                     .setPosition(pos.x, topY - 27)
@@ -269,6 +271,7 @@ export class CenterStage extends GameObjects.Container {
             .setColor('#ffffff')
             .setStroke('#000000', UI.STROKE_THICK)
             .setAlpha(1);
+        fitText(this.revealName, 350, 27);
 
         // Odds (replaces grade label)
         this.revealRarity.setText(getOddsString(result.pet.chance))

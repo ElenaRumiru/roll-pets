@@ -132,18 +132,18 @@ export const UI = {
 export const PEDESTAL = {
     first:  { x: 519, y: 288, scale: 0.68 },
     second: { x: 330, y: 333, scale: 0.55 },
-    third:  { x: 703, y: 359, scale: 0.49 },
+    third:  { x: 703, y: 357, scale: 0.49 },
 };
 
-export const PET_OFFSET_Y = 0;
+export const PET_OFFSET_Y = 8;
 
 export const ROLL_BTN = { x: 487, y: 532, width: 305, height: 67 };
 export const AUTOROLL_TOGGLE = { width: 99, height: 61, gap: 7 };
 
 export const BUFF_CONFIG = {
-    lucky:    { multiplier: 2, rollsPerAd: 1, color: 0x78C828, colorHex: '#78C828' },
-    super:    { multiplier: 3, rollsPerAd: 1, color: 0x3498db, colorHex: '#3498db' },
-    epic:     { multiplier: 5, rollsPerAd: 1, color: 0xffc107, colorHex: '#ffc107' },
+    lucky:    { multiplier: 2, rollsPerAd: 25, color: 0x78C828, colorHex: '#78C828' },
+    super:    { multiplier: 3, rollsPerAd: 12, color: 0x3498db, colorHex: '#3498db' },
+    epic:     { multiplier: 5, rollsPerAd: 5, color: 0xffc107, colorHex: '#ffc107' },
     autoroll: { color: 0xff9d43, colorHex: '#ff9d43' },
     offer:    { duration: 15_000, cooldown: 5_000 },
 } as const;
@@ -160,8 +160,8 @@ export const QUEST_CONFIG = {
     rollSequence: [3, 5, 10],
     gradeSequence: ['uncommon', 'improved'] as Grade[],
     rewards: {
-        roll:  { freeCount: 1, adCount: 5, buffType: 'lucky' as const },
-        grade: { freeCount: 1, adCount: 3, buffType: 'super' as const },
+        roll:  { freeCount: 5, adCount: 25, buffType: 'lucky' as const },
+        grade: { freeCount: 3, adCount: 12, buffType: 'super' as const },
     },
 };
 
@@ -211,6 +211,13 @@ export const LEVELUP_CONFIG = {
     adCoinMultiplier: 3,
     eggCloseSeconds: 5,
     coinAcceptSeconds: 10,
+};
+
+export const LEAGUE_PROMOTION_REWARDS: Record<string, number> = {
+    silver: 500,
+    gold: 5_000,
+    diamond: 50_000,
+    master: 500_000,
 };
 
 export const COIN_HUD = { w: 102, h: 36, iconSize: 38, gap: 10 };

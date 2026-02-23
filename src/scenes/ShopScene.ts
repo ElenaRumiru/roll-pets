@@ -4,6 +4,7 @@ import { GameManager } from '../core/GameManager';
 import { PETS } from '../data/pets';
 import { Button } from '../ui/components/Button';
 import { t } from '../data/locales';
+import { fitText } from '../ui/components/fitText';
 import { ShopOffer, PetDef } from '../types';
 
 const HEADER_H = 74;
@@ -105,6 +106,7 @@ export class ShopScene extends Scene {
             fontFamily: UI.FONT_STROKE, fontSize: '17px', color: '#ffffff',
             stroke: '#000000', strokeThickness: 2,
         }).setOrigin(0.5);
+        fitText(name, CARD_W - 10, 17);
         container.add(name);
 
         // Odds
@@ -124,20 +126,16 @@ export class ShopScene extends Scene {
         const btn = new Button(this, x, BUY_BTN_Y, btnW, btnH,
             priceStr, btnColor, () => this.onBuy(offer.petId, canAfford));
 
-        // Measure text width to center icon+text as a unit
-        const measure = this.add.text(0, 0, priceStr, {
-            fontFamily: UI.FONT_MAIN, fontSize: `${Math.max(12, Math.floor(btnH * 0.38))}px`,
-        });
-        const textW = measure.width;
-        measure.destroy();
+        // label is at index 2 (outlineGfx=0, bg=1, label=2)
+        const label = btn.list[2] as GameObjects.Text;
+        const textW = label.width;
         const iconSize = 20;
         const gap = 4;
         const groupW = iconSize + gap + textW;
         const iconX = -groupW / 2 + iconSize / 2;
         const textShift = iconX + iconSize / 2 + gap + textW / 2;
 
-        // Shift button label to the right of the icon
-        (btn.list[1] as GameObjects.Text).setX(textShift).setY(-3);
+        label.setX(textShift).setY(-3);
         const ci = this.add.image(iconX, -3, 'ui_coin_md').setDisplaySize(iconSize, iconSize);
         btn.add(ci);
 

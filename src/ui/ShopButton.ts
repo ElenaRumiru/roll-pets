@@ -2,6 +2,7 @@ import { GameObjects, Geom, Scene } from 'phaser';
 import { UI, GAME_WIDTH, GAME_HEIGHT } from '../core/config';
 import { t } from '../data/locales';
 import { addButtonFeedback } from './components/buttonFeedback';
+import { fitText } from './components/fitText';
 
 const PANEL_W = 118;
 const BG_H = 67;
@@ -33,6 +34,7 @@ export class ShopButton extends GameObjects.Container {
             stroke: '#000000',
             strokeThickness: UI.STROKE_MEDIUM,
         }).setOrigin(0.5);
+        fitText(label, PANEL_W - 8, 19);
         this.add(label);
 
         this.setInteractive(

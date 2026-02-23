@@ -3,6 +3,7 @@ import { UI, QUEST_PANEL, BUFF_CONFIG } from '../core/config';
 import { QuestSystem } from '../systems/QuestSystem';
 import { t } from '../data/locales';
 import { addButtonFeedback } from './components/buttonFeedback';
+import { fitText } from './components/fitText';
 
 const PW = QUEST_PANEL.w;              // 143
 const PAD = 2;
@@ -59,6 +60,7 @@ export class QuestPanel extends GameObjects.Container {
             fontFamily: UI.FONT_STROKE, fontSize: '17px', color: '#ffffff',
             stroke: '#000000', strokeThickness: UI.STROKE_MEDIUM,
         }).setOrigin(0.5);
+        fitText(header, PW - 12, 17);
         this.add(header);
 
         // Rows
@@ -111,6 +113,7 @@ export class QuestPanel extends GameObjects.Container {
             fontFamily: UI.FONT_STROKE, fontSize: '13px', color: '#ffffff',
             stroke: '#000000', strokeThickness: 2,
         }).setOrigin(0.5);
+        fitText(claimText, BAR_W - 8, 13);
         claimWrap.add(claimText);
 
         claimWrap.setSize(BAR_W, BAR_H + BTN_SHADOW);
@@ -125,6 +128,7 @@ export class QuestPanel extends GameObjects.Container {
         // Quest 1: Roll
         const rq = quests.getRollQuest();
         this.rows[0].label.setText(`${DIAMOND} ${t('quest_roll', { target: String(rq.target) })}`);
+        fitText(this.rows[0].label, PW - 12, 13);
         this.updateBar(this.rows[0], rq.current, rq.target, BUFF_CONFIG.lucky.color);
         this.toggleClaim(this.rows[0], quests.isRollQuestComplete());
 
@@ -132,6 +136,7 @@ export class QuestPanel extends GameObjects.Container {
         const gq = quests.getGradeQuest();
         const gradeName = t(`grade_${quests.getRequiredGrade()}`);
         this.rows[1].label.setText(`${DIAMOND} ${t('quest_grade', { grade: gradeName })}`);
+        fitText(this.rows[1].label, PW - 12, 13);
         this.updateBar(this.rows[1], gq.current, gq.target, BUFF_CONFIG.super.color);
         this.toggleClaim(this.rows[1], quests.isGradeQuestComplete());
     }

@@ -2,6 +2,7 @@ import { GameObjects, Geom, Scene } from 'phaser';
 import { UI, LEFT_PANEL } from '../core/config';
 import { ProgressBar } from './components/ProgressBar';
 import { t } from '../data/locales';
+import { fitText } from './components/fitText';
 
 const PANEL_W = LEFT_PANEL.w;
 const PANEL_H = 32;
@@ -67,6 +68,7 @@ export class TopBar extends GameObjects.Container {
 
     updateDisplay(level: number, xpProgress: number, xp: number, xpNeeded: number): void {
         this.levelText.setText(`${t('level')} ${level}`);
+        fitText(this.levelText, BAR_X - 14, 14);
         this.xpBar.setProgress(xpProgress);
         this.xpLabel.setText(`${xp}/${xpNeeded}`);
     }

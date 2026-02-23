@@ -1,14 +1,17 @@
 import { EventBus } from './EventBus';
-import { BUFF_CONFIG, QUEST_CONFIG, levelUpCoinReward } from './config';
+import { BUFF_CONFIG, QUEST_CONFIG, levelUpCoinReward, LEAGUE_PROMOTION_REWARDS } from './config';
 import { RNGSystem } from '../systems/RNGSystem';
 import { ProgressionSystem } from '../systems/ProgressionSystem';
 import { SaveSystem } from '../systems/SaveSystem';
 import { BuffSystem } from '../systems/BuffSystem';
 import { QuestSystem } from '../systems/QuestSystem';
 import { ShopSystem } from '../systems/ShopSystem';
+import { LeaderboardSystem } from '../systems/LeaderboardSystem';
 import { getEligiblePets, getEggImageKey } from '../data/eggs';
 import { getBgImageKey } from '../data/backgrounds';
-import { RollResult, LevelUpData } from '../types';
+import { getLeagueForChance } from '../data/leaderboard';
+import { PETS } from '../data/pets';
+import { RollResult, LevelUpData, LeaguePromotionData } from '../types';
 
 export class GameManager {
     rng: RNGSystem;
@@ -17,6 +20,7 @@ export class GameManager {
     buffs: BuffSystem;
     quests: QuestSystem;
     shop: ShopSystem;
+    leaderboard: LeaderboardSystem;
     isRolling = false;
     lastRollCoinGain = 0;
     private questResetTimer = 0;
@@ -33,6 +37,7 @@ export class GameManager {
         this.quests = new QuestSystem();
         this.quests.loadFromSave(data.quests);
         this.shop = new ShopSystem();
+        this.leaderboard = new LeaderboardSystem();
         const shopState = data.shop ?? { lastRefreshDate: '', offers: [] };
         this.shop.loadFromSave(shopState);
         if (this.shop.getOffers().length === 0) {
@@ -75,6 +80,7 @@ export class GameManager {
         this.isRolling = true;
 
         const coinsBefore = this.progression.coins;
+        const leagueBefore = getLeagueForChance(this.getBestChance());
         const eligible = getEligiblePets(this.progression.level);
         const luckMultiplier = this.buffs.consumeForRoll();
         const pet = this.rng.rollPet(eligible, luckMultiplier);
@@ -104,6 +110,18 @@ export class GameManager {
             EventBus.emit('level-up', levelUpData);
         }
 
+        const leagueAfter = getLeagueForChance(this.getBestChance());
+        if (leagueBefore.tier !== leagueAfter.tier) {
+            const reward = LEAGUE_PROMOTION_REWARDS[leagueAfter.tier];
+            if (reward) {
+                const promoData: LeaguePromotionData = {
+                    tier: leagueAfter.tier,
+                    coinReward: reward,
+                };
+                EventBus.emit('league-promotion', promoData);
+            }
+        }
+
         this.lastRollCoinGain = this.progression.coins - coinsBefore;
         this.persistSave(result);
     }
@@ -113,6 +131,11 @@ export class GameManager {
     }
 
     claimLevelUpCoins(amount: number): void {
+        if (amount > 0) this.progression.addCoins(amount);
+        this.persistSave();
+    }
+
+    claimLeaguePromoCoins(amount: number): void {
         if (amount > 0) this.progression.addCoins(amount);
         this.persistSave();
     }
@@ -209,6 +232,12 @@ export class GameManager {
 
     /** Save current state (call before scene transitions) */
     saveState(): void { this.persistSave(); }
+
+    private getBestChance(): number {
+        const collected = PETS.filter(p => this.progression.collection.has(p.id));
+        if (collected.length === 0) return 2;
+        return collected.reduce((a, b) => a.chance > b.chance ? a : b).chance;
+    }
 
     getEggImageKey() { return getEggImageKey(this.progression.level); }
     getBgImageKey() { return getBgImageKey(this.progression.level); }

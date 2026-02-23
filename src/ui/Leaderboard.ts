@@ -1,122 +1,163 @@
-import { GameObjects, Scene } from 'phaser';
-import { UI, LEFT_PANEL, GAME_HEIGHT, GRADE, getGradeForChance } from '../core/config';
+import { GameObjects, Geom, Scene } from 'phaser';
+import { UI, LEFT_PANEL, GRADE, getGradeForChance, getOddsString } from '../core/config';
 import { t } from '../data/locales';
+import { LeaderboardEntry, LeagueConfig } from '../types';
 
 const PANEL_W = 163;
-const PANEL_H = 175;
 const RADIUS = 9;
-
-const FAKE_ENTRIES = [
-    { name: 'ProGamer', odds: '1/500K', chance: 500_000 },
-    { name: 'LuckyPet', odds: '1/200K', chance: 200_000 },
-    { name: 'xXPetFanXx', odds: '1/100K', chance: 100_000 },
-    { name: 'PetMaster', odds: '1/50K', chance: 50_000 },
-    { name: 'CoolDude', odds: '1/10K', chance: 10_000 },
-];
+const VISIBLE_ROWS = 5;
+const ROW_H = 17;
+const HEADER_Y = 34;
+const ROW_START_Y = HEADER_Y + 21;
+const COMPACT_H = ROW_START_Y + VISIBLE_ROWS * ROW_H + 8;
+const SEP_Y = ROW_START_Y + VISIBLE_ROWS * ROW_H + 3;
+const PLAYER_Y = SEP_Y + 4;
+const EXPANDED_H = PLAYER_Y + 19 + 8;
 
 export class Leaderboard extends GameObjects.Container {
+    private bg: GameObjects.Graphics;
+    private leagueName: GameObjects.Text;
+    private rowTexts: { rank: GameObjects.Text; name: GameObjects.Text; odds: GameObjects.Text }[] = [];
+    private separator: GameObjects.Graphics;
+    private playerBg: GameObjects.Graphics;
+    private playerRankText: GameObjects.Text;
     private playerNameText: GameObjects.Text;
     private playerOddsText: GameObjects.Text;
-    private playerRankText: GameObjects.Text;
+    private currentH = EXPANDED_H;
 
-    constructor(scene: Scene) {
-        super(scene, LEFT_PANEL.x, Math.round((GAME_HEIGHT - PANEL_H) / 2) - 22);
+    constructor(scene: Scene, onClick: () => void) {
+        super(scene, LEFT_PANEL.x, 0);
 
-        const bg = scene.add.graphics();
-        bg.fillStyle(0x111122, 0.75);
-        bg.fillRoundedRect(0, 0, PANEL_W, PANEL_H, RADIUS);
-        bg.lineStyle(2, 0xffffff, 0.2);
-        bg.strokeRoundedRect(0, 0, PANEL_W, PANEL_H, RADIUS);
-        this.add(bg);
+        // Panel background (redrawn dynamically)
+        this.bg = scene.add.graphics();
+        this.add(this.bg);
+        this.drawBg(EXPANDED_H);
 
-        const title = scene.add.text(PANEL_W / 2, 9, t('leaderboard_title'), {
-            fontFamily: UI.FONT_STROKE,
-            fontSize: '15px',
-            color: '#ffffff',
-            stroke: '#000000',
-            strokeThickness: UI.STROKE_MEDIUM,
+        // League title
+        this.leagueName = scene.add.text(PANEL_W / 2, 9, '', {
+            fontFamily: UI.FONT_STROKE, fontSize: '15px', color: '#ffffff',
+            stroke: '#000000', strokeThickness: UI.STROKE_MEDIUM,
         }).setOrigin(0.5, 0);
-        this.add(title);
+        this.add(this.leagueName);
 
-        const headerY = 34;
-        const hdr = scene.add.text(8, headerY, `#  ${t('leaderboard_player')}`, {
+        // Column headers
+        this.add(scene.add.text(8, HEADER_Y, `#  ${t('leaderboard_player')}`, {
             fontFamily: UI.FONT_STROKE, fontSize: '10px', color: '#ffffff',
             stroke: '#000000', strokeThickness: 1,
-        });
-        this.add(hdr);
-        const hdr2 = scene.add.text(PANEL_W - 8, headerY, t('leaderboard_grade'), {
+        }));
+        this.add(scene.add.text(PANEL_W - 8, HEADER_Y, t('leaderboard_grade'), {
             fontFamily: UI.FONT_STROKE, fontSize: '10px', color: '#ffffff',
             stroke: '#000000', strokeThickness: 1,
-        }).setOrigin(1, 0);
-        this.add(hdr2);
+        }).setOrigin(1, 0));
 
         const headerLine = scene.add.graphics();
         headerLine.lineStyle(1, 0xaaaaaa, 0.5);
-        headerLine.lineBetween(8, headerY + 17, PANEL_W - 8, headerY + 17);
+        headerLine.lineBetween(8, HEADER_Y + 17, PANEL_W - 8, HEADER_Y + 17);
         this.add(headerLine);
 
-        const rowStartY = headerY + 21;
-        const rowH = 17;
-        FAKE_ENTRIES.forEach((entry, i) => {
-            const y = rowStartY + i * rowH;
-            const grade = getGradeForChance(entry.chance);
-            const cfg = GRADE[grade];
-
-            const rank = scene.add.text(8, y, `${i + 1}.`, {
+        // 5 dynamic row slots
+        for (let i = 0; i < VISIBLE_ROWS; i++) {
+            const y = ROW_START_Y + i * ROW_H;
+            const rank = scene.add.text(8, y, '', {
                 fontFamily: UI.FONT_STROKE, fontSize: '10px', color: '#ffffff',
                 stroke: '#000000', strokeThickness: 1,
             });
-            this.add(rank);
-
-            const name = scene.add.text(25, y, entry.name, {
+            const name = scene.add.text(25, y, '', {
                 fontFamily: UI.FONT_STROKE, fontSize: '10px', color: '#ffffff',
                 stroke: '#000000', strokeThickness: 1,
             });
-            this.add(name);
-
-            const odds = scene.add.text(PANEL_W - 8, y, entry.odds, {
-                fontFamily: UI.FONT_STROKE, fontSize: '10px', color: cfg.colorHex,
-                stroke: cfg.outlineHex, strokeThickness: cfg.strokeThickness || 1,
+            const odds = scene.add.text(PANEL_W - 8, y, '', {
+                fontFamily: UI.FONT_STROKE, fontSize: '10px', color: '#ffffff',
+                stroke: '#000000', strokeThickness: 1,
             }).setOrigin(1, 0);
-            this.add(odds);
-        });
+            this.add(rank); this.add(name); this.add(odds);
+            this.rowTexts.push({ rank, name, odds });
+        }
 
-        const sepY = rowStartY + FAKE_ENTRIES.length * rowH + 3;
-        const sep = scene.add.graphics();
-        sep.lineStyle(1, 0x888888, 0.8);
-        sep.lineBetween(8, sepY, PANEL_W - 8, sepY);
-        this.add(sep);
+        // Separator + player row
+        this.separator = scene.add.graphics();
+        this.separator.lineStyle(1, 0x888888, 0.8);
+        this.separator.lineBetween(8, SEP_Y, PANEL_W - 8, SEP_Y);
+        this.add(this.separator);
 
-        const playerY = sepY + 4;
-        const playerBg = scene.add.graphics();
-        playerBg.fillStyle(0xffc107, 0.15);
-        playerBg.fillRoundedRect(4, playerY - 2, PANEL_W - 8, 19, 4);
-        this.add(playerBg);
+        this.playerBg = scene.add.graphics();
+        this.playerBg.fillStyle(0xffc107, 0.15);
+        this.playerBg.fillRoundedRect(4, PLAYER_Y - 2, PANEL_W - 8, 19, 4);
+        this.add(this.playerBg);
 
-        this.playerRankText = scene.add.text(8, playerY, '30.', {
+        this.playerRankText = scene.add.text(8, PLAYER_Y, '', {
             fontFamily: UI.FONT_STROKE, fontSize: '10px', color: '#ffc107',
             stroke: '#000000', strokeThickness: 1,
         });
-        this.add(this.playerRankText);
-
-        this.playerNameText = scene.add.text(30, playerY, '', {
+        this.playerNameText = scene.add.text(30, PLAYER_Y, '', {
             fontFamily: UI.FONT_STROKE, fontSize: '10px', color: '#ffc107',
             stroke: '#000000', strokeThickness: 1,
         });
-        this.add(this.playerNameText);
-
-        this.playerOddsText = scene.add.text(PANEL_W - 8, playerY, '1/500', {
+        this.playerOddsText = scene.add.text(PANEL_W - 8, PLAYER_Y, '', {
             fontFamily: UI.FONT_STROKE, fontSize: '10px', color: '#ffc107',
             stroke: '#000000', strokeThickness: 1,
         }).setOrigin(1, 0);
-        this.add(this.playerOddsText);
+        this.add(this.playerRankText); this.add(this.playerNameText); this.add(this.playerOddsText);
+
+        // Clickable
+        this.setInteractive(new Geom.Rectangle(0, 0, PANEL_W, EXPANDED_H), Geom.Rectangle.Contains);
+        this.on('pointerdown', onClick);
 
         scene.add.existing(this);
     }
 
-    updatePlayerEntry(nickname: string, bestOdds: string, rank: number): void {
-        this.playerRankText.setText(`${rank}.`);
-        this.playerNameText.setText(nickname);
-        this.playerOddsText.setText(bestOdds);
+    updateDisplay(entries: LeaderboardEntry[], playerRank: number, league: LeagueConfig): void {
+        this.leagueName.setText(t(league.label));
+        this.leagueName.setColor(league.colorHex);
+
+        const top5 = entries.slice(0, VISIBLE_ROWS);
+        for (let i = 0; i < VISIBLE_ROWS; i++) {
+            const row = this.rowTexts[i];
+            if (i < top5.length) {
+                const entry = top5[i];
+                const grade = getGradeForChance(entry.chance);
+                const cfg = GRADE[grade];
+                row.rank.setText(`${i + 1}.`);
+                row.name.setText(entry.name);
+                row.odds.setText(getOddsString(entry.chance));
+                row.odds.setColor(cfg.colorHex);
+                row.odds.setStroke(cfg.outlineHex, cfg.strokeThickness || 1);
+                const textColor = entry.isPlayer ? '#ffc107' : '#ffffff';
+                row.rank.setColor(textColor);
+                row.name.setColor(textColor);
+            }
+        }
+
+        const inTop5 = playerRank <= VISIBLE_ROWS;
+        this.separator.setVisible(!inTop5);
+        this.playerBg.setVisible(!inTop5);
+        this.playerRankText.setVisible(!inTop5);
+        this.playerNameText.setVisible(!inTop5);
+        this.playerOddsText.setVisible(!inTop5);
+
+        // Dynamic panel height
+        const newH = inTop5 ? COMPACT_H : EXPANDED_H;
+        if (newH !== this.currentH) {
+            this.currentH = newH;
+            this.drawBg(newH);
+            this.input!.hitArea = new Geom.Rectangle(0, 0, PANEL_W, newH);
+        }
+
+        if (!inTop5) {
+            const pe = entries.find(e => e.isPlayer);
+            if (pe) {
+                this.playerRankText.setText(`${playerRank}.`);
+                this.playerNameText.setText(pe.name);
+                this.playerOddsText.setText(getOddsString(pe.chance));
+            }
+        }
+    }
+
+    private drawBg(h: number): void {
+        this.bg.clear();
+        this.bg.fillStyle(0x111122, 0.75);
+        this.bg.fillRoundedRect(0, 0, PANEL_W, h, RADIUS);
+        this.bg.lineStyle(2, 0xffffff, 0.2);
+        this.bg.strokeRoundedRect(0, 0, PANEL_W, h, RADIUS);
     }
 }

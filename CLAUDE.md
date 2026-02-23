@@ -31,7 +31,7 @@ No test framework configured yet. TypeScript checking is done by Vite at build t
 
 **Entry flow:** `index.html` → `src/main.ts` (awaits `document.fonts.ready`) → `src/game/main.ts` (Phaser config, 1031x580 16:9, Scale.FIT)
 
-**Scene flow:** Boot → Main ↔ Collection / Progression / Shop
+**Scene flow:** Boot → Main ↔ Collection / Progression / Shop / Leaderboard
 
 ```
 src/
@@ -43,12 +43,13 @@ src/
 │   ├── GameManager.ts              # Creates systems, coordinates roll() logic
 │   └── config.ts                   # All balance constants
 │
-├── types/index.ts                  # All interfaces (Pet, Grade, SaveData, etc.)
+├── types/index.ts                  # All interfaces (Pet, Grade, SaveData, LevelUpData, LeaguePromotionData, etc.)
 │
 ├── data/
 │   ├── pets.ts                     # 100 pets (id, name, emoji, imageKey, chance)
 │   ├── eggs.ts                     # Dynamic egg filter by level/visual tier
 │   ├── milestones.ts               # Milestone data generator for progression track
+│   ├── leaderboard.ts              # League tiers (Bronze→Master), getLeagueForChance()
 │   ├── backgrounds.ts              # 17 background themes
 │   └── locales/
 │       ├── en.ts                   # English strings (base)
@@ -62,14 +63,16 @@ src/
 │   ├── AudioSystem.ts              # Play/stop/mute wrapper
 │   ├── BuffSystem.ts               # Buff state (lucky/super/epic multipliers, autoroll toggle)
 │   ├── QuestSystem.ts              # Daily quest logic, progress tracking, UTC midnight reset
-│   └── ShopSystem.ts              # Daily shop: offers, purchases, refresh, UTC midnight reset
+│   ├── ShopSystem.ts              # Daily shop: offers, purchases, refresh, UTC midnight reset
+│   └── LeaderboardSystem.ts       # League standings, fake bot players, rating calculation
 │
 ├── scenes/
 │   ├── BootScene.ts                # Asset loading + image pre-downscaling
 │   ├── MainScene.ts                # Gameplay dashboard (creates UI panels)
 │   ├── CollectionScene.ts          # Pet grid with filters
 │   ├── ProgressionScene.ts         # Level-up rewards track (horizontal scroll)
-│   └── ShopScene.ts               # Daily shop: buy uncollected pets for coins
+│   ├── ShopScene.ts               # Daily shop: buy uncollected pets for coins
+│   └── LeaderboardScene.ts        # Full-screen leaderboard with league tabs
 │
 ├── ui/
 │   ├── TopBar.ts                   # Level badge + XP bar (top-left, clickable → ProgressionScene)
@@ -82,11 +85,15 @@ src/
 │   ├── QuestPanel.ts              # Daily quest panel (right side, above BonusPanel)
 │   ├── QuestClaimPopup.ts         # Quest reward confirmation popup (free vs ad)
 │   ├── LevelUpOverlay.ts          # Level-up popup: egg variant (tap-to-close) / coins variant (free vs ad choice)
+│   ├── LeaguePromotionOverlay.ts  # League promotion popup: rating icon + free vs ad coin choice
+│   ├── Leaderboard.ts             # Mini leaderboard widget on main screen
 │   ├── PetCard.ts                  # Single pet card with image sprite (for collection grid)
 │   └── components/
 │       ├── Button.ts               # Reusable button with tween
 │       ├── ProgressBar.ts          # Reusable progress bar
-│       └── FloatingText.ts         # "+25 XP" floating text
+│       ├── FloatingText.ts         # "+25 XP" floating text
+│       ├── fitText.ts              # Auto-shrink text to fit max width
+│       └── buttonFeedback.ts       # Press/release scale tween for buttons
 │
 └── platform/
     ├── PlatformSDK.ts              # Interface (showRewardedBreak, commercialBreak)
@@ -158,6 +165,8 @@ When official docs are not enough, **search the wider internet**: Reddit, YouTub
 **Level-up overlay:** Two variants triggered on level-up. Config in `LEVELUP_CONFIG`.
 - **Egg variant** (`eggChanged === true`): double gold ring with level number, "New Egg Unlocked!" subtitle, old→new egg transition, egg name + odds characteristic, "Tap to close (N)" countdown (5s), tap anywhere or auto-close.
 - **Coins variant** (`eggChanged === false`): double ring, "Rewards:" subtitle, two choice cards — FREE (green, `level * 10` coins, auto-accepts after 10s countdown shown in button) and WATCH AD (purple, `level * 10 * 3` coins, +300% badge, rewarded video via PlatformSDK). Coins are **deferred** — not added in `roll()`, but via `GameManager.claimLevelUpCoins(amount)` after player choice. Ad failure falls back to free amount. Overlay depth 500 (above autoroll UI at 105), blocks all clicks behind it. Both variants pause autoroll until dismissed.
+
+**League Promotion overlay:** Triggered when a roll causes the player's best pet to cross into a new league tier. Config in `LEAGUE_PROMOTION_REWARDS` (config.ts). Leagues: Bronze (starting, no reward), Silver (500 coins), Gold (5K), Diamond (50K), Master (500K). Detection: `GameManager.roll()` compares `getLeagueForChance(bestChance)` before and after `processRoll()`, emits `league-promotion` event. UI in `LeaguePromotionOverlay.ts`: rating icon (podium), title "LEAGUE PROMOTION!" in league color, subtitle "New League: {name}", two choice cards (FREE with 10s countdown / WATCH AD x3). Coins deferred via `claimLeaguePromoCoins(amount)`. Overlay chaining: if level-up and league promotion both trigger on same roll, level-up shows first, then league promo. Both pause autoroll until dismissed.
 
 **Progression Window:** Opened by clicking TopBar (top-left panel). Shows horizontal scrollable track of level milestones. Each level is either an egg milestone (at `VISUAL_TIERS` thresholds — double ring, egg image, name, odds text) or a coin milestone (`level * 10` coins — single ring, coin icon, amount). Reached levels are yellow/colored, unreached are gray/grayscale. Initial scroll anchors on the last reached level at ~20% from left, showing ~2.5 unearned milestones to the right. Horizon = `max(currentLevel + 5, nextEggLevel + 3)`. Milestone data generated by `data/milestones.ts`. Scene transition follows CollectionScene pattern (stop autoroll, save state, scene.start).
 
