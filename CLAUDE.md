@@ -124,7 +124,7 @@ src/
 
 **SettingsPanel:** All text uses `UI.FONT_STROKE` with black stroke for consistency with rest of game. Panel background is fully opaque (`alpha: 1`).
 
-**Leaderboard widget:** Has `ICON_AREA = 48` for rating icon (`ui/Rating_icon_3.png`, trimmed via `trimToHeight`) protruding above the dark panel, similar to QuestPanel's icon pattern.
+**Leaderboard widget:** Has `ICON_AREA = 48` for rating icon (`ui/Rating_icon_3.png`, trimmed via `trimToWidth` at exact display width=99px for 1:1 pixel mapping — no WebGL scaling, avoids aliasing on thin lines) protruding above the dark panel, similar to QuestPanel's icon pattern.
 
 **Testing:** Always use Playwright MCP to test the game. At the start of every session, navigate to `http://localhost:8080/` via Playwright to verify the dev server is running. Before launching Chrome, check if it's already open (Playwright will fail with a resource access error if Chrome is running). If it fails, ask the user to close Chrome or start the dev server. After every code change, reload the page in Playwright and take a screenshot to verify visuals. Use `browser_console_messages` to check for errors. Click UI elements (ROLL button, Collection, etc.) to test interactions.
 

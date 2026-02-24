@@ -34,11 +34,8 @@ export class Leaderboard extends GameObjects.Container {
         this.add(this.bg);
         this.drawBg(EXPANDED_H);
 
-        // Rating icon (protruding above panel, like QuestPanel)
+        // Rating icon (protruding above panel, 1:1 pixel mapping — no setDisplaySize)
         const icon = scene.add.image(PANEL_W / 2, ICON_AREA - 10, 'ui_rating_mid');
-        const tex = icon.texture.getSourceImage();
-        const displayW = 99;
-        icon.setDisplaySize(displayW, displayW / (tex.width / tex.height));
         this.add(icon);
 
         // League title

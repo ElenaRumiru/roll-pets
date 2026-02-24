@@ -168,8 +168,8 @@ export class BootScene extends Scene {
             { key: 'ui_settings_md', size: 56 },
         ]);
 
-        // Trim rating icon preserving aspect ratio (wide podium)
-        this.trimToHeight('ui_rating_3', 'ui_rating_mid', 130);
+        // Trim rating icon at exact display width (1:1 pixel mapping, no WebGL scaling)
+        this.trimToWidth('ui_rating_3', 'ui_rating_mid', 99);
 
         const renderer = this.game.renderer;
         if (renderer instanceof Renderer.WebGL.WebGLRenderer) {
@@ -222,6 +222,40 @@ export class BootScene extends Scene {
             ctx.drawImage(src, left, top, tw, th, (size - dw) / 2, (size - dh) / 2, dw, dh);
             this.textures.addCanvas(key, c);
         }
+    }
+
+    /** Trim transparent pixels, then scale so width = targetWidth, preserving aspect ratio */
+    private trimToWidth(srcKey: string, destKey: string, targetWidth: number): void {
+        const src = this.textures.get(srcKey).getSourceImage() as HTMLImageElement;
+        const tmp = document.createElement('canvas');
+        tmp.width = src.width;
+        tmp.height = src.height;
+        const tmpCtx = tmp.getContext('2d')!;
+        tmpCtx.drawImage(src, 0, 0);
+        const data = tmpCtx.getImageData(0, 0, tmp.width, tmp.height);
+        let top = tmp.height, left = tmp.width, bottom = 0, right = 0;
+        for (let y = 0; y < tmp.height; y++) {
+            for (let x = 0; x < tmp.width; x++) {
+                if (data.data[(y * tmp.width + x) * 4 + 3] > 10) {
+                    if (y < top) top = y;
+                    if (y > bottom) bottom = y;
+                    if (x < left) left = x;
+                    if (x > right) right = x;
+                }
+            }
+        }
+        const tw = right - left + 1;
+        const th = bottom - top + 1;
+        const scale = targetWidth / tw;
+        const dh = Math.round(th * scale);
+        const c = document.createElement('canvas');
+        c.width = targetWidth;
+        c.height = dh;
+        const ctx = c.getContext('2d')!;
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = 'high';
+        ctx.drawImage(src, left, top, tw, th, 0, 0, targetWidth, dh);
+        this.textures.addCanvas(destKey, c);
     }
 
     /** Trim transparent pixels, then scale so height = targetHeight, preserving aspect ratio */
