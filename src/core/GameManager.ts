@@ -7,11 +7,13 @@ import { BuffSystem } from '../systems/BuffSystem';
 import { QuestSystem } from '../systems/QuestSystem';
 import { ShopSystem } from '../systems/ShopSystem';
 import { LeaderboardSystem } from '../systems/LeaderboardSystem';
+import { DailyBonusSystem } from '../systems/DailyBonusSystem';
 import { getEligiblePets, getEggImageKey } from '../data/eggs';
 import { getBgImageKey } from '../data/backgrounds';
 import { getLeagueForChance } from '../data/leaderboard';
 import { PETS } from '../data/pets';
-import { RollResult, LevelUpData, LeaguePromotionData } from '../types';
+import { RollResult, LevelUpData, LeaguePromotionData, DailyBonusReward } from '../types';
+import { getDefaultDailyBonusState } from './config';
 
 export class GameManager {
     rng: RNGSystem;
@@ -21,6 +23,7 @@ export class GameManager {
     quests: QuestSystem;
     shop: ShopSystem;
     leaderboard: LeaderboardSystem;
+    dailyBonus: DailyBonusSystem;
     isRolling = false;
     lastRollCoinGain = 0;
     private questResetTimer = 0;
@@ -45,6 +48,10 @@ export class GameManager {
             this.shop.generateOffers(this.progression.collection);
         }
         this.shop.checkDailyReset(this.progression.collection);
+
+        this.dailyBonus = new DailyBonusSystem();
+        const dailyBonusState = data.dailyBonus ?? getDefaultDailyBonusState();
+        this.dailyBonus.loadFromSave(dailyBonusState);
 
         this.setupListeners();
     }
@@ -157,6 +164,36 @@ export class GameManager {
         this.persistSave();
     }
 
+    claimDailyBonus(): DailyBonusReward | null {
+        const reward = this.dailyBonus.claimDaily();
+        if (!reward) return null;
+        this.applyDailyBonusReward(reward);
+        EventBus.emit('daily-bonus-claimed');
+        this.persistSave();
+        return reward;
+    }
+
+    claimDailyMilestone(index: number): number {
+        const coins = this.dailyBonus.claimMonthlyMilestone(index);
+        if (coins > 0) {
+            this.progression.addCoins(coins);
+            EventBus.emit('daily-milestone-claimed');
+            this.persistSave();
+        }
+        return coins;
+    }
+
+    private applyDailyBonusReward(reward: DailyBonusReward): void {
+        if (reward.type === 'coins') {
+            this.progression.addCoins(reward.count);
+        } else if (reward.type === 'buff' && reward.buffType) {
+            if (reward.buffType === 'lucky') this.buffs.addLucky(reward.count);
+            else if (reward.buffType === 'super') this.buffs.addSuper(reward.count);
+            else this.buffs.addEpic(reward.count);
+            EventBus.emit('buffs-changed');
+        }
+    }
+
     private activateBuff(buff: string): void {
         switch (buff) {
             case 'lucky':
@@ -215,6 +252,7 @@ export class GameManager {
         data.buffs = this.buffs.toSave();
         data.quests = this.quests.toSave();
         data.shop = this.shop.toSave();
+        data.dailyBonus = this.dailyBonus.toSave();
 
         if (result) {
             data.totalRolls++;
@@ -248,8 +286,10 @@ export class GameManager {
             this.questResetTimer = 0;
             const questReset = this.quests.checkDailyReset();
             const shopReset = this.shop.checkDailyReset(this.progression.collection);
-            if (questReset || shopReset) {
+            const dailyBonusReset = this.dailyBonus.checkNewDay();
+            if (questReset || shopReset || dailyBonusReset) {
                 if (questReset) EventBus.emit('quests-changed');
+                if (dailyBonusReset) EventBus.emit('daily-bonus-changed');
                 this.persistSave();
             }
         }

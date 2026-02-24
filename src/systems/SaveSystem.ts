@@ -1,9 +1,9 @@
 import { SaveData, Grade } from '../types';
 import { PETS } from '../data/pets';
-import { getGradeForChance, getDefaultQuestState } from '../core/config';
+import { getGradeForChance, getDefaultQuestState, getDefaultDailyBonusState } from '../core/config';
 
 const SAVE_KEY = 'pets_go_lite_save';
-const CURRENT_VERSION = 15;
+const CURRENT_VERSION = 16;
 
 function getDefaults(): SaveData {
     return {
@@ -20,6 +20,7 @@ function getDefaults(): SaveData {
         newPets: [],
         quests: getDefaultQuestState(),
         shop: { lastRefreshDate: '', offers: [] },
+        dailyBonus: getDefaultDailyBonusState(),
     };
 }
 
@@ -111,6 +112,10 @@ function migrate(data: SaveData): SaveData {
         }
         data.version = 15;
     }
+    if (data.version === 15) {
+        data.dailyBonus = getDefaultDailyBonusState();
+        data.version = 16;
+    }
     return data;
 }
 
@@ -143,6 +148,7 @@ export class SaveSystem {
         const dq = getDefaultQuestState();
         data.quests.onlineQuest = data.quests.onlineQuest ?? dq.onlineQuest;
         data.quests.milestones = data.quests.milestones ?? dq.milestones;
+        data.dailyBonus = data.dailyBonus ?? getDefaultDailyBonusState();
         return data;
     }
 

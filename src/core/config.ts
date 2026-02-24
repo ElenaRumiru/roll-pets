@@ -1,4 +1,4 @@
-import { Grade, GradeConfig, QuestState } from '../types';
+import { Grade, GradeConfig, QuestState, DailyBonusState, DailyBonusReward } from '../types';
 
 export const GAME_WIDTH = 1031;
 export const GAME_HEIGHT = 580;
@@ -225,6 +225,31 @@ export const LEAGUE_PROMOTION_REWARDS: Record<string, number> = {
     diamond: 50_000,
     master: 500_000,
 };
+
+export const DAILY_BONUS_CONFIG = {
+    weeklyRewards: [
+        { type: 'buff' as const, buffType: 'lucky' as const, count: 5 },
+        { type: 'buff' as const, buffType: 'super' as const, count: 3 },
+        { type: 'buff' as const, buffType: 'lucky' as const, count: 10 },
+        { type: 'coins' as const, count: 25 },
+        { type: 'buff' as const, buffType: 'super' as const, count: 5 },
+        { type: 'buff' as const, buffType: 'epic' as const, count: 3 },
+        { type: 'buff' as const, buffType: 'epic' as const, count: 5 },
+    ] as DailyBonusReward[],
+    milestoneThresholds: [8, 15, 22, 30],
+    milestoneRewards: [500, 2_000, 5_000, 10_000],
+    monthCycleDays: 30,
+};
+
+export function getDefaultDailyBonusState(): DailyBonusState {
+    return {
+        totalLogins: 0,
+        weekDay: 0,
+        lastLoginDate: '',
+        claimedToday: false,
+        monthMilestonesClaimed: [false, false, false, false],
+    };
+}
 
 export const COIN_HUD = { w: 102, h: 36, iconSize: 38, gap: 10 };
 export const XP_HUD = { w: 192, h: 32, iconSize: 42 };

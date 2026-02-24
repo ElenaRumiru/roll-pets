@@ -76,6 +76,7 @@ export class BootScene extends Scene {
         this.load.image('ui_gift_raw', 'assets/ui/gift_green2_icon.png');
         this.load.image('ui_ok_raw', 'assets/ui/ok_icon.png');
         this.load.image('ui_settings_raw', 'assets/ui/settings_icon.png');
+        this.load.image('ui_daily_raw', 'assets/ui/daily_icon.png');
 
         // Pet images (deduplicate — multiple pets share sprites)
         const loadedKeys = new Set<string>();
@@ -167,6 +168,12 @@ export class BootScene extends Scene {
         this.trimAndDownscaleCoin('ui_settings_raw', [
             { key: 'ui_settings_md', size: 56 },
         ]);
+
+        // Trim daily bonus icon — create square variant + wide button variant
+        this.trimAndDownscaleCoin('ui_daily_raw', [
+            { key: 'ui_daily_md', size: 90 },
+        ]);
+        this.trimToWidth('ui_daily_raw', 'ui_daily_btn', 130);
 
         // Trim rating icon at exact display width (1:1 pixel mapping, no WebGL scaling)
         this.trimToWidth('ui_rating_3', 'ui_rating_mid', 99);

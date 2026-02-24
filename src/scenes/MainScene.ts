@@ -9,6 +9,7 @@ import { LeaguePromotionOverlay } from '../ui/LeaguePromotionOverlay';
 import { RightPanel } from '../ui/RightPanel';
 import { CollectionButton } from '../ui/CollectionButton';
 import { ShopButton } from '../ui/ShopButton';
+import { DailyBonusButton } from '../ui/DailyBonusButton';
 import { SettingsButton } from '../ui/SettingsButton';
 import { CoinDisplay } from '../ui/CoinDisplay';
 import { SettingsPanel } from '../ui/SettingsPanel';
@@ -31,6 +32,7 @@ export class MainScene extends Scene {
     private rightPanel!: RightPanel;
     private collectionBtn!: CollectionButton;
     private shopBtn!: ShopButton;
+    private dailyBonusBtn!: DailyBonusButton;
     private settingsPanel!: SettingsPanel;
     private bonusPanel!: BonusPanel;
     private questPanel!: QuestPanel;
@@ -116,6 +118,13 @@ export class MainScene extends Scene {
             this.scene.start('ShopScene');
         });
 
+        this.dailyBonusBtn = new DailyBonusButton(this, () => {
+            this.manager.buffs.stopAutoroll();
+            this.manager.isRolling = false;
+            this.manager.saveState();
+            this.scene.start('DailyBonusScene');
+        });
+
         this.bonusPanel = new BonusPanel(this, (type: string) => this.handleBuffRequest(type));
         this.questPanel = new QuestPanel(this,
             (type: 'roll' | 'grade' | 'online') => this.handleQuestClaim(type),
@@ -158,6 +167,7 @@ export class MainScene extends Scene {
         EventBus.on('autoroll-stop', this.onAutorollStop, this);
         EventBus.on('nickname-changed', this.onNicknameChanged, this);
         EventBus.on('quests-changed', this.onQuestsChanged, this);
+        EventBus.on('daily-bonus-changed', this.onDailyBonusChanged, this);
         this.events.on('shutdown', this.shutdown, this);
 
         // Pause overlay
@@ -191,6 +201,7 @@ export class MainScene extends Scene {
             this.leaderboard.setDepth(105);
             this.collectionBtn.setDepth(105);
             this.shopBtn.setDepth(105);
+            this.dailyBonusBtn.setDepth(105);
             this.coinDisplay.setDepth(105);
         }
 
@@ -230,6 +241,7 @@ export class MainScene extends Scene {
             this.leaderboard.setDepth(105);
             this.collectionBtn.setDepth(105);
             this.shopBtn.setDepth(105);
+            this.dailyBonusBtn.setDepth(105);
             this.coinDisplay.setDepth(105);
         } else if (!autoActive && this.wasAutorollActive) {
             this.centerStage.setAutorollOverlay(false);
@@ -240,6 +252,7 @@ export class MainScene extends Scene {
             this.leaderboard.setDepth(0);
             this.collectionBtn.setDepth(0);
             this.shopBtn.setDepth(0);
+            this.dailyBonusBtn.setDepth(0);
             this.coinDisplay.setDepth(0);
         }
         this.wasAutorollActive = autoActive;
@@ -432,6 +445,10 @@ export class MainScene extends Scene {
         this.questPanel.updateDisplay(this.manager.quests);
     }
 
+    private onDailyBonusChanged(): void {
+        this.dailyBonusBtn.updateBadge(this.manager.dailyBonus.hasUnclaimedReward());
+    }
+
     private handleQuestClaim(type: 'roll' | 'grade' | 'online'): void {
         if (this.questPopup) return;
         this.questPopup = new QuestClaimPopup(this, type,
@@ -465,6 +482,7 @@ export class MainScene extends Scene {
         this.leaderboard.setDepth(0);
         this.collectionBtn.setDepth(0);
         this.shopBtn.setDepth(0);
+        this.dailyBonusBtn.setDepth(0);
         this.coinDisplay.setDepth(0);
         this.rightPanel.updateBuffDisplay(this.manager.buffs);
         this.rightPanel.setRolling(this.manager.isRolling);
@@ -536,6 +554,7 @@ export class MainScene extends Scene {
         const topPets = this.getTopPets();
         this.centerStage.updatePedestals(topPets);
         this.questPanel.updateDisplay(this.manager.quests);
+        this.dailyBonusBtn.updateBadge(this.manager.dailyBonus.hasUnclaimedReward());
     }
 
     private showArrowHint(): void {
@@ -564,5 +583,6 @@ export class MainScene extends Scene {
         EventBus.off('autoroll-stop', this.onAutorollStop, this);
         EventBus.off('nickname-changed', this.onNicknameChanged, this);
         EventBus.off('quests-changed', this.onQuestsChanged, this);
+        EventBus.off('daily-bonus-changed', this.onDailyBonusChanged, this);
     }
 }

@@ -69,6 +69,7 @@ export interface SaveData {
     newPets: string[];
     quests: QuestState;
     shop: ShopState;
+    dailyBonus: DailyBonusState;
 }
 
 export interface BuffState {
@@ -113,6 +114,22 @@ export interface ShopOffer {
 export interface ShopState {
     lastRefreshDate: string;
     offers: ShopOffer[];
+}
+
+// ── Daily Bonus ──
+
+export interface DailyBonusReward {
+    type: 'buff' | 'coins';
+    buffType?: 'lucky' | 'super' | 'epic';
+    count: number;
+}
+
+export interface DailyBonusState {
+    totalLogins: number;
+    weekDay: number;
+    lastLoginDate: string;
+    claimedToday: boolean;
+    monthMilestonesClaimed: boolean[];
 }
 
 // ── Leaderboard / Leagues ──

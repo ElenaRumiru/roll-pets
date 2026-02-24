@@ -166,6 +166,19 @@ export const en: Record<string, string> = {
     'shop_bought': 'Purchased!',
     'shop_no_coins': 'Not enough coins!',
 
+    // Daily Bonus
+    'daily_bonus_button': 'Daily',
+    'daily_bonus_title': 'Daily Bonus',
+    'daily_bonus_back': 'Back',
+    'daily_bonus_day': 'Day {day}',
+    'daily_bonus_today': 'Today',
+    'daily_bonus_tomorrow': 'Tomorrow',
+    'daily_bonus_claim': 'CLAIM',
+    'daily_bonus_claimed': 'CLAIMED',
+    'daily_bonus_timer': 'Next bonus in {time}',
+    'daily_bonus_monthly': 'Monthly Progress',
+    'daily_bonus_hint': 'Log in every day to collect rewards!',
+
     // Buff descriptions
     'buff_desc_lucky': 'x2 chance',
     'buff_desc_super': 'x3 chance',

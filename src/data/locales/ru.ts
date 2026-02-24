@@ -166,6 +166,19 @@ export const ru: Record<string, string> = {
     'shop_bought': 'Куплено!',
     'shop_no_coins': 'Недостаточно монет!',
 
+    // Daily Bonus
+    'daily_bonus_button': 'Бонус',
+    'daily_bonus_title': 'Ежедневный бонус',
+    'daily_bonus_back': 'Назад',
+    'daily_bonus_day': 'День {day}',
+    'daily_bonus_today': 'Сегодня',
+    'daily_bonus_tomorrow': 'Завтра',
+    'daily_bonus_claim': 'ЗАБРАТЬ',
+    'daily_bonus_claimed': 'ПОЛУЧЕНО',
+    'daily_bonus_timer': 'Следующий бонус через {time}',
+    'daily_bonus_monthly': 'Месячный прогресс',
+    'daily_bonus_hint': 'Заходи каждый день и забирай подарки!',
+
     // Buff descriptions
     'buff_desc_lucky': 'x2 шанс',
     'buff_desc_super': 'x3 шанс',
