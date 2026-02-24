@@ -41,7 +41,7 @@ src/
 ├── core/
 │   ├── EventBus.ts                 # Central event emitter (~10 lines)
 │   ├── GameManager.ts              # Creates systems, coordinates roll() logic
-│   └── config.ts                   # All balance constants
+│   └── config.ts                   # All balance constants + UI HUD configs (COIN_HUD, XP_HUD)
 │
 ├── types/index.ts                  # All interfaces (Pet, Grade, SaveData, LevelUpData, LeaguePromotionData, etc.)
 │
@@ -67,7 +67,7 @@ src/
 │   └── LeaderboardSystem.ts       # League standings, fake bot players, rating calculation
 │
 ├── scenes/
-│   ├── BootScene.ts                # Asset loading + image pre-downscaling
+│   ├── BootScene.ts                # Asset loading + image pre-downscaling (trim, resize icons)
 │   ├── MainScene.ts                # Gameplay dashboard (creates UI panels)
 │   ├── CollectionScene.ts          # Pet grid with filters
 │   ├── ProgressionScene.ts         # Level-up rewards track (horizontal scroll)
@@ -75,9 +75,9 @@ src/
 │   └── LeaderboardScene.ts        # Full-screen leaderboard with league tabs
 │
 ├── ui/
-│   ├── TopBar.ts                   # Level badge + XP bar (top-left, clickable → ProgressionScene)
+│   ├── TopBar.ts                   # Shield icon with level number + blue XP bar (top-left, clickable → ProgressionScene)
 │   ├── CoinDisplay.ts             # Coin HUD (top-right, left of settings)
-│   ├── SettingsButton.ts          # Gear icon (top-right)
+│   ├── SettingsButton.ts          # Settings icon image (top-right)
 │   ├── CollectionButton.ts        # Collection count (bottom-left)
 │   ├── ShopButton.ts              # Shop entry (bottom-right, aligned with bonus/quest panels)
 │   ├── CenterStage.ts             # 3 pedestal slots + rhombus shadows + roll overlay (pet + odds + rewards)
@@ -86,7 +86,7 @@ src/
 │   ├── QuestClaimPopup.ts         # Quest reward confirmation popup (free vs ad)
 │   ├── LevelUpOverlay.ts          # Level-up popup: egg variant (tap-to-close) / coins variant (free vs ad choice)
 │   ├── LeaguePromotionOverlay.ts  # League promotion popup: rating icon + free vs ad coin choice
-│   ├── Leaderboard.ts             # Mini leaderboard widget on main screen
+│   ├── Leaderboard.ts             # Mini leaderboard widget with rating icon on main screen
 │   ├── PetCard.ts                  # Single pet card with image sprite (for collection grid)
 │   └── components/
 │       ├── Button.ts               # Reusable button with tween
@@ -116,7 +116,15 @@ src/
 
 **Safe zone:** 15px from all screen edges for HUD elements. Left/right margins use `LEFT_PANEL.x = 15` and `GAME_WIDTH - w - 15`. Top margin = 15px (TopBar, CoinDisplay, SettingsButton). Bottom margin = 15px (CollectionButton, ShopButton, Roll button bottom edge, Autoroll toggle).
 
-**UI color theme:** All main-screen panel backgrounds use `0x111122` (bluish dark) with white outline `lineStyle(2, 0xffffff, 0.2)`. Accent green color is `0x78C828` (lime, matching Roll button image) — used for XP bar, CLAIM/FREE buttons, Lucky buff, quest progress bars. Progress bars follow ProgressBar component style: `0x222244` bg at 0.5 alpha, black outline, fill with white highlight strip.
+**UI color theme:** All main-screen panel backgrounds use `0x111122` (bluish dark) with white outline `lineStyle(2, 0xffffff, 0.2)`. Accent green color is `0x78C828` (lime, matching Roll button image) — used for CLAIM/FREE buttons, Lucky buff, quest progress bars. XP bar uses blue `0x3cb8e8` (matching shield icon color). Progress bars follow ProgressBar component style: `0x222244` bg at 0.5 alpha, black outline, fill with white highlight strip.
+
+**TopBar (XP panel):** Pill-shaped progress bar (192×32, `XP_HUD` config) with no dark background. Blue shield icon (`ui/lvl_icon.png`, trimmed+resized in BootScene) overlaps left edge at 42×42 display, level number centered inside. XP text overlay on bar. Mirrors CoinDisplay's visual pattern.
+
+**SettingsButton:** Uses image icon (`ui/settings_icon.png`, trimmed+resized to `ui_settings_md`) instead of Unicode character. 31×31 display inside circular dark bg.
+
+**SettingsPanel:** All text uses `UI.FONT_STROKE` with black stroke for consistency with rest of game. Panel background is fully opaque (`alpha: 1`).
+
+**Leaderboard widget:** Has `ICON_AREA = 48` for rating icon (`ui/Rating_icon_3.png`, trimmed via `trimToHeight`) protruding above the dark panel, similar to QuestPanel's icon pattern.
 
 **Testing:** Always use Playwright MCP to test the game. At the start of every session, navigate to `http://localhost:8080/` via Playwright to verify the dev server is running. Before launching Chrome, check if it's already open (Playwright will fail with a resource access error if Chrome is running). If it fails, ask the user to close Chrome or start the dev server. After every code change, reload the page in Playwright and take a screenshot to verify visuals. Use `browser_console_messages` to check for errors. Click UI elements (ROLL button, Collection, etc.) to test interactions.
 

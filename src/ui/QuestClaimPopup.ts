@@ -26,7 +26,7 @@ export class QuestClaimPopup {
 
     constructor(
         scene: Scene,
-        questType: 'roll' | 'grade',
+        questType: 'roll' | 'grade' | 'online',
         onFree: () => void,
         onAd: () => void,
         private onDismiss?: () => void,

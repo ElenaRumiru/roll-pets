@@ -67,8 +67,15 @@ export class BootScene extends Scene {
         this.load.image('ui_ad_play', 'assets/ui/ad_play.png');
         this.load.image('ui_coin_raw', 'assets/ui/coin.png');
         this.load.image('ui_exp_raw', 'assets/ui/exp.png');
+        this.load.image('ui_lvl_raw', 'assets/ui/lvl_icon.png');
         this.load.image('ui_shop', 'assets/ui/shop_icon.png');
         this.load.image('ui_rating', 'assets/ui/Rating_icon.png');
+        this.load.image('ui_rating_2', 'assets/ui/Rating_icon_2.png');
+        this.load.image('ui_rating_3', 'assets/ui/Rating_icon_3.png');
+        this.load.image('ui_quest_icon', 'assets/ui/quests_icon.png');
+        this.load.image('ui_gift_raw', 'assets/ui/gift_green2_icon.png');
+        this.load.image('ui_ok_raw', 'assets/ui/ok_icon.png');
+        this.load.image('ui_settings_raw', 'assets/ui/settings_icon.png');
 
         // Pet images (deduplicate — multiple pets share sprites)
         const loadedKeys = new Set<string>();
@@ -124,6 +131,23 @@ export class BootScene extends Scene {
         this.downscaleTexture('ui_x3wow', 'ui_x3wow_mid', 126, 126);
         this.downscaleTexture('ui_x5wow', 'ui_x5wow_mid', 138, 138);
 
+        // Pre-downscale quest icon for crisp rendering
+        this.downscaleTexture('ui_quest_icon', 'ui_quest_mid', 260, 174);
+
+        // Trim gift icon and create size variants
+        this.trimAndDownscaleCoin('ui_gift_raw', [
+            { key: 'ui_gift_lg', size: 80 },
+            { key: 'ui_gift_md', size: 54 },
+            { key: 'ui_gift_sm', size: 30 },
+        ]);
+
+        // Trim ok/check icon and create size variants
+        this.trimAndDownscaleCoin('ui_ok_raw', [
+            { key: 'ui_ok_lg', size: 60 },
+            { key: 'ui_ok_md', size: 40 },
+            { key: 'ui_ok_sm', size: 24 },
+        ]);
+
         // Trim transparent pixels from coin icon and create size variants
         this.trimAndDownscaleCoin('ui_coin_raw', [
             { key: 'ui_coin_lg', size: 80 },
@@ -133,6 +157,19 @@ export class BootScene extends Scene {
 
         // Trim exp icon preserving aspect ratio (wide text, not square)
         this.trimToHeight('ui_exp_raw', 'ui_exp_md', 44);
+
+        // Trim level shield icon and create size variant
+        this.trimAndDownscaleCoin('ui_lvl_raw', [
+            { key: 'ui_lvl_md', size: 60 },
+        ]);
+
+        // Trim settings icon and create size variant
+        this.trimAndDownscaleCoin('ui_settings_raw', [
+            { key: 'ui_settings_md', size: 56 },
+        ]);
+
+        // Trim rating icon preserving aspect ratio (wide podium)
+        this.trimToHeight('ui_rating_3', 'ui_rating_mid', 130);
 
         const renderer = this.game.renderer;
         if (renderer instanceof Renderer.WebGL.WebGLRenderer) {

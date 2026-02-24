@@ -24,6 +24,7 @@ export class GameManager {
     isRolling = false;
     lastRollCoinGain = 0;
     private questResetTimer = 0;
+    private onlineTimeAccum = 0;
 
     constructor() {
         this.save = new SaveSystem();
@@ -176,20 +177,33 @@ export class GameManager {
         this.persistSave();
     }
 
-    claimQuestReward(questType: 'roll' | 'grade', useAd: boolean): void {
+    claimQuestReward(questType: 'roll' | 'grade' | 'online', useAd: boolean): void {
         const cfg = QUEST_CONFIG.rewards[questType];
         const count = useAd ? cfg.adCount : cfg.freeCount;
-        const claimed = questType === 'roll'
-            ? this.quests.claimRollQuest()
-            : this.quests.claimGradeQuest();
+        let claimed = false;
+        if (questType === 'roll') claimed = this.quests.claimRollQuest();
+        else if (questType === 'grade') claimed = this.quests.claimGradeQuest();
+        else claimed = this.quests.claimOnlineQuest();
         if (!claimed) return;
 
         if (cfg.buffType === 'lucky') this.buffs.addLucky(count);
-        else this.buffs.addSuper(count);
+        else if (cfg.buffType === 'super') this.buffs.addSuper(count);
+        else this.buffs.addEpic(count);
 
+        this.quests.incrementMilestoneCount();
         EventBus.emit('buffs-changed');
         EventBus.emit('quests-changed');
         this.persistSave();
+    }
+
+    claimQuestMilestone(index: number): number {
+        const coins = this.quests.claimMilestone(index);
+        if (coins > 0) {
+            this.progression.addCoins(coins);
+            EventBus.emit('quests-changed');
+            this.persistSave();
+        }
+        return coins;
     }
 
     private persistSave(result?: RollResult): void {
@@ -218,6 +232,17 @@ export class GameManager {
 
     update(deltaMs: number): void {
         this.buffs.update(deltaMs);
+
+        // Online time tracking (accumulate ms, tick every second)
+        this.onlineTimeAccum += deltaMs;
+        if (this.onlineTimeAccum >= 1000) {
+            const secs = Math.floor(this.onlineTimeAccum / 1000);
+            this.onlineTimeAccum -= secs * 1000;
+            if (this.quests.updateOnlineTime(secs)) {
+                EventBus.emit('quests-changed');
+            }
+        }
+
         this.questResetTimer += deltaMs;
         if (this.questResetTimer >= 60_000) {
             this.questResetTimer = 0;

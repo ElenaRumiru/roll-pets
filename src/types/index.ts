@@ -86,10 +86,23 @@ export interface QuestProgress {
     sequenceIndex: number;
 }
 
+export interface OnlineQuestProgress {
+    current: number;       // seconds accumulated today
+    target: number;        // target in seconds
+    sequenceIndex: number;
+}
+
+export interface QuestMilestoneState {
+    completedCount: number;       // quests completed today (0..N)
+    claimedMilestones: number[];  // indices of claimed milestone rewards
+}
+
 export interface QuestState {
     lastResetDate: string;
     rollQuest: QuestProgress;
     gradeQuest: QuestProgress;
+    onlineQuest: OnlineQuestProgress;
+    milestones: QuestMilestoneState;
 }
 
 export interface ShopOffer {

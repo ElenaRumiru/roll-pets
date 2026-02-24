@@ -127,6 +127,15 @@ export const en: Record<string, string> = {
     'quest_rolls': '{count} Roll',
     'quest_rolls_plural': '{count} Rolls',
 
+    // Online quest
+    'quest_online': 'Online {target} min',
+    'quest_back': 'Back',
+    'quest_timer': 'Resets in {time}',
+    'quest_daily_progress': 'Daily Progress',
+    'quest_scene_title': 'Quests',
+    'quest_in_progress': 'IN PROGRESS',
+    'quest_reward': 'Reward',
+
     // Coins
     'coins': 'Coins',
     'coins_reward': '+{amount}',

@@ -39,7 +39,7 @@ export class SettingsPanel extends GameObjects.Container {
 
         // Panel background (semi-transparent)
         const panel = scene.add.graphics();
-        panel.fillStyle(0x111122, 0.82);
+        panel.fillStyle(0x111122, 1);
         panel.fillRoundedRect(px, py, PANEL_W, PANEL_H, UI.CORNER_RADIUS);
         panel.lineStyle(1.5, 0x444466, 0.4);
         panel.strokeRoundedRect(px, py, PANEL_W, PANEL_H, UI.CORNER_RADIUS);
@@ -47,13 +47,15 @@ export class SettingsPanel extends GameObjects.Container {
 
         // Title
         const title = scene.add.text(GAME_WIDTH / 2, py + 35, t('settings'), {
-            fontFamily: UI.FONT_MAIN, fontSize: '25px', color: '#ffffff',
+            fontFamily: UI.FONT_STROKE, fontSize: '25px', color: '#ffffff',
+            stroke: '#000000', strokeThickness: UI.STROKE_MEDIUM,
         }).setOrigin(0.5);
         this.add(title);
 
         // Close button
         const closeBtn = scene.add.text(px + PANEL_W - 25, py + 25, '\u2715', {
-            fontFamily: UI.FONT_BODY, fontSize: '22px', color: '#aaaaaa',
+            fontFamily: UI.FONT_STROKE, fontSize: '22px', color: '#aaaaaa',
+            stroke: '#000000', strokeThickness: UI.STROKE_THIN,
         }).setOrigin(0.5).setInteractive({ useHandCursor: true });
         closeBtn.on('pointerdown', () => this.hide());
         closeBtn.on('pointerover', () => closeBtn.setColor('#ffffff'));
@@ -93,14 +95,16 @@ export class SettingsPanel extends GameObjects.Container {
 
     private createMusicToggle(px: number, y: number): void {
         const label = this.scene.add.text(px + 37, y, t('settings_music'), {
-            fontFamily: UI.FONT_BODY, fontSize: '20px', color: '#cccccc',
+            fontFamily: UI.FONT_STROKE, fontSize: '18px', color: '#cccccc',
+            stroke: '#000000', strokeThickness: UI.STROKE_THIN,
         }).setOrigin(0, 0.5);
         this.add(label);
 
         this.musicToggle = this.scene.add.text(
             px + PANEL_W - 37, y,
             this.audio.musicOn ? t('sound_on') : t('sound_off'),
-            { fontFamily: UI.FONT_MAIN, fontSize: '17px', color: this.audio.musicOn ? '#00ff88' : '#ff5555' },
+            { fontFamily: UI.FONT_STROKE, fontSize: '17px', color: this.audio.musicOn ? '#00ff88' : '#ff5555',
+              stroke: '#000000', strokeThickness: UI.STROKE_THIN },
         ).setOrigin(1, 0.5).setInteractive({ useHandCursor: true });
 
         this.musicToggle.on('pointerdown', () => {
@@ -116,14 +120,16 @@ export class SettingsPanel extends GameObjects.Container {
 
     private createSfxToggle(px: number, y: number): void {
         const label = this.scene.add.text(px + 37, y, t('settings_sfx'), {
-            fontFamily: UI.FONT_BODY, fontSize: '20px', color: '#cccccc',
+            fontFamily: UI.FONT_STROKE, fontSize: '18px', color: '#cccccc',
+            stroke: '#000000', strokeThickness: UI.STROKE_THIN,
         }).setOrigin(0, 0.5);
         this.add(label);
 
         this.sfxToggle = this.scene.add.text(
             px + PANEL_W - 37, y,
             this.audio.sfxOn ? t('sound_on') : t('sound_off'),
-            { fontFamily: UI.FONT_MAIN, fontSize: '17px', color: this.audio.sfxOn ? '#00ff88' : '#ff5555' },
+            { fontFamily: UI.FONT_STROKE, fontSize: '17px', color: this.audio.sfxOn ? '#00ff88' : '#ff5555',
+              stroke: '#000000', strokeThickness: UI.STROKE_THIN },
         ).setOrigin(1, 0.5).setInteractive({ useHandCursor: true });
 
         this.sfxToggle.on('pointerdown', () => {
@@ -139,19 +145,22 @@ export class SettingsPanel extends GameObjects.Container {
 
     private createNicknameRow(px: number, y: number): void {
         const label = this.scene.add.text(px + 37, y, t('settings_nickname'), {
-            fontFamily: UI.FONT_BODY, fontSize: '20px', color: '#cccccc',
+            fontFamily: UI.FONT_STROKE, fontSize: '18px', color: '#cccccc',
+            stroke: '#000000', strokeThickness: UI.STROKE_THIN,
         }).setOrigin(0, 0.5);
         this.add(label);
 
         const pencil = this.scene.add.text(px + PANEL_W - 25, y, '\u270F\uFE0F', {
-            fontSize: '14px',
+            fontFamily: UI.FONT_STROKE, fontSize: '14px',
+            stroke: '#000000', strokeThickness: 1,
         }).setOrigin(1, 0.5);
         this.add(pencil);
 
         const currentName = this.save.getNickname() || t('default_nickname');
         this.nicknameText = this.scene.add.text(
             px + PANEL_W - 52, y, currentName,
-            { fontFamily: UI.FONT_MAIN, fontSize: '17px', color: '#00ff88' },
+            { fontFamily: UI.FONT_STROKE, fontSize: '17px', color: '#00ff88',
+              stroke: '#000000', strokeThickness: UI.STROKE_THIN },
         ).setOrigin(1, 0.5).setInteractive({ useHandCursor: true });
 
         this.nicknameText.on('pointerover', () => this.nicknameText.setColor('#ffffff'));
@@ -176,7 +185,8 @@ export class SettingsPanel extends GameObjects.Container {
 
     private createLanguageRow(px: number, y: number): void {
         const label = this.scene.add.text(px + 37, y, t('settings_language'), {
-            fontFamily: UI.FONT_BODY, fontSize: '20px', color: '#cccccc',
+            fontFamily: UI.FONT_STROKE, fontSize: '18px', color: '#cccccc',
+            stroke: '#000000', strokeThickness: UI.STROKE_THIN,
         }).setOrigin(0, 0.5);
         this.add(label);
 
@@ -194,12 +204,14 @@ export class SettingsPanel extends GameObjects.Container {
         this.langBtnText = this.scene.add.text(
             btnX + 15, y,
             this.LANG_LABELS[getLanguage()] ?? 'English',
-            { fontFamily: UI.FONT_MAIN, fontSize: '16px', color: '#ffffff' },
+            { fontFamily: UI.FONT_STROKE, fontSize: '16px', color: '#ffffff',
+              stroke: '#000000', strokeThickness: UI.STROKE_THIN },
         ).setOrigin(0, 0.5);
         this.add(this.langBtnText);
 
         const arrow = this.scene.add.text(btnX + btnW - 17, y, '\u25BC', {
-            fontFamily: UI.FONT_BODY, fontSize: '11px', color: '#888888',
+            fontFamily: UI.FONT_STROKE, fontSize: '11px', color: '#888888',
+            stroke: '#000000', strokeThickness: 1,
         }).setOrigin(0.5, 0.5);
         this.add(arrow);
 
@@ -247,8 +259,9 @@ export class SettingsPanel extends GameObjects.Container {
             ).setInteractive({ useHandCursor: true });
 
             const txt = this.scene.add.text(this.langBtnX + 15, iy, this.LANG_LABELS[lang], {
-                fontFamily: UI.FONT_MAIN, fontSize: '16px',
+                fontFamily: UI.FONT_STROKE, fontSize: '16px',
                 color: isActive ? '#00ff88' : '#cccccc',
+                stroke: '#000000', strokeThickness: 1,
             }).setOrigin(0, 0.5);
 
             row.on('pointerover', () => { txt.setColor('#00ff88'); row.setFillStyle(0x444466, 0.5); });
@@ -265,7 +278,8 @@ export class SettingsPanel extends GameObjects.Container {
 
             if (isActive) {
                 const check = this.scene.add.text(this.langBtnX + this.langBtnW - 20, iy, '\u2713', {
-                    fontFamily: UI.FONT_BODY, fontSize: '17px', color: '#00ff88',
+                    fontFamily: UI.FONT_STROKE, fontSize: '17px', color: '#00ff88',
+                    stroke: '#000000', strokeThickness: 1,
                 }).setOrigin(0.5, 0.5);
                 this.langDropdown.add(check);
             }
@@ -294,12 +308,14 @@ export class SettingsPanel extends GameObjects.Container {
         const pctText = this.scene.add.text(
             px + PANEL_W - 37, y,
             `${Math.round(currentVal * 100)}%`,
-            { fontFamily: UI.FONT_MAIN, fontSize: '16px', color: '#ffffff' },
+            { fontFamily: UI.FONT_STROKE, fontSize: '16px', color: '#ffffff',
+              stroke: '#000000', strokeThickness: UI.STROKE_THIN },
         ).setOrigin(1, 0.5);
         this.add(pctText);
 
         const volLabel = this.scene.add.text(px + 37, y, t('settings_volume'), {
-            fontFamily: UI.FONT_BODY, fontSize: '16px', color: '#999999',
+            fontFamily: UI.FONT_STROKE, fontSize: '14px', color: '#999999',
+            stroke: '#000000', strokeThickness: 1,
         }).setOrigin(0, 0.5);
         this.add(volLabel);
 

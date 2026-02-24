@@ -13,11 +13,8 @@ export class SettingsButton extends GameObjects.Container {
         bg.strokeCircle(0, 0, 20);
         this.add(bg);
 
-        const icon = scene.add.text(0, 1, '\u2699', {
-            fontSize: '31px',
-            color: '#ffffff',
-            resolution: 2,
-        }).setOrigin(0.5);
+        const icon = scene.add.image(0, 0, 'ui_settings_md')
+            .setDisplaySize(31, 31);
         this.add(icon);
 
         this.setSize(42, 42);

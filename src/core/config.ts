@@ -159,10 +159,14 @@ export const BONUS_PANEL = {
 export const QUEST_CONFIG = {
     rollSequence: [3, 5, 10],
     gradeSequence: ['uncommon', 'improved'] as Grade[],
+    onlineSequence: [3, 5, 10],           // minutes, loops at 10
     rewards: {
-        roll:  { freeCount: 5, adCount: 25, buffType: 'lucky' as const },
-        grade: { freeCount: 3, adCount: 12, buffType: 'super' as const },
+        roll:   { freeCount: 5, adCount: 25, buffType: 'lucky' as const },
+        grade:  { freeCount: 3, adCount: 12, buffType: 'super' as const },
+        online: { freeCount: 1, adCount: 3, buffType: 'epic' as const },
     },
+    milestonesAt: [2, 4, 6, 8, 10],
+    milestoneRewards: [50, 200, 500, 2_000, 10_000],
 };
 
 export const QUEST_PANEL = { x: GAME_WIDTH - 135 - 15, w: 135 };
@@ -174,6 +178,8 @@ export function getDefaultQuestState(): QuestState {
         lastResetDate: today,
         rollQuest: { current: 0, target: QUEST_CONFIG.rollSequence[0], sequenceIndex: 0 },
         gradeQuest: { current: 0, target: 1, sequenceIndex: 0 },
+        onlineQuest: { current: 0, target: QUEST_CONFIG.onlineSequence[0] * 60, sequenceIndex: 0 },
+        milestones: { completedCount: 0, claimedMilestones: [] },
     };
 }
 
@@ -221,6 +227,7 @@ export const LEAGUE_PROMOTION_REWARDS: Record<string, number> = {
 };
 
 export const COIN_HUD = { w: 102, h: 36, iconSize: 38, gap: 10 };
+export const XP_HUD = { w: 192, h: 32, iconSize: 42 };
 
 /** Convert pet chance (X from "1 in X") to display string */
 export function getOddsString(chance: number): string {

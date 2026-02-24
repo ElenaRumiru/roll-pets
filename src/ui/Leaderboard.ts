@@ -7,7 +7,8 @@ const PANEL_W = 163;
 const RADIUS = 9;
 const VISIBLE_ROWS = 5;
 const ROW_H = 17;
-const HEADER_Y = 34;
+const ICON_AREA = 48;
+const HEADER_Y = ICON_AREA + 34;
 const ROW_START_Y = HEADER_Y + 21;
 const COMPACT_H = ROW_START_Y + VISIBLE_ROWS * ROW_H + 8;
 const SEP_Y = ROW_START_Y + VISIBLE_ROWS * ROW_H + 3;
@@ -33,8 +34,15 @@ export class Leaderboard extends GameObjects.Container {
         this.add(this.bg);
         this.drawBg(EXPANDED_H);
 
+        // Rating icon (protruding above panel, like QuestPanel)
+        const icon = scene.add.image(PANEL_W / 2, ICON_AREA - 10, 'ui_rating_mid');
+        const tex = icon.texture.getSourceImage();
+        const displayW = 99;
+        icon.setDisplaySize(displayW, displayW / (tex.width / tex.height));
+        this.add(icon);
+
         // League title
-        this.leagueName = scene.add.text(PANEL_W / 2, 9, '', {
+        this.leagueName = scene.add.text(PANEL_W / 2, ICON_AREA + 9, '', {
             fontFamily: UI.FONT_STROKE, fontSize: '15px', color: '#ffffff',
             stroke: '#000000', strokeThickness: UI.STROKE_MEDIUM,
         }).setOrigin(0.5, 0);
@@ -101,6 +109,7 @@ export class Leaderboard extends GameObjects.Container {
 
         // Clickable
         this.setInteractive(new Geom.Rectangle(0, 0, PANEL_W, EXPANDED_H), Geom.Rectangle.Contains);
+        this.input!.hitArea = new Geom.Rectangle(0, 0, PANEL_W, EXPANDED_H);
         this.on('pointerdown', onClick);
 
         scene.add.existing(this);
@@ -156,8 +165,8 @@ export class Leaderboard extends GameObjects.Container {
     private drawBg(h: number): void {
         this.bg.clear();
         this.bg.fillStyle(0x111122, 0.75);
-        this.bg.fillRoundedRect(0, 0, PANEL_W, h, RADIUS);
+        this.bg.fillRoundedRect(0, ICON_AREA, PANEL_W, h - ICON_AREA, RADIUS);
         this.bg.lineStyle(2, 0xffffff, 0.2);
-        this.bg.strokeRoundedRect(0, 0, PANEL_W, h, RADIUS);
+        this.bg.strokeRoundedRect(0, ICON_AREA, PANEL_W, h - ICON_AREA, RADIUS);
     }
 }

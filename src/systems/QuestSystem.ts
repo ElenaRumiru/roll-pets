@@ -1,5 +1,14 @@
-import { QuestState, QuestProgress, Grade, RollResult } from '../types';
+import { QuestState, QuestProgress, OnlineQuestProgress, Grade, RollResult } from '../types';
 import { QUEST_CONFIG, getDefaultQuestState, GRADE_ORDER } from '../core/config';
+
+export type QuestType = 'roll' | 'grade' | 'online';
+
+interface VisibleQuest {
+    type: QuestType;
+    current: number;
+    target: number;
+    complete: boolean;
+}
 
 export class QuestSystem {
     private state: QuestState;
@@ -19,6 +28,9 @@ export class QuestSystem {
         this.state.lastResetDate = today;
         this.state.rollQuest = { current: 0, target: QUEST_CONFIG.rollSequence[0], sequenceIndex: 0 };
         this.state.gradeQuest = { current: 0, target: 1, sequenceIndex: 0 };
+        const onlineSeq = QUEST_CONFIG.onlineSequence;
+        this.state.onlineQuest = { current: 0, target: onlineSeq[0] * 60, sequenceIndex: 0 };
+        this.state.milestones = { completedCount: 0, claimedMilestones: [] };
         return true;
     }
 
@@ -38,6 +50,89 @@ export class QuestSystem {
             }
         }
     }
+
+    // ── Online quest ──
+
+    updateOnlineTime(deltaSec: number): boolean {
+        const oq = this.state.onlineQuest;
+        if (this.isOnlineComplete()) return false;
+        const before = oq.current;
+        oq.current = Math.min(oq.current + deltaSec, oq.target);
+        return Math.floor(oq.current) !== Math.floor(before);
+    }
+
+    isOnlineComplete(): boolean {
+        return this.state.onlineQuest.current >= this.state.onlineQuest.target;
+    }
+
+    getOnlineQuest(): Readonly<OnlineQuestProgress> { return this.state.onlineQuest; }
+
+    claimOnlineQuest(): boolean {
+        const oq = this.state.onlineQuest;
+        if (!this.isOnlineComplete()) return false;
+        oq.sequenceIndex++;
+        const seq = QUEST_CONFIG.onlineSequence;
+        oq.target = seq[Math.min(oq.sequenceIndex, seq.length - 1)] * 60;
+        oq.current = 0;
+        return true;
+    }
+
+    // ── Milestones ──
+
+    incrementMilestoneCount(): void {
+        this.state.milestones.completedCount++;
+    }
+
+    getMilestones() { return this.state.milestones; }
+
+    claimMilestone(index: number): number {
+        const ms = this.state.milestones;
+        const threshold = QUEST_CONFIG.milestonesAt[index];
+        if (ms.completedCount < threshold) return 0;
+        if (ms.claimedMilestones.includes(index)) return 0;
+        ms.claimedMilestones.push(index);
+        return QUEST_CONFIG.milestoneRewards[index];
+    }
+
+    getClaimableMilestoneCount(): number {
+        const ms = this.state.milestones;
+        let count = 0;
+        for (let i = 0; i < QUEST_CONFIG.milestonesAt.length; i++) {
+            if (ms.completedCount >= QUEST_CONFIG.milestonesAt[i]
+                && !ms.claimedMilestones.includes(i)) {
+                count++;
+            }
+        }
+        return count;
+    }
+
+    // ── Display priority (pick 2 of 3) ──
+
+    getVisibleQuests(): VisibleQuest[] {
+        const all: VisibleQuest[] = [
+            { type: 'roll', current: this.state.rollQuest.current, target: this.state.rollQuest.target, complete: this.isRollQuestComplete() },
+            { type: 'grade', current: this.state.gradeQuest.current, target: this.state.gradeQuest.target, complete: this.isGradeQuestComplete() },
+            { type: 'online', current: Math.floor(this.state.onlineQuest.current), target: this.state.onlineQuest.target, complete: this.isOnlineComplete() },
+        ];
+        all.sort((a, b) => {
+            if (a.complete !== b.complete) return a.complete ? -1 : 1;
+            const ratioA = a.target > 0 ? a.current / a.target : 0;
+            const ratioB = b.target > 0 ? b.current / b.target : 0;
+            return ratioB - ratioA;
+        });
+        return all.slice(0, 2);
+    }
+
+    getTotalClaimableCount(): number {
+        let count = 0;
+        if (this.isRollQuestComplete()) count++;
+        if (this.isGradeQuestComplete()) count++;
+        if (this.isOnlineComplete()) count++;
+        count += this.getClaimableMilestoneCount();
+        return count;
+    }
+
+    // ── Existing quest methods ──
 
     claimRollQuest(): boolean {
         const q = this.state.rollQuest;
@@ -74,10 +169,18 @@ export class QuestSystem {
         return seq[Math.min(this.state.rollQuest.sequenceIndex, seq.length - 1)];
     }
 
+    getSecondsUntilReset(): number {
+        const now = new Date();
+        const tomorrow = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + 1));
+        return Math.max(0, Math.floor((tomorrow.getTime() - now.getTime()) / 1000));
+    }
+
     toSave(): QuestState {
         return { ...this.state,
             rollQuest: { ...this.state.rollQuest },
             gradeQuest: { ...this.state.gradeQuest },
+            onlineQuest: { ...this.state.onlineQuest },
+            milestones: { ...this.state.milestones, claimedMilestones: [...this.state.milestones.claimedMilestones] },
         };
     }
 

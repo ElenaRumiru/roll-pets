@@ -83,11 +83,11 @@ export class BonusPanel extends GameObjects.Container {
         this.card.on('pointerup', () => this.cancelTooltip());
         this.card.on('pointerout', () => this.cancelTooltip());
 
-        this.icon = scene.add.image(ICON_PAD + ICON_SZ / 2 - 2, CONTENT_CY, BUFF_ICON.lucky)
+        this.icon = scene.add.image(ICON_PAD + ICON_SZ / 2 - 4, CONTENT_CY, BUFF_ICON.lucky)
             .setDisplaySize(ICON_SZ, ICON_SZ);
         this.card.add(this.icon);
 
-        this.label = scene.add.text(AREA_CX - 3, CONTENT_TOP + 14, '', {
+        this.label = scene.add.text(AREA_CX - 5, CONTENT_TOP + 14, '', {
             fontFamily: UI.FONT_STROKE, fontSize: '13px', color: '#ffffff',
             stroke: '#000000', strokeThickness: UI.STROKE_THIN,
         }).setOrigin(0.5, 0.5);
@@ -143,7 +143,7 @@ export class BonusPanel extends GameObjects.Container {
 
         this.icon.setTexture(BUFF_ICON[type]).setDisplaySize(iconSize, iconSize).setY(iconY);
         this.label.setText(t(BUFF_LABEL_KEY[type], { count: BUFF_CONFIG[type].rollsPerAd }));
-        fitText(this.label, ROW_W - AREA_LEFT - PAD - 4, 13);
+        fitText(this.label, ROW_W - AREA_LEFT - PAD + 12, 13);
         this.desc.setText(t(BUFF_DESC_KEY[type])).setColor(colorHex);
 
         this.bg.clear();

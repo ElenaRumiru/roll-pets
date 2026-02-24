@@ -127,6 +127,15 @@ export const ru: Record<string, string> = {
     'quest_rolls': '{count} ролл',
     'quest_rolls_plural': '{count} ролла',
 
+    // Online quest
+    'quest_online': 'Онлайн {target} мин',
+    'quest_back': 'Назад',
+    'quest_timer': 'Сброс через {time}',
+    'quest_daily_progress': 'Прогресс дня',
+    'quest_scene_title': 'Квесты',
+    'quest_in_progress': 'В ПРОЦЕССЕ',
+    'quest_reward': 'Награда',
+
     // Coins
     'coins': 'Монеты',
     'coins_reward': '+{amount}',

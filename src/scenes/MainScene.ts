@@ -117,14 +117,22 @@ export class MainScene extends Scene {
         });
 
         this.bonusPanel = new BonusPanel(this, (type: string) => this.handleBuffRequest(type));
-        this.questPanel = new QuestPanel(this, (type: 'roll' | 'grade') => this.handleQuestClaim(type));
+        this.questPanel = new QuestPanel(this,
+            (type: 'roll' | 'grade' | 'online') => this.handleQuestClaim(type),
+            () => {
+                this.manager.buffs.stopAutoroll();
+                this.manager.isRolling = false;
+                this.manager.saveState();
+                this.scene.start('QuestScene');
+            },
+        );
 
         // Position quest panel + bonus panel aligned with leaderboard
         const COMBINED_GAP = 6;
         const leaderboardY = Math.round((GAME_HEIGHT - 175) / 2) - 22 - 25; // shifted 25px up for shop button
-        this.questPanel.y = leaderboardY;
+        this.questPanel.y = leaderboardY - 20;
         this.leaderboard.y = leaderboardY;
-        this.bonusPanel.y = leaderboardY + this.questPanel.panelHeight + COMBINED_GAP;
+        this.bonusPanel.y = this.questPanel.y + this.questPanel.panelHeight + COMBINED_GAP;
 
         // Audio (singleton from registry)
         this.audio = this.registry.get('audio') as AudioSystem;
@@ -424,7 +432,7 @@ export class MainScene extends Scene {
         this.questPanel.updateDisplay(this.manager.quests);
     }
 
-    private handleQuestClaim(type: 'roll' | 'grade'): void {
+    private handleQuestClaim(type: 'roll' | 'grade' | 'online'): void {
         if (this.questPopup) return;
         this.questPopup = new QuestClaimPopup(this, type,
             () => {

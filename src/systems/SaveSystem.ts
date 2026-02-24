@@ -3,7 +3,7 @@ import { PETS } from '../data/pets';
 import { getGradeForChance, getDefaultQuestState } from '../core/config';
 
 const SAVE_KEY = 'pets_go_lite_save';
-const CURRENT_VERSION = 14;
+const CURRENT_VERSION = 15;
 
 function getDefaults(): SaveData {
     return {
@@ -101,6 +101,16 @@ function migrate(data: SaveData): SaveData {
         data.settings.language = data.settings.language ?? 'en';
         data.version = 14;
     }
+    if (data.version === 14) {
+        const q = data.quests;
+        if (!q.onlineQuest) {
+            q.onlineQuest = { current: 0, target: 180, sequenceIndex: 0 };
+        }
+        if (!q.milestones) {
+            q.milestones = { completedCount: 0, claimedMilestones: [] };
+        }
+        data.version = 15;
+    }
     return data;
 }
 
@@ -130,6 +140,9 @@ export class SaveSystem {
         data.settings = { ...defaults.settings, ...data.settings };
         data.buffs = { ...defaults.buffs, ...data.buffs };
         data.quests = data.quests ?? getDefaultQuestState();
+        const dq = getDefaultQuestState();
+        data.quests.onlineQuest = data.quests.onlineQuest ?? dq.onlineQuest;
+        data.quests.milestones = data.quests.milestones ?? dq.milestones;
         return data;
     }
 

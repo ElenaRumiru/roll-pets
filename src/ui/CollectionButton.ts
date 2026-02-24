@@ -43,7 +43,7 @@ export class CollectionButton extends GameObjects.Container {
         // Notification badge (top-right corner of dark panel)
         const badgeX = PANEL_W - 2;
         const badgeY = TOTAL_H - BG_H + 7;
-        const badgeR = 10;
+        const badgeR = 12;
         this.badgeGfx = scene.add.graphics();
         this.badgeGfx.lineStyle(2, 0x000000, 1);
         this.badgeGfx.fillStyle(0xcc0000, 1);
@@ -51,12 +51,12 @@ export class CollectionButton extends GameObjects.Container {
         this.badgeGfx.strokeCircle(badgeX, badgeY, badgeR);
         this.add(this.badgeGfx);
 
-        this.badgeText = scene.add.text(badgeX, badgeY - 1, '', {
+        this.badgeText = scene.add.text(badgeX, badgeY, '', {
             fontFamily: UI.FONT_STROKE,
-            fontSize: '11px',
+            fontSize: '13px',
             color: '#ffffff',
             stroke: '#000000',
-            strokeThickness: 1,
+            strokeThickness: 2,
         }).setOrigin(0.5);
         this.add(this.badgeText);
 
@@ -77,6 +77,7 @@ export class CollectionButton extends GameObjects.Container {
     updateCount(newCount: number): void {
         if (newCount > 0) {
             this.badgeText.setText(String(newCount));
+            this.badgeText.setFontSize(newCount >= 10 ? '11px' : '13px');
             this.badgeGfx.setVisible(true);
             this.badgeText.setVisible(true);
         } else {

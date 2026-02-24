@@ -1,74 +1,70 @@
 import { GameObjects, Geom, Scene } from 'phaser';
-import { UI, LEFT_PANEL } from '../core/config';
+import { UI, LEFT_PANEL, XP_HUD, xpForLevel } from '../core/config';
 import { ProgressBar } from './components/ProgressBar';
-import { t } from '../data/locales';
-import { fitText } from './components/fitText';
 
-const PANEL_W = LEFT_PANEL.w;
-const PANEL_H = 32;
-const RADIUS = 10;
-const BAR_X = 67;
-const BAR_W = 111;
-const BAR_H = 17;
+const ICON_X = XP_HUD.iconSize * 0.28;
+const CY = XP_HUD.h / 2;
+const TEXT_LEFT = XP_HUD.iconSize * 0.6 + 2;
+const TEXT_CENTER_X = TEXT_LEFT + (XP_HUD.w - TEXT_LEFT) / 2;
 
 export class TopBar extends GameObjects.Container {
-    private levelText: GameObjects.Text;
+    private levelLabel: GameObjects.Text;
     private xpBar: ProgressBar;
     private xpLabel: GameObjects.Text;
 
     constructor(scene: Scene, onClick?: () => void) {
         super(scene, LEFT_PANEL.x, 15);
 
-        // Semi-transparent black panel
-        const bg = scene.add.graphics();
-        bg.fillStyle(0x111122, 0.75);
-        bg.fillRoundedRect(0, 0, PANEL_W, PANEL_H, RADIUS);
-        bg.lineStyle(2, 0xffffff, 0.2);
-        bg.strokeRoundedRect(0, 0, PANEL_W, PANEL_H, RADIUS);
-        this.add(bg);
+        // XP progress bar (pill-shaped, serves as the panel)
+        this.xpBar = new ProgressBar(
+            scene, 0, CY, XP_HUD.w, XP_HUD.h, 0x111122, 0x3cb8e8,
+        );
+        this.add(this.xpBar);
 
-        // Make entire panel clickable
+        // XP numbers overlay on bar
+        this.xpLabel = scene.add.text(TEXT_CENTER_X, CY, '', {
+            fontFamily: UI.FONT_STROKE,
+            fontSize: '13px',
+            color: '#ffffff',
+            stroke: '#000000',
+            strokeThickness: UI.STROKE_THIN,
+        }).setOrigin(0.5, 0.5);
+        this.add(this.xpLabel);
+
+        // Shield icon overlapping left edge (like coin in CoinDisplay)
+        const icon = scene.add.image(ICON_X, CY, 'ui_lvl_md')
+            .setDisplaySize(XP_HUD.iconSize, XP_HUD.iconSize);
+        this.add(icon);
+
+        // Level number centered inside shield
+        this.levelLabel = scene.add.text(ICON_X, CY, '1', {
+            fontFamily: UI.FONT_STROKE,
+            fontSize: '18px',
+            fontStyle: 'bold',
+            color: '#ffffff',
+            stroke: '#000000',
+            strokeThickness: UI.STROKE_MEDIUM,
+        }).setOrigin(0.5, 0.5);
+        this.add(this.levelLabel);
+
+        // Clickable hit area covering shield + bar
         if (onClick) {
+            const hitX = -XP_HUD.iconSize * 0.22;
             this.setInteractive({
-                hitArea: new Geom.Rectangle(0, 0, PANEL_W, PANEL_H),
+                hitArea: new Geom.Rectangle(
+                    hitX, 0, XP_HUD.w - hitX, XP_HUD.h,
+                ),
                 hitAreaCallback: Geom.Rectangle.Contains,
                 useHandCursor: true,
             });
             this.on('pointerdown', onClick);
         }
 
-        const cy = PANEL_H / 2;
-
-        // Level text (left side, vertically centered)
-        this.levelText = scene.add.text(12, cy, '', {
-            fontFamily: UI.FONT_STROKE,
-            fontSize: '14px',
-            color: '#ffffff',
-            stroke: '#000000',
-            strokeThickness: UI.STROKE_THIN,
-        }).setOrigin(0, 0.5);
-        this.add(this.levelText);
-
-        // XP bar (right side, vertically centered)
-        this.xpBar = new ProgressBar(scene, BAR_X, cy + 1, BAR_W, BAR_H, 0x222244, 0x78C828);
-        this.add(this.xpBar);
-
-        // XP numbers overlay on bar
-        this.xpLabel = scene.add.text(BAR_X + BAR_W / 2, cy + 1, '', {
-            fontFamily: UI.FONT_STROKE,
-            fontSize: '11px',
-            color: '#ffffff',
-            stroke: '#000000',
-            strokeThickness: UI.STROKE_THIN,
-        }).setOrigin(0.5);
-        this.add(this.xpLabel);
-
         scene.add.existing(this);
     }
 
     updateDisplay(level: number, xpProgress: number, xp: number, xpNeeded: number): void {
-        this.levelText.setText(`${t('level')} ${level}`);
-        fitText(this.levelText, BAR_X - 14, 14);
+        this.levelLabel.setText(`${level}`);
         this.xpBar.setProgress(xpProgress);
         this.xpLabel.setText(`${xp}/${xpNeeded}`);
     }
