@@ -16,6 +16,10 @@ export const ru: Record<string, string> = {
     'levelup_title': 'НОВЫЙ УРОВЕНЬ!',
     'levelup_new_egg': 'Новое яйцо:',
     'egg_effect': 'Роллит питомцев {odds} и выше!',
+    'egg_luck': 'Удача',
+    'egg_req_level': 'Уровень {level}',
+    'egg_incubation_info': 'Инкубация: {buff} удача, {time}',
+    'egg_chance': 'шанс',
 
     // Grades
     'grade_common': 'Обычный',
@@ -62,11 +66,23 @@ export const ru: Record<string, string> = {
     'all_pets': 'Все питомцы',
 
     // Egg Tiers
-    'egg_basic': 'Обычное яйцо',
-    'egg_golden': 'Золотое яйцо',
-    'egg_crystal': 'Кристальное яйцо',
-    'egg_fire': 'Огненное яйцо',
-    'egg_cosmic': 'Космическое яйцо',
+    'egg_tier_1': 'Луговое яйцо',
+    'egg_tier_2': 'Пятнистое яйцо',
+    'egg_tier_3': 'Морозное яйцо',
+    'egg_tier_4': 'Пламенное яйцо',
+    'egg_tier_5': 'Золотое яйцо',
+    'egg_tier_6': 'Нефритовое яйцо',
+    'egg_tier_7': 'Сапфировое яйцо',
+    'egg_tier_8': 'Рубиновое яйцо',
+    'egg_tier_9': 'Янтарное яйцо',
+    'egg_tier_10': 'Сияющее яйцо',
+    'egg_tier_11': 'Вулканическое яйцо',
+    'egg_tier_12': 'Тайное яйцо',
+    'egg_tier_13': 'Призрачное яйцо',
+    'egg_tier_14': 'Имперское яйцо',
+    'egg_tier_15': 'Туманное яйцо',
+    'egg_tier_16': 'Звёздное яйцо',
+    'egg_tier_17': 'Небесное яйцо',
 
     // Backgrounds
     'bg_meadow': 'Луг',
@@ -165,6 +181,8 @@ export const ru: Record<string, string> = {
     'shop_timer': 'Обновление через {time}',
     'shop_bought': 'Куплено!',
     'shop_no_coins': 'Недостаточно монет!',
+    'shop_tab_pets': 'Питомцы',
+    'shop_tab_eggs': 'Яйца',
 
     // Daily Bonus
     'daily_bonus_button': 'Бонус',
@@ -178,6 +196,26 @@ export const ru: Record<string, string> = {
     'daily_bonus_timer': 'Следующий бонус через {time}',
     'daily_bonus_monthly': 'Месячный прогресс',
     'daily_bonus_hint': 'Заходи каждый день и забирай подарки!',
+
+    // Nests
+    'nests_button': 'Инкубация',
+    'nests_title': 'Инкубация',
+    'nests_back': 'Назад',
+    'nests_empty': 'Пусто',
+    'nests_select': 'Выбрать',
+    'nests_in_progress': 'В процессе',
+    'nests_collect': 'Забрать',
+    'nests_ready': 'Готово!',
+    'nests_locked': 'Закрыто',
+    'nests_buy': 'Купить',
+    'nests_select_egg': 'Выберите яйцо',
+    'nests_egg_count': 'x{count}',
+    'nests_no_coins': 'Недостаточно монет!',
+    'nests_speed_up': 'Ускорить 30%',
+    'nests_no_eggs': 'Нет яиц! Загляни в магазин.',
+    'nests_buy_eggs': 'Купить яйца',
+    'nests_hint': 'Инкубируй яйца, чтобы получить редких питомцев!',
+    'shop_eggs_hint': 'Яйца для использования в Инкубации',
 
     // Buff descriptions
     'buff_desc_lucky': 'x2 шанс',

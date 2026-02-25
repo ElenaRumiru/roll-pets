@@ -1,5 +1,6 @@
 import { getVisualTier, VISUAL_TIERS, levelUpCoinReward } from '../core/config';
 import { getEggImageKey, getEggNameKey, getEggMinOdds } from './eggs';
+import { getEggTierConfig, formatBuffMultiplier, formatIncubationTime } from './eggTiers';
 
 export interface Milestone {
     level: number;
@@ -7,6 +8,8 @@ export interface Milestone {
     eggKey?: string;
     eggNameKey?: string;
     eggMinOdds?: string;
+    eggBuffLabel?: string;
+    eggIncubationLabel?: string;
     coinAmount?: number;
 }
 
@@ -36,12 +39,16 @@ export function getMilestones(currentLevel: number): Milestone[] {
     for (let lvl = 1; lvl <= horizon; lvl++) {
         if (isEggLevel(lvl)) {
             const eggKey = getEggImageKey(lvl);
+            const tier = getVisualTier(lvl);
+            const tierCfg = getEggTierConfig(tier);
             milestones.push({
                 level: lvl,
                 type: 'egg',
                 eggKey,
                 eggNameKey: getEggNameKey(eggKey),
                 eggMinOdds: getEggMinOdds(lvl),
+                eggBuffLabel: formatBuffMultiplier(tierCfg.buffMultiplier),
+                eggIncubationLabel: formatIncubationTime(tierCfg.incubationMs),
             });
         } else {
             milestones.push({

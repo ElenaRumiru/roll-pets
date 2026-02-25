@@ -1,4 +1,4 @@
-import { Grade, GradeConfig, QuestState, DailyBonusState, DailyBonusReward } from '../types';
+import { Grade, GradeConfig, QuestState, DailyBonusState, DailyBonusReward, NestState } from '../types';
 
 export const GAME_WIDTH = 1031;
 export const GAME_HEIGHT = 580;
@@ -248,6 +248,22 @@ export function getDefaultDailyBonusState(): DailyBonusState {
         lastLoginDate: '',
         claimedToday: false,
         monthMilestonesClaimed: [false, false, false, false],
+    };
+}
+
+export const NEST_CONFIG = {
+    maxSlots: 3,
+    slotPrices: [0, 5_000, 50_000],
+    incubationMs: 30_000,
+} as const;
+
+export function getDefaultNestState(): NestState {
+    return {
+        slots: [
+            { unlocked: true,  eggTier: null, level: null, startTime: null, duration: NEST_CONFIG.incubationMs, boosted: false, buffMultiplier: 1 },
+            { unlocked: false, eggTier: null, level: null, startTime: null, duration: NEST_CONFIG.incubationMs, boosted: false, buffMultiplier: 1 },
+            { unlocked: false, eggTier: null, level: null, startTime: null, duration: NEST_CONFIG.incubationMs, boosted: false, buffMultiplier: 1 },
+        ],
     };
 }
 

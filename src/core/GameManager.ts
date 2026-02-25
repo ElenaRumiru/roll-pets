@@ -1,5 +1,5 @@
 import { EventBus } from './EventBus';
-import { BUFF_CONFIG, QUEST_CONFIG, levelUpCoinReward, LEAGUE_PROMOTION_REWARDS } from './config';
+import { BUFF_CONFIG, QUEST_CONFIG, levelUpCoinReward, LEAGUE_PROMOTION_REWARDS, NEST_CONFIG, getDefaultNestState } from './config';
 import { RNGSystem } from '../systems/RNGSystem';
 import { ProgressionSystem } from '../systems/ProgressionSystem';
 import { SaveSystem } from '../systems/SaveSystem';
@@ -8,7 +8,9 @@ import { QuestSystem } from '../systems/QuestSystem';
 import { ShopSystem } from '../systems/ShopSystem';
 import { LeaderboardSystem } from '../systems/LeaderboardSystem';
 import { DailyBonusSystem } from '../systems/DailyBonusSystem';
+import { NestSystem } from '../systems/NestSystem';
 import { getEligiblePets, getEggImageKey } from '../data/eggs';
+import { getEggTierConfig } from '../data/eggTiers';
 import { getBgImageKey } from '../data/backgrounds';
 import { getLeagueForChance } from '../data/leaderboard';
 import { PETS } from '../data/pets';
@@ -24,6 +26,7 @@ export class GameManager {
     shop: ShopSystem;
     leaderboard: LeaderboardSystem;
     dailyBonus: DailyBonusSystem;
+    nests: NestSystem;
     isRolling = false;
     lastRollCoinGain = 0;
     private questResetTimer = 0;
@@ -52,6 +55,9 @@ export class GameManager {
         this.dailyBonus = new DailyBonusSystem();
         const dailyBonusState = data.dailyBonus ?? getDefaultDailyBonusState();
         this.dailyBonus.loadFromSave(dailyBonusState);
+
+        this.nests = new NestSystem();
+        this.nests.loadFromSave(data.nests ?? getDefaultNestState());
 
         this.setupListeners();
     }
@@ -183,6 +189,70 @@ export class GameManager {
         return coins;
     }
 
+    unlockNestSlot(index: number): boolean {
+        const price = NEST_CONFIG.slotPrices[index];
+        if (this.progression.coins < price) return false;
+        if (!this.nests.unlockSlot(index, this.progression.coins)) return false;
+        this.progression.addCoins(-price);
+        EventBus.emit('nests-changed');
+        this.persistSave();
+        return true;
+    }
+
+    placeNestEgg(slotIndex: number, tier: number): boolean {
+        const inv = this.save.getData().eggInventory;
+        const key = String(tier);
+        if (!inv[key] || inv[key] <= 0) return false;
+        const cfg = getEggTierConfig(tier);
+        if (!this.nests.placeEgg(slotIndex, tier, this.progression.level, cfg.incubationMs, cfg.buffMultiplier)) return false;
+        inv[key]--;
+        if (inv[key] <= 0) delete inv[key];
+        EventBus.emit('nests-changed');
+        this.persistSave();
+        return true;
+    }
+
+    boostNestSlot(index: number): boolean {
+        if (!this.nests.boostSlot(index)) return false;
+        EventBus.emit('nests-changed');
+        this.persistSave();
+        return true;
+    }
+
+    hatchNest(slotIndex: number): RollResult | null {
+        const info = this.nests.collectHatch(slotIndex);
+        if (!info) return null;
+        const eligible = getEligiblePets(info.level);
+        const pet = this.rng.rollPet(eligible, info.buffMultiplier);
+        const result = this.progression.processRoll(pet);
+        if (result.isNew) this.save.addNewPet(result.pet.id);
+        EventBus.emit('nests-changed');
+        this.persistSave();
+        return result;
+    }
+
+    getEggInventory(): Record<string, number> {
+        return this.save.getData().eggInventory;
+    }
+
+    purchaseEgg(tier: number, price: number): boolean {
+        if (this.progression.coins < price) return false;
+        this.progression.addCoins(-price);
+        const inv = this.save.getData().eggInventory;
+        const key = String(tier);
+        inv[key] = (inv[key] ?? 0) + 1;
+        EventBus.emit('egg-purchased', tier);
+        this.persistSave();
+        return true;
+    }
+
+    addEggs(tier: number, count: number): void {
+        const inv = this.save.getData().eggInventory;
+        const key = String(tier);
+        inv[key] = (inv[key] ?? 0) + count;
+        this.persistSave();
+    }
+
     private applyDailyBonusReward(reward: DailyBonusReward): void {
         if (reward.type === 'coins') {
             this.progression.addCoins(reward.count);
@@ -253,6 +323,7 @@ export class GameManager {
         data.quests = this.quests.toSave();
         data.shop = this.shop.toSave();
         data.dailyBonus = this.dailyBonus.toSave();
+        data.nests = this.nests.toSave();
 
         if (result) {
             data.totalRolls++;

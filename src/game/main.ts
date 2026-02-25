@@ -8,6 +8,7 @@ import { ShopScene } from '../scenes/ShopScene';
 import { LeaderboardScene } from '../scenes/LeaderboardScene';
 import { QuestScene } from '../scenes/QuestScene';
 import { DailyBonusScene } from '../scenes/DailyBonusScene';
+import { NestsScene } from '../scenes/NestsScene';
 
 const config: Phaser.Types.Core.GameConfig = {
     type: AUTO,
@@ -29,6 +30,7 @@ const config: Phaser.Types.Core.GameConfig = {
         LeaderboardScene,
         QuestScene,
         DailyBonusScene,
+        NestsScene,
     ],
 };
 

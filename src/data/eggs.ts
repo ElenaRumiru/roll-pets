@@ -28,11 +28,7 @@ export function getEggImageKey(level: number): string {
 /** Map egg image key (egg_1..egg_17) to a locale name key */
 export function getEggNameKey(eggImageKey: string): string {
     const tier = parseInt(eggImageKey.replace('egg_', ''));
-    if (tier >= 15) return 'egg_cosmic';
-    if (tier >= 11) return 'egg_fire';
-    if (tier >= 8) return 'egg_crystal';
-    if (tier >= 5) return 'egg_golden';
-    return 'egg_basic';
+    return `egg_tier_${tier}`;
 }
 
 /** Get formatted min odds string for a given level's egg pool */

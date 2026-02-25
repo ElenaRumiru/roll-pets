@@ -8,7 +8,7 @@ const PANEL_W = 118;
 const BG_H = 67;
 const TOTAL_H = 93;
 const RADIUS = 14;
-const GAP_FROM_SHOP = 8;
+const GAP_FROM_SHOP = 11;
 
 export class DailyBonusButton extends GameObjects.Container {
     private badgeGfx: GameObjects.Graphics;

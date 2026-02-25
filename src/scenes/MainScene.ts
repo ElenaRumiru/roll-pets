@@ -9,6 +9,7 @@ import { LeaguePromotionOverlay } from '../ui/LeaguePromotionOverlay';
 import { RightPanel } from '../ui/RightPanel';
 import { CollectionButton } from '../ui/CollectionButton';
 import { ShopButton } from '../ui/ShopButton';
+import { NestsButton } from '../ui/NestsButton';
 import { DailyBonusButton } from '../ui/DailyBonusButton';
 import { SettingsButton } from '../ui/SettingsButton';
 import { CoinDisplay } from '../ui/CoinDisplay';
@@ -31,6 +32,7 @@ export class MainScene extends Scene {
     private centerStage!: CenterStage;
     private rightPanel!: RightPanel;
     private collectionBtn!: CollectionButton;
+    private nestsBtn!: NestsButton;
     private shopBtn!: ShopButton;
     private dailyBonusBtn!: DailyBonusButton;
     private settingsPanel!: SettingsPanel;
@@ -109,6 +111,13 @@ export class MainScene extends Scene {
             this.manager.isRolling = false;
             this.manager.saveState();
             this.scene.start('CollectionScene');
+        });
+
+        this.nestsBtn = new NestsButton(this, () => {
+            this.manager.buffs.stopAutoroll();
+            this.manager.isRolling = false;
+            this.manager.saveState();
+            this.scene.start('NestsScene');
         });
 
         this.shopBtn = new ShopButton(this, () => {
@@ -200,6 +209,7 @@ export class MainScene extends Scene {
             this.questPanel.setDepth(105);
             this.leaderboard.setDepth(105);
             this.collectionBtn.setDepth(105);
+            this.nestsBtn.setDepth(105);
             this.shopBtn.setDepth(105);
             this.dailyBonusBtn.setDepth(105);
             this.coinDisplay.setDepth(105);
@@ -240,6 +250,7 @@ export class MainScene extends Scene {
             this.questPanel.setDepth(105);
             this.leaderboard.setDepth(105);
             this.collectionBtn.setDepth(105);
+            this.nestsBtn.setDepth(105);
             this.shopBtn.setDepth(105);
             this.dailyBonusBtn.setDepth(105);
             this.coinDisplay.setDepth(105);
@@ -251,6 +262,7 @@ export class MainScene extends Scene {
             this.questPanel.setDepth(0);
             this.leaderboard.setDepth(0);
             this.collectionBtn.setDepth(0);
+            this.nestsBtn.setDepth(0);
             this.shopBtn.setDepth(0);
             this.dailyBonusBtn.setDepth(0);
             this.coinDisplay.setDepth(0);
@@ -481,6 +493,7 @@ export class MainScene extends Scene {
         this.questPanel.setDepth(0);
         this.leaderboard.setDepth(0);
         this.collectionBtn.setDepth(0);
+        this.nestsBtn.setDepth(0);
         this.shopBtn.setDepth(0);
         this.dailyBonusBtn.setDepth(0);
         this.coinDisplay.setDepth(0);
@@ -555,6 +568,7 @@ export class MainScene extends Scene {
         this.centerStage.updatePedestals(topPets);
         this.questPanel.updateDisplay(this.manager.quests);
         this.dailyBonusBtn.updateBadge(this.manager.dailyBonus.hasUnclaimedReward());
+        this.nestsBtn.updateBadge(this.manager.nests.getReadyCount(), this.manager.nests.hasEmptySlot());
     }
 
     private showArrowHint(): void {

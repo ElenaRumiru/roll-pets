@@ -16,6 +16,10 @@ export const en: Record<string, string> = {
     'levelup_title': 'LEVEL UP!',
     'levelup_new_egg': 'New Egg:',
     'egg_effect': 'Rolls pets {odds} and more!',
+    'egg_luck': 'Luck',
+    'egg_req_level': 'Level {level}',
+    'egg_incubation_info': 'Incubation: {buff} luck, {time}',
+    'egg_chance': 'chance',
 
     // Grades
     'grade_common': 'Common',
@@ -62,11 +66,23 @@ export const en: Record<string, string> = {
     'all_pets': 'All Pets',
 
     // Egg Tiers
-    'egg_basic': 'Basic Egg',
-    'egg_golden': 'Golden Egg',
-    'egg_crystal': 'Crystal Egg',
-    'egg_fire': 'Fire Egg',
-    'egg_cosmic': 'Cosmic Egg',
+    'egg_tier_1': 'Meadow Egg',
+    'egg_tier_2': 'Spotted Egg',
+    'egg_tier_3': 'Frosted Egg',
+    'egg_tier_4': 'Ember Egg',
+    'egg_tier_5': 'Golden Egg',
+    'egg_tier_6': 'Jade Egg',
+    'egg_tier_7': 'Sapphire Egg',
+    'egg_tier_8': 'Ruby Egg',
+    'egg_tier_9': 'Amber Egg',
+    'egg_tier_10': 'Radiant Egg',
+    'egg_tier_11': 'Volcanic Egg',
+    'egg_tier_12': 'Arcane Egg',
+    'egg_tier_13': 'Phantom Egg',
+    'egg_tier_14': 'Imperial Egg',
+    'egg_tier_15': 'Nebula Egg',
+    'egg_tier_16': 'Stellar Egg',
+    'egg_tier_17': 'Celestial Egg',
 
     // Backgrounds
     'bg_meadow': 'Meadow',
@@ -165,6 +181,8 @@ export const en: Record<string, string> = {
     'shop_timer': 'Refresh in {time}',
     'shop_bought': 'Purchased!',
     'shop_no_coins': 'Not enough coins!',
+    'shop_tab_pets': 'Pets',
+    'shop_tab_eggs': 'Eggs',
 
     // Daily Bonus
     'daily_bonus_button': 'Daily',
@@ -178,6 +196,26 @@ export const en: Record<string, string> = {
     'daily_bonus_timer': 'Next bonus in {time}',
     'daily_bonus_monthly': 'Monthly Progress',
     'daily_bonus_hint': 'Log in every day to collect rewards!',
+
+    // Nests
+    'nests_button': 'Incubation',
+    'nests_title': 'Incubation',
+    'nests_back': 'Back',
+    'nests_empty': 'Empty',
+    'nests_select': 'Select',
+    'nests_in_progress': 'In Progress',
+    'nests_collect': 'Collect',
+    'nests_ready': 'Ready!',
+    'nests_locked': 'Locked',
+    'nests_buy': 'Buy',
+    'nests_select_egg': 'Select an Egg',
+    'nests_egg_count': 'x{count}',
+    'nests_no_coins': 'Not enough coins!',
+    'nests_speed_up': 'Speed +30%',
+    'nests_no_eggs': 'No eggs! Visit the Shop.',
+    'nests_buy_eggs': 'Buy Eggs',
+    'nests_hint': 'Incubate eggs to hatch rarer pets!',
+    'shop_eggs_hint': 'Eggs for use in Incubation',
 
     // Buff descriptions
     'buff_desc_lucky': 'x2 chance',

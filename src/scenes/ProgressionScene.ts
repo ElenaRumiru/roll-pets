@@ -4,6 +4,7 @@ import { getMilestones, Milestone } from '../data/milestones';
 import { Button } from '../ui/components/Button';
 import { t } from '../data/locales';
 import { GameManager } from '../core/GameManager';
+import { fitText } from '../ui/components/fitText';
 
 const HEADER_H = 62;
 const TRACK_Y = Math.round(GAME_HEIGHT * 0.55);
@@ -131,17 +132,28 @@ export class ProgressionScene extends Scene {
         // Label below circle
         const labelY = TRACK_Y + r + 17;
         if (isEgg) {
-            this.trackContainer.add(this.add.text(x, labelY, t('progression_new_egg'), {
+            const eggName = m.eggNameKey ? t(m.eggNameKey) : t('progression_new_egg');
+            const nameText = this.add.text(x, labelY, eggName, {
                 fontFamily: UI.FONT_STROKE, fontSize: '20px',
                 color: reached ? '#ffffff' : '#777777',
                 stroke: '#000000', strokeThickness: UI.STROKE_MEDIUM,
-            }).setOrigin(0.5));
+            }).setOrigin(0.5);
+            fitText(nameText, 180, 20);
+            this.trackContainer.add(nameText);
 
             if (m.eggMinOdds) {
                 this.trackContainer.add(this.add.text(x, labelY + 27,
                     t('egg_effect', { odds: m.eggMinOdds }), {
                         fontFamily: UI.FONT_BODY, fontSize: '15px',
                         color: reached ? '#aaaaaa' : '#555555',
+                        stroke: '#000000', strokeThickness: 1,
+                    }).setOrigin(0.5));
+            }
+            if (m.eggBuffLabel && m.eggIncubationLabel) {
+                this.trackContainer.add(this.add.text(x, labelY + 50,
+                    t('egg_incubation_info', { buff: m.eggBuffLabel, time: m.eggIncubationLabel }), {
+                        fontFamily: UI.FONT_BODY, fontSize: '13px',
+                        color: reached ? '#78C828' : '#555555',
                         stroke: '#000000', strokeThickness: 1,
                     }).setOrigin(0.5));
             }

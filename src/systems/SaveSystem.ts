@@ -1,9 +1,9 @@
 import { SaveData, Grade } from '../types';
 import { PETS } from '../data/pets';
-import { getGradeForChance, getDefaultQuestState, getDefaultDailyBonusState } from '../core/config';
+import { getGradeForChance, getDefaultQuestState, getDefaultDailyBonusState, getDefaultNestState } from '../core/config';
 
 const SAVE_KEY = 'pets_go_lite_save';
-const CURRENT_VERSION = 16;
+const CURRENT_VERSION = 18;
 
 function getDefaults(): SaveData {
     return {
@@ -21,6 +21,8 @@ function getDefaults(): SaveData {
         quests: getDefaultQuestState(),
         shop: { lastRefreshDate: '', offers: [] },
         dailyBonus: getDefaultDailyBonusState(),
+        nests: getDefaultNestState(),
+        eggInventory: { '1': 3 },
     };
 }
 
@@ -116,6 +118,19 @@ function migrate(data: SaveData): SaveData {
         data.dailyBonus = getDefaultDailyBonusState();
         data.version = 16;
     }
+    if (data.version === 16) {
+        data.nests = getDefaultNestState();
+        data.version = 17;
+    }
+    if (data.version === 17) {
+        data.eggInventory = data.eggInventory ?? {};
+        if (data.nests) {
+            data.nests.slots.forEach(s => {
+                (s as unknown as Record<string, unknown>).buffMultiplier ??= 1;
+            });
+        }
+        data.version = 18;
+    }
     return data;
 }
 
@@ -149,6 +164,8 @@ export class SaveSystem {
         data.quests.onlineQuest = data.quests.onlineQuest ?? dq.onlineQuest;
         data.quests.milestones = data.quests.milestones ?? dq.milestones;
         data.dailyBonus = data.dailyBonus ?? getDefaultDailyBonusState();
+        data.nests = data.nests ?? getDefaultNestState();
+        data.eggInventory = data.eggInventory ?? {};
         return data;
     }
 

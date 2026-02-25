@@ -11,7 +11,6 @@ export class RightPanel extends GameObjects.Container {
     private rollBg: GameObjects.Image;
     private rollLabel: GameObjects.Text;
     private badges: BuffBadges;
-    private spaceHint: GameObjects.Text;
     private toggleImg: GameObjects.Image;
     private autorollEnabled = false;
     private autorollRunning = false;
@@ -56,10 +55,6 @@ export class RightPanel extends GameObjects.Container {
         fitText(this.rollLabel, ROLL_BTN.width - 25, 30);
         this.rollWrap.add(this.rollLabel);
 
-        this.spaceHint = scene.add.text(0, 40, 'SPACE', {
-            fontFamily: UI.FONT_BODY, fontSize: '12px', color: '#666666',
-        }).setOrigin(0.5);
-        this.rollWrap.add(this.spaceHint);
 
         addButtonFeedback(scene, this.rollBg, { scaleTarget: this.rollWrap });
 

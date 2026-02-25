@@ -70,6 +70,8 @@ export interface SaveData {
     quests: QuestState;
     shop: ShopState;
     dailyBonus: DailyBonusState;
+    nests: NestState;
+    eggInventory: Record<string, number>;
 }
 
 export interface BuffState {
@@ -114,6 +116,22 @@ export interface ShopOffer {
 export interface ShopState {
     lastRefreshDate: string;
     offers: ShopOffer[];
+}
+
+// ── Nests ──
+
+export interface NestSlot {
+    unlocked: boolean;
+    eggTier: number | null;     // visual tier 1-17, null if empty
+    level: number | null;       // player level when egg was placed
+    startTime: number | null;   // Date.now() timestamp
+    duration: number;           // incubation ms
+    boosted: boolean;           // true if ad speed-up was used
+    buffMultiplier: number;     // luck multiplier applied at hatch time
+}
+
+export interface NestState {
+    slots: NestSlot[];
 }
 
 // ── Daily Bonus ──

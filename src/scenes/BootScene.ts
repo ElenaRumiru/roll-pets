@@ -77,6 +77,9 @@ export class BootScene extends Scene {
         this.load.image('ui_ok_raw', 'assets/ui/ok_icon.png');
         this.load.image('ui_settings_raw', 'assets/ui/settings_icon.png');
         this.load.image('ui_daily_raw', 'assets/ui/daily_icon.png');
+        this.load.image('ui_nests_raw', 'assets/ui/incubation_icon.png');
+        this.load.image('ui_nest_raw', 'assets/ui/nest.png');
+        this.load.image('ui_lock_raw', 'assets/ui/lock_icon.png');
 
         // Pet images (deduplicate — multiple pets share sprites)
         const loadedKeys = new Set<string>();
@@ -177,6 +180,15 @@ export class BootScene extends Scene {
 
         // Trim rating icon at exact display width (1:1 pixel mapping, no WebGL scaling)
         this.trimToWidth('ui_rating_3', 'ui_rating_mid', 99);
+
+        // Trim nest icons for crisp rendering
+        this.trimToWidth('ui_nests_raw', 'ui_nests_btn', 220);
+        this.trimToWidth('ui_nest_raw', 'ui_nest_mid', 280);
+
+        // Trim lock icon for nest slots
+        this.trimAndDownscaleCoin('ui_lock_raw', [
+            { key: 'ui_lock_md', size: 56 },
+        ]);
 
         const renderer = this.game.renderer;
         if (renderer instanceof Renderer.WebGL.WebGLRenderer) {

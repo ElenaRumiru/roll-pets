@@ -42,16 +42,18 @@ export class RNGSystem {
     }
 
     /**
-     * Sequential check from rarest to most common.
+     * Single-roll sequential check from rarest to most common.
+     * One random value per roll; first pet whose threshold exceeds it wins.
      * checkChance = min(1.0, luckMultiplier / pet.chance)
-     * First pet to pass = result. Fallback = most common pet.
+     * Fallback = most common pet.
      */
     rollPet(eligiblePets: PetDef[], luckMultiplier: number): PetDef {
         const sorted = [...eligiblePets].sort((a, b) => b.chance - a.chance);
+        const r = this.next();
 
         for (const pet of sorted) {
             const checkChance = Math.min(1.0, luckMultiplier / pet.chance);
-            if (this.next() < checkChance) {
+            if (r < checkChance) {
                 return pet;
             }
         }

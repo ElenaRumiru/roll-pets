@@ -1,18 +1,22 @@
 import { Scene, GameObjects } from 'phaser';
-import { GAME_WIDTH, GAME_HEIGHT, UI, GRADE, getGradeForChance, getOddsString } from '../core/config';
+import { GAME_WIDTH, GAME_HEIGHT, UI } from '../core/config';
 import { GameManager } from '../core/GameManager';
-import { PETS } from '../data/pets';
 import { Button } from '../ui/components/Button';
+import { buildPetCards } from '../ui/ShopPetsTab';
+import { buildEggCards, EggTabResult } from '../ui/ShopEggsTab';
 import { t } from '../data/locales';
-import { fitText } from '../ui/components/fitText';
-import { ShopOffer, PetDef } from '../types';
+import { getEggTierConfig } from '../data/eggTiers';
+import { showCoinSpend } from '../ui/components/FloatingText';
 
 const HEADER_H = 74;
-const CARD_W = 141;
-const CARD_H = 160;
-const CARD_GAP = 17;
+const TAB_Y = HEADER_H + 25;
+const TAB_W = 100;
+const TAB_GAP = 10;
+const TIMER_Y = HEADER_H + 72;
 const CARDS_Y = 265;
-const BUY_BTN_Y = CARDS_Y + CARD_H / 2 + 35;
+const BUY_BTN_Y = CARDS_Y + 130;
+
+type ShopTab = 'pets' | 'eggs';
 
 export class ShopScene extends Scene {
     private manager!: GameManager;
@@ -20,23 +24,35 @@ export class ShopScene extends Scene {
     private timerText!: GameObjects.Text;
     private coinText!: GameObjects.Text;
     private emptyText!: GameObjects.Text;
+    private refreshBtn!: Button;
     private timerElapsed = 0;
+    private activeTab: ShopTab = 'pets';
+    private petsTabBtn!: Button;
+    private eggsTabBtn!: Button;
+    private eggTabResult: EggTabResult | null = null;
+    private eggsHint!: GameObjects.Text;
 
     constructor() { super('ShopScene'); }
 
-    create(): void {
+    create(data?: { tab?: ShopTab }): void {
         this.manager = this.registry.get('gameManager') as GameManager;
         this.timerElapsed = 0;
+        this.eggTabResult = null;
+        this.activeTab = data?.tab ?? 'pets';
         this.add.rectangle(GAME_WIDTH / 2, GAME_HEIGHT / 2, GAME_WIDTH, GAME_HEIGHT, 0x12121e);
         this.cardsContainer = this.add.container(0, 0);
         this.createHeader();
+        this.createTabs();
         this.createTimer();
         this.emptyText = this.add.text(GAME_WIDTH / 2, CARDS_Y, t('shop_empty'), {
             fontFamily: UI.FONT_MAIN, fontSize: '20px', color: '#666688', align: 'center',
         }).setOrigin(0.5).setVisible(false);
-        new Button(this, GAME_WIDTH / 2, GAME_HEIGHT - 37, 222, 52,
+        this.refreshBtn = new Button(this, GAME_WIDTH / 2, GAME_HEIGHT - 37, 222, 52,
             `\u25B6 ${t('shop_refresh')}`, 0x7b42c9, () => this.onRefresh());
-        this.buildCards();
+        this.eggsHint = this.add.text(GAME_WIDTH / 2, GAME_HEIGHT - 25, t('shop_eggs_hint'), {
+            fontFamily: UI.FONT_BODY, fontSize: '14px', color: '#666688',
+        }).setOrigin(0.5).setVisible(false);
+        this.switchTab(this.activeTab);
     }
 
     private createHeader(): void {
@@ -46,6 +62,7 @@ export class ShopScene extends Scene {
         hdr.lineStyle(1, UI.PANEL_BORDER, 0.3);
         hdr.lineBetween(0, HEADER_H, GAME_WIDTH, HEADER_H);
         new Button(this, 68, 37, 111, 39, `\u2190 ${t('shop_back')}`, 0x444455, () => {
+            this.cleanupEggTab();
             this.scene.start('MainScene');
         });
         this.add.text(GAME_WIDTH / 2, 37, t('shop_title'), {
@@ -59,96 +76,98 @@ export class ShopScene extends Scene {
         }).setOrigin(0, 0.5);
     }
 
+    private createTabs(): void {
+        const cx = GAME_WIDTH / 2;
+        const leftX = cx - TAB_W / 2 - TAB_GAP / 2;
+        const rightX = cx + TAB_W / 2 + TAB_GAP / 2;
+
+        this.petsTabBtn = new Button(this, leftX, TAB_Y, TAB_W, 36,
+            t('shop_tab_pets'), 0x333344, () => this.switchTab('pets'));
+        this.eggsTabBtn = new Button(this, rightX, TAB_Y, TAB_W, 36,
+            t('shop_tab_eggs'), 0x333344, () => this.switchTab('eggs'));
+    }
+
     private createTimer(): void {
-        this.timerText = this.add.text(GAME_WIDTH / 2, HEADER_H + 32, '', {
+        this.timerText = this.add.text(GAME_WIDTH / 2, TIMER_Y, '', {
             fontFamily: UI.FONT_BODY, fontSize: '16px', color: '#aaaaaa',
         }).setOrigin(0.5);
         this.updateTimerText();
     }
 
-    private buildCards(): void {
+    private switchTab(tab: ShopTab): void {
+        this.cleanupEggTab();
+        this.activeTab = tab;
+
+        // Update tab button visuals
+        if (tab === 'pets') {
+            this.petsTabBtn.setColor(0x3498db);
+            this.petsTabBtn.setOutline(0x3498db);
+            this.eggsTabBtn.setColor(0x333344);
+            this.eggsTabBtn.setOutline(null);
+        } else {
+            this.eggsTabBtn.setColor(0xffc107);
+            this.eggsTabBtn.setOutline(0xffc107);
+            this.petsTabBtn.setColor(0x333344);
+            this.petsTabBtn.setOutline(null);
+        }
+
+        // Show/hide tab-specific elements
+        const showPets = tab === 'pets';
+        this.timerText.setVisible(showPets);
+        this.refreshBtn.setVisible(showPets);
+        this.eggsHint.setVisible(!showPets);
+        this.emptyText.setVisible(false);
+
         this.cardsContainer.removeAll(true);
-        const offers = this.manager.shop.getOffers();
-        this.emptyText.setVisible(offers.length === 0);
-        if (offers.length === 0) return;
-        const totalW = offers.length * CARD_W + (offers.length - 1) * CARD_GAP;
-        const startX = GAME_WIDTH / 2 - totalW / 2 + CARD_W / 2;
-        offers.forEach((offer, i) => {
-            const pet = PETS.find(p => p.id === offer.petId);
-            if (!pet) return;
-            const x = startX + i * (CARD_W + CARD_GAP);
-            this.createOfferCard(x, offer, pet);
-        });
+
+        if (tab === 'pets') {
+            this.buildPetsContent();
+        } else {
+            this.buildEggsContent();
+        }
     }
 
-    private createOfferCard(x: number, offer: ShopOffer, pet: PetDef): void {
-        const cfg = GRADE[getGradeForChance(pet.chance)];
-        const r = 15;
-        const container = this.add.container(x, CARDS_Y);
+    private buildPetsContent(): void {
+        const offers = this.manager.shop.getOffers();
+        this.emptyText.setVisible(offers.length === 0);
+        buildPetCards(this, this.cardsContainer, offers,
+            this.manager.progression.coins, CARDS_Y, BUY_BTN_Y,
+            (petId, canAfford) => this.onBuy(petId, canAfford), this.formatCoins);
+    }
 
-        // Card bg
-        const bg = this.add.graphics();
-        bg.fillStyle(0x2a2a3e, 1);
-        bg.fillRoundedRect(-CARD_W / 2, -CARD_H / 2, CARD_W, CARD_H, r);
-        bg.lineStyle(2, cfg.color, 0.8);
-        bg.strokeRoundedRect(-CARD_W / 2, -CARD_H / 2, CARD_W, CARD_H, r);
-        bg.fillStyle(cfg.color, 0.1);
-        bg.fillRoundedRect(-CARD_W / 2 + 1, -CARD_H / 2 + 1, CARD_W - 2, CARD_H * 0.35,
-            { tl: r - 1, tr: r - 1, bl: 0, br: 0 });
-        container.add(bg);
+    private buildEggsContent(): void {
+        this.eggTabResult = buildEggCards(this, this.cardsContainer,
+            this.manager.progression.level,
+            this.manager.getEggInventory(),
+            this.manager.progression.coins,
+            CARDS_Y, BUY_BTN_Y,
+            (tier) => this.onBuyEgg(tier), this.formatCoins);
+    }
 
-        // Pet image
-        const img = this.add.image(0, -20, pet.imageKey).setScale(0.47);
-        container.add(img);
-
-        // Name (native crisp font)
-        const name = this.add.text(0, CARD_H / 2 - 37, t('pet_' + pet.id), {
-            fontFamily: UI.FONT_STROKE, fontSize: '17px', color: '#ffffff',
-            stroke: '#000000', strokeThickness: 2,
-        }).setOrigin(0.5);
-        fitText(name, CARD_W - 10, 17);
-        container.add(name);
-
-        // Odds
-        const odds = this.add.text(0, CARD_H / 2 - 17, getOddsString(pet.chance), {
-            fontFamily: UI.FONT_MAIN, fontSize: '14px', color: cfg.colorHex,
-        }).setOrigin(0.5);
-        container.add(odds);
-
-        this.cardsContainer.add(container);
-
-        // Buy button
-        const canAfford = this.manager.progression.coins >= offer.price;
-        const btnColor = canAfford ? 0x27ae60 : 0x555566;
-        const btnW = 148;
-        const btnH = 47;
-        const priceStr = this.formatCoins(offer.price);
-        const btn = new Button(this, x, BUY_BTN_Y, btnW, btnH,
-            priceStr, btnColor, () => this.onBuy(offer.petId, canAfford));
-
-        // label is at index 2 (outlineGfx=0, bg=1, label=2)
-        const label = btn.list[2] as GameObjects.Text;
-        const textW = label.width;
-        const iconSize = 20;
-        const gap = 4;
-        const groupW = iconSize + gap + textW;
-        const iconX = -groupW / 2 + iconSize / 2;
-        const textShift = iconX + iconSize / 2 + gap + textW / 2;
-
-        label.setX(textShift).setY(-3);
-        const ci = this.add.image(iconX, -3, 'ui_coin_md').setDisplaySize(iconSize, iconSize);
-        btn.add(ci);
-
-        if (!canAfford) btn.setEnabled(false);
-        this.cardsContainer.add(btn);
+    private cleanupEggTab(): void {
+        if (this.eggTabResult) {
+            this.eggTabResult.cleanup();
+            this.eggTabResult = null;
+        }
     }
 
     private onBuy(petId: string, canAfford: boolean): void {
         if (!canAfford) { this.showToast(t('shop_no_coins')); return; }
+        const offer = this.manager.shop.getOffers().find(o => o.petId === petId);
         const success = this.manager.purchasePet(petId);
         if (!success) { this.showToast(t('shop_no_coins')); return; }
+        if (offer) showCoinSpend(this, GAME_WIDTH - 100, 55, this.formatCoins(offer.price));
         this.coinText.setText(this.formatCoins(this.manager.progression.coins));
-        this.buildCards();
+        this.switchTab('pets');
+    }
+
+    private onBuyEgg(tier: number): void {
+        const cfg = getEggTierConfig(tier);
+        const success = this.manager.purchaseEgg(tier, cfg.price);
+        if (!success) { this.showToast(t('shop_no_coins')); return; }
+        showCoinSpend(this, GAME_WIDTH - 100, 55, this.formatCoins(cfg.price));
+        this.coinText.setText(this.formatCoins(this.manager.progression.coins));
+        this.switchTab('eggs');
     }
 
     private showToast(message: string): void {
@@ -167,11 +186,11 @@ export class ShopScene extends Scene {
         const sdk = this.registry.get('platformSDK') as import('../platform/PlatformSDK').PlatformSDK | undefined;
         if (sdk) {
             sdk.showRewardedBreak().then((success: boolean) => {
-                if (success) { this.manager.refreshShop(); this.buildCards(); }
+                if (success) { this.manager.refreshShop(); this.switchTab('pets'); }
             });
         } else {
             this.manager.refreshShop();
-            this.buildCards();
+            this.switchTab('pets');
         }
     }
 

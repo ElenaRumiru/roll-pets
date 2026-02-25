@@ -13,6 +13,12 @@ export class DailyBonusSystem {
             ...state,
             monthMilestonesClaimed: [...state.monthMilestonesClaimed],
         };
+        // Fix: old saves incremented totalLogins on login before claim.
+        // Compensate by decrementing if today's reward hasn't been claimed yet.
+        if (!this.state.claimedToday && this.state.totalLogins > 0
+            && this.state.lastLoginDate !== '') {
+            this.state.totalLogins--;
+        }
         this.checkNewDay();
     }
 
@@ -26,17 +32,9 @@ export class DailyBonusSystem {
         this.state.claimedToday = false;
 
         if (isFirstEver) {
-            this.state.totalLogins = 1;
             this.state.weekDay = 0;
         } else {
-            this.state.totalLogins++;
-            if (this.state.totalLogins > DAILY_BONUS_CONFIG.monthCycleDays) {
-                this.state.totalLogins = 1;
-                this.state.weekDay = 0;
-                this.state.monthMilestonesClaimed = [false, false, false, false];
-            } else {
-                this.state.weekDay = (this.state.weekDay + 1) % 7;
-            }
+            this.state.weekDay = (this.state.weekDay + 1) % 7;
         }
         return true;
     }
@@ -52,7 +50,16 @@ export class DailyBonusSystem {
     claimDaily(): DailyBonusReward | null {
         if (this.state.claimedToday) return null;
         this.state.claimedToday = true;
-        return this.getTodayReward();
+        const reward = this.getTodayReward();
+
+        this.state.totalLogins++;
+        if (this.state.totalLogins > DAILY_BONUS_CONFIG.monthCycleDays) {
+            this.state.totalLogins = 1;
+            this.state.weekDay = 0;
+            this.state.monthMilestonesClaimed = [false, false, false, false];
+        }
+
+        return reward;
     }
 
     claimMonthlyMilestone(index: number): number {
