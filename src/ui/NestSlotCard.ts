@@ -11,7 +11,7 @@ const CARD_R = 14;
 const NEST_W = 154;      // 140 * 1.10
 const EGG_SIZE = 135;    // +12% from 120
 const NEST_Y = 50;       // lower third of card
-const EGG_Y = 15;        // above nest center
+const EGG_Y = 11;        // above nest center
 const TIMER_Y = -SLOT_H / 2 + 25;  // top of card
 
 export interface SlotLayout {
@@ -82,6 +82,15 @@ export function renderIncubatingSlot(
     }
 }
 
+// Shock particle spawn positions: upper third of egg, rotation so bottom→center
+const HALF_PI = Math.PI / 2;
+const SHOCK_SPOTS = [
+    { x: -35, y: EGG_Y - 48, rot: Math.atan2(48, 35) + Math.PI + HALF_PI },
+    { x: 35, y: EGG_Y - 48, rot: Math.atan2(48, -35) + Math.PI + HALF_PI },
+    { x: -45, y: EGG_Y - 22, rot: Math.atan2(22, 45) + Math.PI + HALF_PI },
+    { x: 45, y: EGG_Y - 22, rot: Math.atan2(22, -45) + Math.PI + HALF_PI },
+];
+
 export function renderReadySlot(
     scene: Scene, container: GameObjects.Container, x: number, layout: SlotLayout,
     slot: NestSlot, onCollect: () => void,
@@ -93,15 +102,36 @@ export function renderReadySlot(
     bg.lineStyle(2, 0x78C828, 0.6);
     bg.strokeRoundedRect(-SLOT_W / 2, -SLOT_H / 2, SLOT_W, SLOT_H, CARD_R);
     c.add(bg);
-    const nestImg = scene.add.image(0, NEST_Y, 'ui_nest_mid').setDisplaySize(NEST_W, nestHeight(scene));
-    c.add(nestImg);
+    c.add(scene.add.image(0, NEST_Y, 'ui_nest_mid').setDisplaySize(NEST_W, nestHeight(scene)));
     if (slot.eggTier) {
-        const eggImg = scene.add.image(0, EGG_Y, `egg_${slot.eggTier}_sm`).setDisplaySize(EGG_SIZE, EGG_SIZE);
+        const eggImg = scene.add.image(0, EGG_Y, `egg_${slot.eggTier}_sm`)
+            .setDisplaySize(EGG_SIZE, EGG_SIZE);
         c.add(eggImg);
-        scene.tweens.add({
-            targets: [nestImg, eggImg], scaleX: '*=1.05', scaleY: '*=1.05',
-            duration: 600, yoyo: true, repeat: -1, ease: 'Sine.inOut',
-        });
+        // Knock animation: sharp tilt alternating left/right every ~1s
+        let dir = 1;
+        const knock = () => {
+            const angle = dir * 0.12; // ~7 degrees
+            dir *= -1;
+            scene.tweens.add({
+                targets: eggImg, rotation: angle,
+                duration: 80, ease: 'Sine.easeOut',
+                onComplete: () => scene.tweens.add({
+                    targets: eggImg, rotation: 0,
+                    duration: 120, ease: 'Sine.easeIn',
+                }),
+            });
+            // Shock particle at peak
+            const spot = SHOCK_SPOTS[Math.floor(Math.random() * SHOCK_SPOTS.length)];
+            const shock = scene.add.image(spot.x, spot.y, 'ui_shock_sm')
+                .setDisplaySize(28, 28).setRotation(spot.rot).setAlpha(0.9);
+            c.add(shock);
+            scene.tweens.add({
+                targets: shock, alpha: 0, duration: 350, delay: 80,
+                ease: 'Power2', onComplete: () => shock.destroy(),
+            });
+        };
+        knock();
+        scene.time.addEvent({ delay: 1000, callback: knock, loop: true });
     }
     c.add(scene.add.text(0, TIMER_Y, t('nests_ready'), {
         fontFamily: UI.FONT_STROKE, fontSize: '18px', color: '#78C828',

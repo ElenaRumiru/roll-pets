@@ -60,7 +60,7 @@ export class NestsScene extends Scene {
     }
 
     private createHint(): void {
-        this.add.text(GAME_WIDTH / 2, HEADER_H + 72, t('nests_hint'), {
+        this.add.text(GAME_WIDTH / 2, 127, t('nests_hint'), {
             fontFamily: UI.FONT_BODY, fontSize: '14px', color: '#666688',
         }).setOrigin(0.5);
     }

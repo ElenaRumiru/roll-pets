@@ -80,6 +80,7 @@ export class BootScene extends Scene {
         this.load.image('ui_nests_raw', 'assets/ui/incubation_icon.png');
         this.load.image('ui_nest_raw', 'assets/ui/nest.png');
         this.load.image('ui_lock_raw', 'assets/ui/lock_icon.png');
+        this.load.image('ui_shock_raw', 'assets/ui/shock_icon.png');
 
         // Pet images (deduplicate — multiple pets share sprites)
         const loadedKeys = new Set<string>();
@@ -200,6 +201,11 @@ export class BootScene extends Scene {
         // Trim nest icons for crisp rendering
         this.trimToWidth('ui_nests_raw', 'ui_nests_btn', 220);
         this.trimToWidth('ui_nest_raw', 'ui_nest_mid', 280);
+
+        // Trim shock icon for hatch animation
+        this.trimAndDownscaleCoin('ui_shock_raw', [
+            { key: 'ui_shock_sm', size: 36 },
+        ]);
 
         // Trim lock icon for nest slots
         this.trimAndDownscaleCoin('ui_lock_raw', [
