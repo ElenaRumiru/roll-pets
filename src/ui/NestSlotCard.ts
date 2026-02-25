@@ -9,7 +9,7 @@ const SLOT_W = 200;
 const SLOT_H = 250;
 const CARD_R = 14;
 const NEST_W = 154;      // 140 * 1.10
-const EGG_SIZE = 120;    // 80 * 1.50
+const EGG_SIZE = 135;    // +12% from 120
 const NEST_Y = 50;       // lower third of card
 const EGG_Y = 15;        // above nest center
 const TIMER_Y = -SLOT_H / 2 + 25;  // top of card
@@ -59,7 +59,7 @@ export function renderIncubatingSlot(
     bg.strokeRoundedRect(-SLOT_W / 2, -SLOT_H / 2, SLOT_W, SLOT_H, CARD_R);
     c.add(bg);
     c.add(scene.add.image(0, NEST_Y, 'ui_nest_mid').setDisplaySize(NEST_W, nestHeight(scene)));
-    if (slot.eggTier) c.add(scene.add.image(0, EGG_Y, `egg_${slot.eggTier}`).setDisplaySize(EGG_SIZE, EGG_SIZE));
+    if (slot.eggTier) c.add(scene.add.image(0, EGG_Y, `egg_${slot.eggTier}_sm`).setDisplaySize(EGG_SIZE, EGG_SIZE));
     const timerText = scene.add.text(0, TIMER_Y,
         formatTime(nests.getTimeRemainingMs(index)), {
             fontFamily: UI.FONT_STROKE, fontSize: '18px', color: '#ffffff',
@@ -96,7 +96,7 @@ export function renderReadySlot(
     const nestImg = scene.add.image(0, NEST_Y, 'ui_nest_mid').setDisplaySize(NEST_W, nestHeight(scene));
     c.add(nestImg);
     if (slot.eggTier) {
-        const eggImg = scene.add.image(0, EGG_Y, `egg_${slot.eggTier}`).setDisplaySize(EGG_SIZE, EGG_SIZE);
+        const eggImg = scene.add.image(0, EGG_Y, `egg_${slot.eggTier}_sm`).setDisplaySize(EGG_SIZE, EGG_SIZE);
         c.add(eggImg);
         scene.tweens.add({
             targets: [nestImg, eggImg], scaleX: '*=1.05', scaleY: '*=1.05',

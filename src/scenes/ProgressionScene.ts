@@ -110,7 +110,7 @@ export class ProgressionScene extends Scene {
         // Icon inside circle — large, fills most of the circle
         if (isEgg && m.eggKey) {
             const eggSize = r * 1.7;
-            const icon = this.add.image(x, TRACK_Y, m.eggKey)
+            const icon = this.add.image(x, TRACK_Y, `${m.eggKey}_sm`)
                 .setDisplaySize(eggSize, eggSize);
             if (!reached) this.applyGrayscale(icon);
             this.trackContainer.add(icon);

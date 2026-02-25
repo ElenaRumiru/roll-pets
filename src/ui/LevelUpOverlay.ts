@@ -108,11 +108,11 @@ export class LevelUpOverlay {
 
         // Old egg → arrow → new egg
         const eggY = y + 62;
-        const oldEgg = this.scene.add.image(-99, eggY, data.oldEggKey).setDisplaySize(111, 111);
+        const oldEgg = this.scene.add.image(-99, eggY, `${data.oldEggKey}_sm`).setDisplaySize(111, 111);
         container.add(oldEgg);
         const arrow = this.scene.add.image(0, eggY, 'ui_arrow').setDisplaySize(35, 35).setRotation(-Math.PI / 2);
         container.add(arrow);
-        const newEgg = this.scene.add.image(99, eggY, data.eggKey).setDisplaySize(111, 111);
+        const newEgg = this.scene.add.image(99, eggY, `${data.eggKey}_sm`).setDisplaySize(111, 111);
         container.add(newEgg);
         y = eggY + 72;
 

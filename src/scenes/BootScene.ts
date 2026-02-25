@@ -127,6 +127,22 @@ export class BootScene extends Scene {
             this.textures.addCanvas(pet.imageKey, c);
         }
 
+        // Pre-downscale egg textures (1024px → 170px) for shop/nests/popup
+        // Original stays for CenterStage roll (296px display)
+        const TARGET_EGG = 170;
+        for (let i = 1; i <= TOTAL_EGGS; i++) {
+            const key = `egg_${i}`;
+            const eSrc = this.textures.get(key).getSourceImage() as HTMLImageElement;
+            const eC = document.createElement('canvas');
+            eC.width = TARGET_EGG;
+            eC.height = TARGET_EGG;
+            const eCtx = eC.getContext('2d')!;
+            eCtx.imageSmoothingEnabled = true;
+            eCtx.imageSmoothingQuality = 'high';
+            eCtx.drawImage(eSrc, 0, 0, TARGET_EGG, TARGET_EGG);
+            this.textures.addCanvas(`${key}_sm`, eC);
+        }
+
         // Pre-downscale shop icon for crisp rendering (original 1536x1024, ratio 3:2)
         this.downscaleTexture('ui_shop', 'ui_shop_mid', 370, 247);
 

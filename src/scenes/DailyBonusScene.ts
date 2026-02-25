@@ -10,8 +10,9 @@ const HEADER_H = 74;
 const TRACK_Y = 110;
 const GRID_TOP = 200;
 const DAY7_H = CARD_H * 2 + CARD_GAP;
-const HINT_Y = GRID_TOP + DAY7_H + 22;
-const CLAIM_Y = HINT_Y + 46;
+const HINT_Y = 174;
+const TIMER_ABOVE_BTN_Y = GRID_TOP + DAY7_H + 30;
+const CLAIM_Y = TIMER_ABOVE_BTN_Y + 42;
 const FREE_CLR = 0x78C828;
 const FREE_DRK = 0x4E8A18;
 
@@ -91,8 +92,8 @@ export class DailyBonusScene extends Scene {
     }
 
     private createTimer(): void {
-        this.timerText = this.add.text(GAME_WIDTH / 2, GAME_HEIGHT - 30, '', {
-            fontFamily: UI.FONT_BODY, fontSize: '16px', color: '#aaaaaa',
+        this.timerText = this.add.text(GAME_WIDTH / 2, TIMER_ABOVE_BTN_Y, '', {
+            fontFamily: UI.FONT_BODY, fontSize: '14px', color: '#aaaaaa',
         }).setOrigin(0.5);
         this.updateTimerText();
     }

@@ -121,7 +121,7 @@ function renderEggCard(
 
     if (unlocked) {
         // Egg image
-        c.add(scene.add.image(0, -CARD_H / 2 + 50, `egg_${tier}`).setDisplaySize(72, 72));
+        c.add(scene.add.image(0, -CARD_H / 2 + 50, `egg_${tier}_sm`).setDisplaySize(86, 86));
 
         // Egg name (can wrap to 2 lines)
         const nameKey = getEggNameKey(`egg_${tier}`);

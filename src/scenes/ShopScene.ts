@@ -30,7 +30,7 @@ export class ShopScene extends Scene {
     private petsTabBtn!: Button;
     private eggsTabBtn!: Button;
     private eggTabResult: EggTabResult | null = null;
-    private eggsHint!: GameObjects.Text;
+    private hintText!: GameObjects.Text;
 
     constructor() { super('ShopScene'); }
 
@@ -49,9 +49,9 @@ export class ShopScene extends Scene {
         }).setOrigin(0.5).setVisible(false);
         this.refreshBtn = new Button(this, GAME_WIDTH / 2, GAME_HEIGHT - 37, 222, 52,
             `\u25B6 ${t('shop_refresh')}`, 0x7b42c9, () => this.onRefresh());
-        this.eggsHint = this.add.text(GAME_WIDTH / 2, GAME_HEIGHT - 25, t('shop_eggs_hint'), {
+        this.hintText = this.add.text(GAME_WIDTH / 2, TIMER_Y, '', {
             fontFamily: UI.FONT_BODY, fontSize: '14px', color: '#666688',
-        }).setOrigin(0.5).setVisible(false);
+        }).setOrigin(0.5);
         this.switchTab(this.activeTab);
     }
 
@@ -88,8 +88,8 @@ export class ShopScene extends Scene {
     }
 
     private createTimer(): void {
-        this.timerText = this.add.text(GAME_WIDTH / 2, TIMER_Y, '', {
-            fontFamily: UI.FONT_BODY, fontSize: '16px', color: '#aaaaaa',
+        this.timerText = this.add.text(GAME_WIDTH / 2, GAME_HEIGHT - 80, '', {
+            fontFamily: UI.FONT_BODY, fontSize: '14px', color: '#aaaaaa',
         }).setOrigin(0.5);
         this.updateTimerText();
     }
@@ -115,7 +115,7 @@ export class ShopScene extends Scene {
         const showPets = tab === 'pets';
         this.timerText.setVisible(showPets);
         this.refreshBtn.setVisible(showPets);
-        this.eggsHint.setVisible(!showPets);
+        this.hintText.setText(showPets ? t('shop_pets_hint') : t('shop_eggs_hint'));
         this.emptyText.setVisible(false);
 
         this.cardsContainer.removeAll(true);

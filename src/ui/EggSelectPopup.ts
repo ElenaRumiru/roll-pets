@@ -109,8 +109,8 @@ export class EggSelectPopup {
         card.add(cardBg);
 
         // Egg image
-        card.add(scene.add.image(0, -CARD_H / 2 + 40, `egg_${egg.tier}`)
-            .setDisplaySize(58, 58));
+        card.add(scene.add.image(0, -CARD_H / 2 + 40, `egg_${egg.tier}_sm`)
+            .setDisplaySize(70, 70));
 
         // Egg name
         const nameKey = getEggNameKey(`egg_${egg.tier}`);
