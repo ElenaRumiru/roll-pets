@@ -218,6 +218,11 @@ export const en: Record<string, string> = {
     'shop_pets_hint': 'Buy a pet you definitely don\'t have yet!',
     'shop_eggs_hint': 'Eggs for use in Incubation',
 
+    // Feature Unlock
+    'feature_unlocked': 'New feature unlocked!',
+    'feature_incubation': 'Incubation',
+    'nests_locked_level': 'Lvl {level}',
+
     // Buff descriptions
     'buff_desc_lucky': 'x2 chance',
     'buff_desc_super': 'x3 chance',

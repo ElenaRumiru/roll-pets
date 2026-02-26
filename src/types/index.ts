@@ -48,6 +48,7 @@ export interface LevelUpData {
     oldEggKey: string;
     eggChanged: boolean;
     coinReward: number;
+    featureUnlock?: string;
 }
 
 export interface LeaguePromotionData {

@@ -107,19 +107,24 @@ export class GameManager {
         this.quests.onRollComplete(result);
         EventBus.emit('quests-changed');
 
-        const oldEggKey = getEggImageKey(this.progression.level);
+        const oldLevel = this.progression.level;
+        const oldEggKey = getEggImageKey(oldLevel);
         const leveledUp = this.progression.checkLevelUp();
         if (leveledUp) {
-            const newEggKey = getEggImageKey(this.progression.level);
+            const newLevel = this.progression.level;
+            const newEggKey = getEggImageKey(newLevel);
             const eggChanged = oldEggKey !== newEggKey;
-            const coinReward = eggChanged ? 0 : levelUpCoinReward(this.progression.level);
+            const featureUnlock = (oldLevel < NEST_CONFIG.unlockLevel && newLevel >= NEST_CONFIG.unlockLevel)
+                ? 'incubation' : undefined;
+            const coinReward = (eggChanged || featureUnlock) ? 0 : levelUpCoinReward(newLevel);
             const levelUpData: LevelUpData = {
-                level: this.progression.level,
+                level: newLevel,
                 eggKey: newEggKey,
-                bgKey: getBgImageKey(this.progression.level),
+                bgKey: getBgImageKey(newLevel),
                 oldEggKey,
                 eggChanged,
                 coinReward,
+                featureUnlock,
             };
             EventBus.emit('level-up', levelUpData);
         }

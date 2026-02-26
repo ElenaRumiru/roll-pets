@@ -1,5 +1,5 @@
 import { Scene, GameObjects } from 'phaser';
-import { GAME_WIDTH, GAME_HEIGHT, UI } from '../core/config';
+import { GAME_WIDTH, GAME_HEIGHT, UI, NEST_CONFIG } from '../core/config';
 import { GameManager } from '../core/GameManager';
 import { Button } from '../ui/components/Button';
 import { buildPetCards } from '../ui/ShopPetsTab';
@@ -27,8 +27,8 @@ export class ShopScene extends Scene {
     private refreshBtn!: Button;
     private timerElapsed = 0;
     private activeTab: ShopTab = 'pets';
-    private petsTabBtn!: Button;
-    private eggsTabBtn!: Button;
+    private petsTabBtn: Button | null = null;
+    private eggsTabBtn: Button | null = null;
     private eggTabResult: EggTabResult | null = null;
     private hintText!: GameObjects.Text;
 
@@ -38,11 +38,14 @@ export class ShopScene extends Scene {
         this.manager = this.registry.get('gameManager') as GameManager;
         this.timerElapsed = 0;
         this.eggTabResult = null;
-        this.activeTab = data?.tab ?? 'pets';
+        this.petsTabBtn = null;
+        this.eggsTabBtn = null;
+        const nestsUnlocked = this.manager.progression.level >= NEST_CONFIG.unlockLevel;
+        this.activeTab = (data?.tab === 'eggs' && nestsUnlocked) ? 'eggs' : 'pets';
         this.add.rectangle(GAME_WIDTH / 2, GAME_HEIGHT / 2, GAME_WIDTH, GAME_HEIGHT, 0x12121e);
         this.cardsContainer = this.add.container(0, 0);
         this.createHeader();
-        this.createTabs();
+        if (nestsUnlocked) this.createTabs();
         this.createTimer();
         this.emptyText = this.add.text(GAME_WIDTH / 2, CARDS_Y, t('shop_empty'), {
             fontFamily: UI.FONT_MAIN, fontSize: '20px', color: '#666688', align: 'center',
@@ -100,15 +103,15 @@ export class ShopScene extends Scene {
 
         // Update tab button visuals
         if (tab === 'pets') {
-            this.petsTabBtn.setColor(0x3498db);
-            this.petsTabBtn.setOutline(0x3498db);
-            this.eggsTabBtn.setColor(0x333344);
-            this.eggsTabBtn.setOutline(null);
+            this.petsTabBtn?.setColor(0x3498db);
+            this.petsTabBtn?.setOutline(0x3498db);
+            this.eggsTabBtn?.setColor(0x333344);
+            this.eggsTabBtn?.setOutline(null);
         } else {
-            this.eggsTabBtn.setColor(0xffc107);
-            this.eggsTabBtn.setOutline(0xffc107);
-            this.petsTabBtn.setColor(0x333344);
-            this.petsTabBtn.setOutline(null);
+            this.eggsTabBtn?.setColor(0xffc107);
+            this.eggsTabBtn?.setOutline(0xffc107);
+            this.petsTabBtn?.setColor(0x333344);
+            this.petsTabBtn?.setOutline(null);
         }
 
         // Show/hide tab-specific elements

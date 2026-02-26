@@ -1,5 +1,5 @@
 import { Scene } from 'phaser';
-import { GAME_WIDTH, GAME_HEIGHT, AUTOROLL_INTERVAL, xpForLevel, UI, ONBOARDING, LEVELUP_CONFIG } from '../core/config';
+import { GAME_WIDTH, GAME_HEIGHT, AUTOROLL_INTERVAL, xpForLevel, UI, ONBOARDING, LEVELUP_CONFIG, NEST_CONFIG } from '../core/config';
 import { EventBus } from '../core/EventBus';
 import { GameManager } from '../core/GameManager';
 import { TopBar } from '../ui/TopBar';
@@ -113,7 +113,8 @@ export class MainScene extends Scene {
             this.scene.start('CollectionScene');
         });
 
-        this.nestsBtn = new NestsButton(this, () => {
+        const nestsLocked = this.manager.progression.level < NEST_CONFIG.unlockLevel;
+        this.nestsBtn = new NestsButton(this, nestsLocked, () => {
             this.manager.buffs.stopAutoroll();
             this.manager.isRolling = false;
             this.manager.saveState();
@@ -568,6 +569,7 @@ export class MainScene extends Scene {
         this.centerStage.updatePedestals(topPets);
         this.questPanel.updateDisplay(this.manager.quests);
         this.dailyBonusBtn.updateBadge(this.manager.dailyBonus.hasUnclaimedReward());
+        this.nestsBtn.setLocked(this.manager.progression.level < NEST_CONFIG.unlockLevel);
         this.nestsBtn.updateBadge(this.manager.nests.getReadyCount(), this.manager.nests.hasEmptySlot());
     }
 

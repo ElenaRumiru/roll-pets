@@ -218,6 +218,11 @@ export const ru: Record<string, string> = {
     'shop_pets_hint': 'В Магазине можно купить питомца, которого у вас точно нет!',
     'shop_eggs_hint': 'Яйца для использования в Инкубации',
 
+    // Feature Unlock
+    'feature_unlocked': 'Новая функция открыта!',
+    'feature_incubation': 'Инкубация',
+    'nests_locked_level': 'Ур. {level}',
+
     // Buff descriptions
     'buff_desc_lucky': 'x2 шанс',
     'buff_desc_super': 'x3 шанс',

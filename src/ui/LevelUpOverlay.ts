@@ -41,8 +41,8 @@ export class LevelUpOverlay {
     show(data: LevelUpData, onComplete: (chosenCoinAmount: number) => void): void {
         this.cleanup();
 
-        // Fullscreen dark blocker — blocks ALL clicks behind it
-        const blocker = this.scene.add.rectangle(CX, CY, GAME_WIDTH, GAME_HEIGHT, 0x000000, 0.75)
+        // Fullscreen dark blocker — oversized to avoid sub-pixel gaps
+        const blocker = this.scene.add.rectangle(CX, CY, GAME_WIDTH + 4, GAME_HEIGHT + 4, 0x000000, 0.75)
             .setDepth(DEPTH).setInteractive();
         this.elements.push(blocker);
 
@@ -61,7 +61,9 @@ export class LevelUpOverlay {
         }).setOrigin(0.5);
         container.add(title);
 
-        if (data.eggChanged) {
+        if (data.featureUnlock) {
+            this.buildFeatureUnlockVariant(container, blocker, data, titleY, onComplete);
+        } else if (data.eggChanged) {
             this.buildEggVariant(container, blocker, data, titleY, onComplete);
         } else {
             this.buildCoinVariant(container, data, titleY, onComplete);
@@ -159,6 +161,75 @@ export class LevelUpOverlay {
 
     private fmtTapClose(s: number): string {
         return t('levelup_tap_close').replace('{seconds}', String(s));
+    }
+
+    // ─── FEATURE UNLOCK VARIANT ────────────────────────────
+
+    private buildFeatureUnlockVariant(
+        container: GameObjects.Container,
+        blocker: GameObjects.Rectangle,
+        _data: LevelUpData,
+        titleY: number,
+        onComplete: (chosenCoinAmount: number) => void,
+    ): void {
+        let y = titleY + 35;
+
+        const subtitle = this.scene.add.text(0, y, t('feature_unlocked'), {
+            fontFamily: UI.FONT_STROKE, fontSize: '18px',
+            color: '#ffffff', stroke: '#000000', strokeThickness: UI.STROKE_MEDIUM,
+        }).setOrigin(0.5);
+        container.add(subtitle);
+        const afterSubtitle = y + 14;
+
+        // Icon dimensions (2x size)
+        const src = this.scene.textures.get('ui_nests_btn').getSourceImage();
+        const iconW = 180;
+        const iconH = Math.round(iconW * src.height / src.width);
+
+        // Name position — leave room for icon + padding
+        const nameY = afterSubtitle + iconH + 30;
+
+        // Feature icon — centered between subtitle and name
+        const iconY = (afterSubtitle + nameY) / 2;
+        const icon = this.scene.add.image(0, iconY, 'ui_nests_btn').setDisplaySize(iconW, iconH);
+        container.add(icon);
+
+        // Feature name
+        const name = this.scene.add.text(0, nameY, t('feature_incubation'), {
+            fontFamily: UI.FONT_STROKE, fontSize: '22px',
+            color: '#ffc107', stroke: '#000000', strokeThickness: UI.STROKE_MEDIUM,
+        }).setOrigin(0.5);
+        container.add(name);
+        y = nameY + 25;
+
+        // Description — same font as egg effect line
+        const desc = this.scene.add.text(0, y, t('nests_hint'), {
+            fontFamily: UI.FONT_STROKE, fontSize: '16px',
+            color: '#aaaaaa', stroke: '#000000', strokeThickness: UI.STROKE_THIN,
+        }).setOrigin(0.5);
+        container.add(desc);
+        y += 42;
+
+        // Countdown
+        let seconds = LEVELUP_CONFIG.eggCloseSeconds;
+        const countdown = this.scene.add.text(0, y, this.fmtTapClose(seconds), {
+            fontFamily: UI.FONT_BODY, fontSize: '16px',
+            color: '#888888', stroke: '#000000', strokeThickness: 1,
+        }).setOrigin(0.5);
+        fitText(countdown, 350, 16);
+        container.add(countdown);
+
+        this.timer = this.scene.time.addEvent({
+            delay: 1000, repeat: seconds - 1,
+            callback: () => {
+                seconds--;
+                countdown.setText(this.fmtTapClose(seconds));
+                fitText(countdown, 350, 16);
+                if (seconds <= 0) this.close(() => onComplete(0));
+            },
+        });
+
+        blocker.on('pointerdown', () => this.close(() => onComplete(0)));
     }
 
     // ─── COINS VARIANT ──────────────────────────────────────

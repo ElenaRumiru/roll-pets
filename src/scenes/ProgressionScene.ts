@@ -57,7 +57,7 @@ export class ProgressionScene extends Scene {
             this.scene.start('MainScene');
         });
 
-        const title = this.add.text(GAME_WIDTH / 2, 31, t('progression_title'), {
+        this.add.text(GAME_WIDTH / 2, 31, t('progression_title'), {
             fontFamily: UI.FONT_STROKE, fontSize: '23px',
             color: '#ffffff', stroke: '#000000', strokeThickness: UI.STROKE_MEDIUM,
         }).setOrigin(0.5).setDepth(10);
@@ -92,7 +92,8 @@ export class ProgressionScene extends Scene {
 
     private drawMilestone(x: number, m: Milestone, reached: boolean): void {
         const isEgg = m.type === 'egg';
-        const r = isEgg ? EGG_R : COIN_R;
+        const isFeature = m.type === 'feature';
+        const r = (isEgg || isFeature) ? EGG_R : COIN_R;
         const ringColor = reached ? RING_COLOR : RING_GRAY;
 
         // Circle background + rings
@@ -101,14 +102,22 @@ export class ProgressionScene extends Scene {
         gfx.fillCircle(x, TRACK_Y, r);
         gfx.lineStyle(4, ringColor, 1);
         gfx.strokeCircle(x, TRACK_Y, r);
-        if (isEgg) {
+        if (isEgg || isFeature) {
             gfx.lineStyle(3, ringColor, 0.6);
             gfx.strokeCircle(x, TRACK_Y, r - 8);
         }
         this.trackContainer.add(gfx);
 
-        // Icon inside circle — large, fills most of the circle
-        if (isEgg && m.eggKey) {
+        // Icon inside circle
+        if (isFeature) {
+            const src = this.textures.get('ui_nests_btn').getSourceImage();
+            const nestW = r * 1.5;
+            const nestH = Math.round(nestW * src.height / src.width);
+            const icon = this.add.image(x, TRACK_Y, 'ui_nests_btn')
+                .setDisplaySize(nestW, nestH);
+            if (!reached) this.applyGrayscale(icon);
+            this.trackContainer.add(icon);
+        } else if (isEgg && m.eggKey) {
             const eggSize = r * 1.7;
             const icon = this.add.image(x, TRACK_Y, `${m.eggKey}_sm`)
                 .setDisplaySize(eggSize, eggSize);
@@ -131,7 +140,23 @@ export class ProgressionScene extends Scene {
 
         // Label below circle
         const labelY = TRACK_Y + r + 17;
-        if (isEgg) {
+        if (isFeature) {
+            const nameText = this.add.text(x, labelY, t('feature_incubation'), {
+                fontFamily: UI.FONT_STROKE, fontSize: '20px',
+                color: reached ? '#ffffff' : '#777777',
+                stroke: '#000000', strokeThickness: UI.STROKE_MEDIUM,
+            }).setOrigin(0.5);
+            fitText(nameText, 180, 20);
+            this.trackContainer.add(nameText);
+
+            this.trackContainer.add(this.add.text(x, labelY + 22, t('nests_hint'), {
+                fontFamily: UI.FONT_BODY, fontSize: '15px',
+                color: reached ? '#aaaaaa' : '#555555',
+                stroke: '#000000', strokeThickness: 1,
+                wordWrap: { width: 180 },
+                align: 'center',
+            }).setOrigin(0.5, 0));
+        } else if (isEgg) {
             const eggName = m.eggNameKey ? t(m.eggNameKey) : t('progression_new_egg');
             const nameText = this.add.text(x, labelY, eggName, {
                 fontFamily: UI.FONT_STROKE, fontSize: '20px',

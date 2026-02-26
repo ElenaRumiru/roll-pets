@@ -255,6 +255,7 @@ export const NEST_CONFIG = {
     maxSlots: 3,
     slotPrices: [0, 5_000, 50_000],
     incubationMs: 30_000,
+    unlockLevel: 5,
 } as const;
 
 export function getDefaultNestState(): NestState {

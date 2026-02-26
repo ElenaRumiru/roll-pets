@@ -31,7 +31,7 @@ No test framework configured yet. TypeScript checking is done by Vite at build t
 
 **Entry flow:** `index.html` → `src/main.ts` (awaits `document.fonts.ready`) → `src/game/main.ts` (Phaser config, 1031x580 16:9, Scale.FIT)
 
-**Scene flow:** Boot → Main ↔ Collection / Progression / Shop / Leaderboard
+**Scene flow:** Boot → Main ↔ Collection / Progression / Shop / Nests / Leaderboard
 
 ```
 src/
@@ -48,6 +48,7 @@ src/
 ├── data/
 │   ├── pets.ts                     # 100 pets (id, name, emoji, imageKey, chance)
 │   ├── eggs.ts                     # Dynamic egg filter by level/visual tier
+│   ├── eggTiers.ts                 # 17 egg tier configs (price, buffMultiplier, incubationMs)
 │   ├── milestones.ts               # Milestone data generator for progression track
 │   ├── leaderboard.ts              # League tiers (Bronze→Master), getLeagueForChance()
 │   ├── backgrounds.ts              # 17 background themes
@@ -59,11 +60,12 @@ src/
 ├── systems/                        # Pure TS, zero Phaser dependency
 │   ├── RNGSystem.ts                # sfc32 PRNG + weightedRandom
 │   ├── ProgressionSystem.ts        # XP, coins, levels, luck formula
-│   ├── SaveSystem.ts               # localStorage with try/catch (v13)
+│   ├── SaveSystem.ts               # localStorage with try/catch (v18)
 │   ├── AudioSystem.ts              # Play/stop/mute wrapper
 │   ├── BuffSystem.ts               # Buff state (lucky/super/epic multipliers, autoroll toggle)
 │   ├── QuestSystem.ts              # Daily quest logic, progress tracking, UTC midnight reset
 │   ├── ShopSystem.ts              # Daily shop: offers, purchases, refresh, UTC midnight reset
+│   ├── NestSystem.ts              # Nest slot management, incubation timers, hatch logic
 │   └── LeaderboardSystem.ts       # League standings, fake bot players, rating calculation
 │
 ├── scenes/
@@ -71,7 +73,8 @@ src/
 │   ├── MainScene.ts                # Gameplay dashboard (creates UI panels)
 │   ├── CollectionScene.ts          # Pet grid with filters
 │   ├── ProgressionScene.ts         # Level-up rewards track (horizontal scroll)
-│   ├── ShopScene.ts               # Daily shop: buy uncollected pets for coins
+│   ├── ShopScene.ts               # Daily shop + egg shop (two tabs when incubation unlocked)
+│   ├── NestsScene.ts              # Incubation: 3 nest slots, egg placement, hatch collection
 │   └── LeaderboardScene.ts        # Full-screen leaderboard with league tabs
 │
 ├── ui/
@@ -84,8 +87,14 @@ src/
 │   ├── RightPanel.ts              # Roll button (bottom-center) + autoroll toggle (right of Roll)
 │   ├── QuestPanel.ts              # Daily quest panel (right side, above BonusPanel)
 │   ├── QuestClaimPopup.ts         # Quest reward confirmation popup (free vs ad)
-│   ├── LevelUpOverlay.ts          # Level-up popup: egg variant (tap-to-close) / coins variant (free vs ad choice)
+│   ├── LevelUpOverlay.ts          # Level-up popup: feature unlock / egg / coins variants
 │   ├── LeaguePromotionOverlay.ts  # League promotion popup: rating icon + free vs ad coin choice
+│   ├── NestsButton.ts             # Incubation button (bottom, locked/unlocked states)
+│   ├── NestSlotCard.ts            # Single nest slot card (empty/incubating/ready)
+│   ├── NestHatchOverlay.ts        # Hatch animation overlay for nests
+│   ├── EggSelectPopup.ts          # Egg selection grid popup for nest placement
+│   ├── ShopPetsTab.ts             # Pet cards builder for shop Pets tab
+│   ├── ShopEggsTab.ts             # Egg cards builder for shop Eggs tab
 │   ├── Leaderboard.ts             # Mini leaderboard widget with rating icon on main screen
 │   ├── PetCard.ts                  # Single pet card with image sprite (for collection grid)
 │   └── components/
@@ -171,13 +180,14 @@ When official docs are not enough, **search the wider internet**: Reddit, YouTub
 
 **Coin economy:** Each roll awards coins based on grade. New pets: Common 5, Uncommon 10, Improved 25, Rare 50, Valuable 100, Elite 250, Epic 500, Heroic 1K, Mythic 2.5K, Ancient 5K, Legendary 10K. Duplicates: ~10-20% of new (Common 1 → Legendary 1K). Coins persist in save, displayed via `CoinDisplay` HUD (top-right). Roll overlay shows EXP + coin rewards on one line with icons.
 
-**Level-up overlay:** Two variants triggered on level-up. Config in `LEVELUP_CONFIG`.
+**Level-up overlay:** Three variants triggered on level-up. Config in `LEVELUP_CONFIG`.
+- **Feature unlock variant** (`featureUnlock !== undefined`): double gold ring with level number, "New feature unlocked!" subtitle, 2x-sized feature icon centered between subtitle and name, feature name in gold, description in same style as egg effect line, "Tap to close (N)" countdown (5s). Currently only triggers for Incubation at level 5 (`NEST_CONFIG.unlockLevel`).
 - **Egg variant** (`eggChanged === true`): double gold ring with level number, "New Egg Unlocked!" subtitle, old→new egg transition, egg name + odds characteristic, "Tap to close (N)" countdown (5s), tap anywhere or auto-close.
-- **Coins variant** (`eggChanged === false`): double ring, "Rewards:" subtitle, two choice cards — FREE (green, `level * 10` coins, auto-accepts after 10s countdown shown in button) and WATCH AD (purple, `level * 10 * 3` coins, +300% badge, rewarded video via PlatformSDK). Coins are **deferred** — not added in `roll()`, but via `GameManager.claimLevelUpCoins(amount)` after player choice. Ad failure falls back to free amount. Overlay depth 500 (above autoroll UI at 105), blocks all clicks behind it. Both variants pause autoroll until dismissed.
+- **Coins variant** (`eggChanged === false`): double ring, "Rewards:" subtitle, two choice cards — FREE (green, `level * 10` coins, auto-accepts after 10s countdown shown in button) and WATCH AD (purple, `level * 10 * 3` coins, +300% badge, rewarded video via PlatformSDK). Coins are **deferred** — not added in `roll()`, but via `GameManager.claimLevelUpCoins(amount)` after player choice. Ad failure falls back to free amount. Overlay depth 500 (above autoroll UI at 105), blocks all clicks behind it. All variants pause autoroll until dismissed.
 
 **League Promotion overlay:** Triggered when a roll causes the player's best pet to cross into a new league tier. Config in `LEAGUE_PROMOTION_REWARDS` (config.ts). Leagues: Bronze (starting, no reward), Silver (500 coins), Gold (5K), Diamond (50K), Master (500K). Detection: `GameManager.roll()` compares `getLeagueForChance(bestChance)` before and after `processRoll()`, emits `league-promotion` event. UI in `LeaguePromotionOverlay.ts`: rating icon (podium), title "LEAGUE PROMOTION!" in league color, subtitle "New League: {name}", two choice cards (FREE with 10s countdown / WATCH AD x3). Coins deferred via `claimLeaguePromoCoins(amount)`. Overlay chaining: if level-up and league promotion both trigger on same roll, level-up shows first, then league promo. Both pause autoroll until dismissed.
 
-**Progression Window:** Opened by clicking TopBar (top-left panel). Shows horizontal scrollable track of level milestones. Each level is either an egg milestone (at `VISUAL_TIERS` thresholds — double ring, egg image, name, odds text) or a coin milestone (`level * 10` coins — single ring, coin icon, amount). Reached levels are yellow/colored, unreached are gray/grayscale. Initial scroll anchors on the last reached level at ~20% from left, showing ~2.5 unearned milestones to the right. Horizon = `max(currentLevel + 5, nextEggLevel + 3)`. Milestone data generated by `data/milestones.ts`. Scene transition follows CollectionScene pattern (stop autoroll, save state, scene.start).
+**Progression Window:** Opened by clicking TopBar (top-left panel). Shows horizontal scrollable track of level milestones. Three milestone types: egg milestone (at `VISUAL_TIERS` thresholds — double ring, egg image, name, odds text, incubation stats), feature milestone (at `NEST_CONFIG.unlockLevel` — double ring, nest icon, feature name, description), or coin milestone (`level * 10` coins — single ring, coin icon, amount). Reached levels are yellow/colored, unreached are gray/grayscale. Initial scroll anchors on the last reached level at ~20% from left, showing ~2.5 unearned milestones to the right. Horizon = `max(currentLevel + 5, nextEggLevel + 3)`. Milestone data generated by `data/milestones.ts`. Scene transition follows CollectionScene pattern (stop autoroll, save state, scene.start).
 
 **Shop:** Daily-refreshing store where players buy specific uncollected pets for coins. Managed by `ShopSystem` (pure TS), UI in `ShopScene` + `ShopButton`. Save version 13.
 - Displays up to 5 random uncollected pets from the full 100-pet pool (regardless of player level).
@@ -189,6 +199,16 @@ When official docs are not enough, **search the wider internet**: Reddit, YouTub
 - Scene transition follows CollectionScene pattern (stop autoroll, save state, scene.start).
 - ShopButton positioned bottom-right (118px wide).
 - Events: `shop-purchase` emitted on successful buy.
+
+**Nests / Incubation:** Unlocks at level 5 (`NEST_CONFIG.unlockLevel`). Players place eggs in nest slots, wait for incubation, and hatch pets with a luck buff. Managed by `NestSystem` (pure TS), UI in `NestsScene` + `NestsButton` + `EggSelectPopup` + `NestSlotCard` + `NestHatchOverlay`. Save version 18.
+- 3 nest slots (`NEST_CONFIG.maxSlots`), slot 1 free, slots 2-3 cost coins (`slotPrices: [0, 5K, 50K]`).
+- Eggs are purchasable items with inventory tracking (`eggInventory: Record<string, number>` in save). 17 tiers with price, buffMultiplier, incubationMs defined in `data/eggTiers.ts`. Starter: 3 free tier-1 eggs.
+- Placing egg: consumes from inventory, sets slot duration + buffMultiplier from tier config.
+- Hatching: `rollPet(eligible, buffMultiplier)` uses stored multiplier for better pets.
+- Shop has two tabs (Pets / Eggs) when incubation is unlocked. EggSelectPopup has "+" cell to navigate to shop eggs tab.
+- **Locked state** (level < 5): NestsButton shows lock icon + "Lvl 5" text, click disabled. Shop shows only Pets tab, no Eggs tab.
+- **Feature unlock**: Detected in `GameManager.roll()` when level crosses `unlockLevel`. Triggers feature unlock variant of LevelUpOverlay.
+- Events: `nest-placed`, `nest-hatched`, `nest-collected` emitted on respective actions.
 
 **Daily Quests:** Two repeating quests that reset at UTC midnight. Managed by `QuestSystem` (pure TS), UI in `QuestPanel` + `QuestClaimPopup`. Save version 13.
 - Quest 1 (Roll): targets [3, 5, 10], loops at 10. Reward: 5x Lucky (free) / 25x Lucky (ad).
