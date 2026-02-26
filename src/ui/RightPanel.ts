@@ -1,9 +1,10 @@
-import { GameObjects, Scene } from 'phaser';
+import { GameObjects, Geom, Scene } from 'phaser';
 import { UI, ROLL_BTN, AUTOROLL_TOGGLE } from '../core/config';
 import { BuffBadges } from './BuffBadges';
 import { BuffSystem } from '../systems/BuffSystem';
 import { t } from '../data/locales';
 import { addButtonFeedback } from './components/buttonFeedback';
+import { showToast } from './components/Toast';
 import { fitText } from './components/fitText';
 
 export class RightPanel extends GameObjects.Container {
@@ -83,6 +84,16 @@ export class RightPanel extends GameObjects.Container {
             AUTOROLL_TOGGLE.height,
             8,
         );
+        this.lockOverlay.setInteractive(
+            new Geom.Rectangle(
+                toggleX - AUTOROLL_TOGGLE.width / 2,
+                toggleY - AUTOROLL_TOGGLE.height / 2,
+                AUTOROLL_TOGGLE.width,
+                AUTOROLL_TOGGLE.height,
+            ),
+            Geom.Rectangle.Contains,
+        );
+        this.lockOverlay.on('pointerdown', () => this.handleToggleClick());
         this.add(this.lockOverlay);
 
         this.lockIcon = scene.add.image(toggleX, toggleY - 22, 'ui_lock_md')
@@ -117,7 +128,10 @@ export class RightPanel extends GameObjects.Container {
     }
 
     private handleToggleClick(): void {
-        if (this.isLocked) return;
+        if (this.isLocked) {
+            showToast(this.scene, t('toast_level_required', { level: String(AUTOROLL_TOGGLE.unlockLevel) }), 'error');
+            return;
+        }
         this.onToggleAutoroll(!this.autorollEnabled);
     }
 

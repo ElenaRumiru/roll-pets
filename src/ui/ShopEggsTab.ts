@@ -4,6 +4,7 @@ import { EGG_TIERS, formatBuffMultiplier, formatIncubationTime } from '../data/e
 import { getEggNameKey } from '../data/eggs';
 import { Button } from './components/Button';
 import { t } from '../data/locales';
+import { showToast } from './components/Toast';
 
 const CARD_W = 156;
 const CARD_H = 186;
@@ -150,6 +151,11 @@ function renderEggCard(
             fontFamily: UI.FONT_STROKE, fontSize: '14px', color: '#666688',
             stroke: '#000000', strokeThickness: 1,
         }).setOrigin(0.5));
+        c.setSize(CARD_W, CARD_H);
+        c.setInteractive();
+        c.on('pointerdown', () => {
+            showToast(scene, t('toast_level_required', { level: reqLevel }), 'error');
+        });
     }
 
     container.add(c);

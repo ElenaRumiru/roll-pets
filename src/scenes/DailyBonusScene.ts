@@ -4,6 +4,7 @@ import { GameManager } from '../core/GameManager';
 import { Button } from '../ui/components/Button';
 import { t } from '../data/locales';
 import { addButtonFeedback } from '../ui/components/buttonFeedback';
+import { showToast } from '../ui/components/Toast';
 import { createCardGrid, createMilestoneTrack, CARD_H, CARD_GAP } from '../ui/DailyBonusCards';
 
 const HEADER_H = 74;
@@ -84,8 +85,17 @@ export class DailyBonusScene extends Scene {
             wrap.setSize(bw, bh + 2);
             wrap.setInteractive({ useHandCursor: true });
             wrap.on('pointerdown', () => {
-                this.manager.claimDailyBonus();
-                this.scene.restart();
+                const reward = this.manager.claimDailyBonus();
+                if (reward) {
+                    if (reward.type === 'buff' && reward.buffType) {
+                        const name = t(`badge_${reward.buffType}`);
+                        showToast(this, t('toast_received', { count: reward.count, item: name }), 'info');
+                    } else if (reward.type === 'coins') {
+                        showToast(this, t('toast_received', { count: reward.count, item: t('coins') }), 'info');
+                    }
+                }
+                wrap.disableInteractive();
+                this.time.delayedCall(1500, () => this.scene.restart());
             });
             addButtonFeedback(this, wrap);
         }

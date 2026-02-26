@@ -226,6 +226,10 @@ export const ru: Record<string, string> = {
     'autoroll_locked_level': 'Ур. {level}',
     'nests_locked_level': 'Ур. {level}',
 
+    // Toast notifications
+    'toast_level_required': 'Требуется уровень {level}',
+    'toast_received': 'Получено: {count}x {item}',
+
     // Buff descriptions
     'buff_desc_lucky': 'x2 шанс',
     'buff_desc_super': 'x3 шанс',

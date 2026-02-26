@@ -1,5 +1,5 @@
 import { Scene } from 'phaser';
-import { GAME_WIDTH, GAME_HEIGHT, AUTOROLL_INTERVAL, xpForLevel, UI, ONBOARDING, LEVELUP_CONFIG, NEST_CONFIG, AUTOROLL_TOGGLE } from '../core/config';
+import { GAME_WIDTH, GAME_HEIGHT, AUTOROLL_INTERVAL, xpForLevel, UI, ONBOARDING, LEVELUP_CONFIG, NEST_CONFIG, AUTOROLL_TOGGLE, QUEST_CONFIG, BUFF_CONFIG } from '../core/config';
 import { EventBus } from '../core/EventBus';
 import { GameManager } from '../core/GameManager';
 import { TopBar } from '../ui/TopBar';
@@ -25,6 +25,7 @@ import { PetDef, RollResult, LevelUpData, LeaguePromotionData } from '../types';
 import { PlatformSDK } from '../platform/PlatformSDK';
 import { AudioSystem } from '../systems/AudioSystem';
 import { t } from '../data/locales';
+import { showToast } from '../ui/components/Toast';
 
 export class MainScene extends Scene {
     private manager!: GameManager;
@@ -441,9 +442,15 @@ export class MainScene extends Scene {
         this.refreshUI();
     }
 
-    private onBuffActivated(_buff: string): void {
+    private onBuffActivated(buff: string): void {
         this.refreshUI();
         this.bonusPanel.onOfferAccepted();
+        const buffType = buff as 'lucky' | 'super' | 'epic';
+        const count = BUFF_CONFIG[buffType]?.rollsPerAd;
+        if (count) {
+            const buffName = t(`badge_${buffType}`);
+            showToast(this, t('toast_received', { count, item: buffName }), 'info');
+        }
     }
 
     private onBuffsChanged(): void {
@@ -466,9 +473,12 @@ export class MainScene extends Scene {
 
     private handleQuestClaim(type: 'roll' | 'grade' | 'online'): void {
         if (this.questPopup) return;
+        const cfg = QUEST_CONFIG.rewards[type];
+        const buffName = t(`badge_${cfg.buffType}`);
         this.questPopup = new QuestClaimPopup(this, type,
             () => {
                 this.manager.claimQuestReward(type, false);
+                showToast(this, t('toast_received', { count: cfg.freeCount, item: buffName }), 'info');
                 this.questPopup = null;
             },
             () => {
@@ -476,10 +486,13 @@ export class MainScene extends Scene {
                 if (sdk) {
                     sdk.showRewardedBreak().then((success: boolean) => {
                         this.manager.claimQuestReward(type, success);
+                        const count = success ? cfg.adCount : cfg.freeCount;
+                        showToast(this, t('toast_received', { count, item: buffName }), 'info');
                         this.questPopup = null;
                     });
                 } else {
                     this.manager.claimQuestReward(type, true);
+                    showToast(this, t('toast_received', { count: cfg.adCount, item: buffName }), 'info');
                     this.questPopup = null;
                 }
             },

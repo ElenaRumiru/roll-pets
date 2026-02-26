@@ -7,6 +7,7 @@ import { NestHatchOverlay } from '../ui/NestHatchOverlay';
 import { renderEmptySlot, renderIncubatingSlot, renderReadySlot, renderLockedSlot, SlotLayout } from '../ui/NestSlotCard';
 import { t } from '../data/locales';
 import { showCoinSpend } from '../ui/components/FloatingText';
+import { showToast } from '../ui/components/Toast';
 
 const HEADER_H = 74;
 const SLOT_W = 200;
@@ -149,20 +150,8 @@ export class NestsScene extends Scene {
             showCoinSpend(this, GAME_WIDTH - 100, 55, this.formatCoins(price));
             this.refreshSlots();
         } else {
-            this.showToast(t('nests_no_coins'));
+            showToast(this, t('nests_no_coins'), 'error');
         }
-    }
-
-    private showToast(message: string): void {
-        const toast = this.add.text(GAME_WIDTH / 2, GAME_HEIGHT / 2 + 74, message, {
-            fontFamily: UI.FONT_STROKE, fontSize: '20px', color: '#ff4444',
-            stroke: '#000000', strokeThickness: UI.STROKE_MEDIUM,
-        }).setOrigin(0.5).setDepth(10);
-        this.tweens.add({
-            targets: toast, y: toast.y - 30, alpha: 0,
-            duration: 1200, ease: 'Power2',
-            onComplete: () => toast.destroy(),
-        });
     }
 
     update(_time: number, delta: number): void {

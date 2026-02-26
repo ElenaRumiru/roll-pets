@@ -7,6 +7,8 @@ import { buildEggCards, EggTabResult } from '../ui/ShopEggsTab';
 import { t } from '../data/locales';
 import { getEggTierConfig } from '../data/eggTiers';
 import { showCoinSpend } from '../ui/components/FloatingText';
+import { showToast } from '../ui/components/Toast';
+import { getEggNameKey } from '../data/eggs';
 
 const HEADER_H = 74;
 const TAB_Y = HEADER_H + 25;
@@ -155,10 +157,10 @@ export class ShopScene extends Scene {
     }
 
     private onBuy(petId: string, canAfford: boolean): void {
-        if (!canAfford) { this.showToast(t('shop_no_coins')); return; }
+        if (!canAfford) { showToast(this, t('shop_no_coins'), 'error'); return; }
         const offer = this.manager.shop.getOffers().find(o => o.petId === petId);
         const success = this.manager.purchasePet(petId);
-        if (!success) { this.showToast(t('shop_no_coins')); return; }
+        if (!success) { showToast(this, t('shop_no_coins'), 'error'); return; }
         if (offer) showCoinSpend(this, GAME_WIDTH - 100, 55, this.formatCoins(offer.price));
         this.coinText.setText(this.formatCoins(this.manager.progression.coins));
         this.switchTab('pets');
@@ -167,22 +169,12 @@ export class ShopScene extends Scene {
     private onBuyEgg(tier: number): void {
         const cfg = getEggTierConfig(tier);
         const success = this.manager.purchaseEgg(tier, cfg.price);
-        if (!success) { this.showToast(t('shop_no_coins')); return; }
+        if (!success) { showToast(this, t('shop_no_coins'), 'error'); return; }
         showCoinSpend(this, GAME_WIDTH - 100, 55, this.formatCoins(cfg.price));
         this.coinText.setText(this.formatCoins(this.manager.progression.coins));
+        const nameKey = getEggNameKey(`egg_${tier}`);
+        showToast(this, t('toast_received', { count: 1, item: t(nameKey) }), 'info');
         this.switchTab('eggs');
-    }
-
-    private showToast(message: string): void {
-        const toast = this.add.text(GAME_WIDTH / 2, GAME_HEIGHT / 2 + 74, message, {
-            fontFamily: UI.FONT_STROKE, fontSize: '20px', color: '#ff4444',
-            stroke: '#000000', strokeThickness: UI.STROKE_MEDIUM,
-        }).setOrigin(0.5).setDepth(10);
-        this.tweens.add({
-            targets: toast, y: toast.y - 30, alpha: 0,
-            duration: 1200, ease: 'Power2',
-            onComplete: () => toast.destroy(),
-        });
     }
 
     private onRefresh(): void {

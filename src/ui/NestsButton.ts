@@ -2,6 +2,7 @@ import { GameObjects, Geom, Scene } from 'phaser';
 import { UI, GAME_HEIGHT, LEFT_PANEL, NEST_CONFIG } from '../core/config';
 import { t } from '../data/locales';
 import { addButtonFeedback } from './components/buttonFeedback';
+import { showToast } from './components/Toast';
 import { fitText } from './components/fitText';
 
 const PANEL_W = 128;
@@ -85,7 +86,13 @@ export class NestsButton extends GameObjects.Container {
             Geom.Rectangle.Contains,
         );
         this.input!.cursor = locked ? 'default' : 'pointer';
-        this.on('pointerdown', () => { if (!this.isLocked) onClick(); });
+        this.on('pointerdown', () => {
+            if (this.isLocked) {
+                showToast(scene, t('toast_level_required', { level: NEST_CONFIG.unlockLevel }), 'error');
+                return;
+            }
+            onClick();
+        });
         addButtonFeedback(scene, this, { pivot: { x: PANEL_W / 2, y: TOTAL_H / 2 } });
 
         scene.add.existing(this);

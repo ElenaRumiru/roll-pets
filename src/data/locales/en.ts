@@ -226,6 +226,10 @@ export const en: Record<string, string> = {
     'autoroll_locked_level': 'Lvl {level}',
     'nests_locked_level': 'Lvl {level}',
 
+    // Toast notifications
+    'toast_level_required': 'Level {level} required',
+    'toast_received': 'Received: {count}x {item}',
+
     // Buff descriptions
     'buff_desc_lucky': 'x2 chance',
     'buff_desc_super': 'x3 chance',
