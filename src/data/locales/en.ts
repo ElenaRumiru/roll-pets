@@ -221,6 +221,9 @@ export const en: Record<string, string> = {
     // Feature Unlock
     'feature_unlocked': 'New feature unlocked!',
     'feature_incubation': 'Incubation',
+    'feature_autoroll': 'Auto Roll',
+    'autoroll_hint': 'One tap — endless rolling!',
+    'autoroll_locked_level': 'Lvl {level}',
     'nests_locked_level': 'Lvl {level}',
 
     // Buff descriptions

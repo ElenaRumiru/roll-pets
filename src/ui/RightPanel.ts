@@ -14,6 +14,10 @@ export class RightPanel extends GameObjects.Container {
     private toggleImg: GameObjects.Image;
     private autorollEnabled = false;
     private autorollRunning = false;
+    private isLocked = false;
+    private lockOverlay!: GameObjects.Graphics;
+    private lockIcon!: GameObjects.Image;
+    private lockLabel!: GameObjects.Text;
 
     private onRoll: () => void;
     private onStopAutoroll: () => void;
@@ -69,6 +73,32 @@ export class RightPanel extends GameObjects.Container {
         this.add(this.toggleImg);
         addButtonFeedback(scene, this.toggleImg);
 
+        // Lock overlay for autoroll toggle
+        this.lockOverlay = scene.add.graphics();
+        this.lockOverlay.fillStyle(0x111122, 0.75);
+        this.lockOverlay.fillRoundedRect(
+            toggleX - AUTOROLL_TOGGLE.width / 2,
+            toggleY - AUTOROLL_TOGGLE.height / 2,
+            AUTOROLL_TOGGLE.width,
+            AUTOROLL_TOGGLE.height,
+            8,
+        );
+        this.add(this.lockOverlay);
+
+        this.lockIcon = scene.add.image(toggleX, toggleY - 22, 'ui_lock_md')
+            .setDisplaySize(44, 44);
+        this.add(this.lockIcon);
+
+        this.lockLabel = scene.add.text(toggleX, toggleY + 14, t('autoroll_locked_level', { level: String(AUTOROLL_TOGGLE.unlockLevel) }), {
+            fontFamily: UI.FONT_STROKE, fontSize: '17px',
+            color: '#999999', stroke: '#000000', strokeThickness: UI.STROKE_MEDIUM,
+        }).setOrigin(0.5);
+        this.add(this.lockLabel);
+
+        this.lockOverlay.setVisible(false);
+        this.lockIcon.setVisible(false);
+        this.lockLabel.setVisible(false);
+
         // Buff badges above roll button (almost touching top edge)
         this.badges = new BuffBadges(scene, ROLL_BTN.x, ROLL_BTN.y - ROLL_BTN.height / 2 - 12);
         this.add(this.badges);
@@ -87,7 +117,21 @@ export class RightPanel extends GameObjects.Container {
     }
 
     private handleToggleClick(): void {
+        if (this.isLocked) return;
         this.onToggleAutoroll(!this.autorollEnabled);
+    }
+
+    setLocked(locked: boolean): void {
+        this.isLocked = locked;
+        this.lockOverlay.setVisible(locked);
+        this.lockIcon.setVisible(locked);
+        this.lockLabel.setVisible(locked);
+        this.toggleImg.setVisible(!locked);
+        if (locked) {
+            this.toggleImg.disableInteractive();
+        } else {
+            this.toggleImg.setInteractive({ useHandCursor: true });
+        }
     }
 
     setRolling(rolling: boolean): void {
@@ -116,8 +160,10 @@ export class RightPanel extends GameObjects.Container {
         this.autorollEnabled = buffs.isAutorollEnabled();
         this.autorollRunning = buffs.isAutorollActive();
 
-        // Update toggle image
-        this.toggleImg.setTexture(this.autorollEnabled ? 'ui_automod_on' : 'ui_automod_off');
+        // Update toggle image (skip if locked — toggle is hidden)
+        if (!this.isLocked) {
+            this.toggleImg.setTexture(this.autorollEnabled ? 'ui_automod_on' : 'ui_automod_off');
+        }
 
         // Update roll button label based on state
         if (this.autorollRunning) {

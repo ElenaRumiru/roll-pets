@@ -1,5 +1,5 @@
 import { EventBus } from './EventBus';
-import { BUFF_CONFIG, QUEST_CONFIG, levelUpCoinReward, LEAGUE_PROMOTION_REWARDS, NEST_CONFIG, getDefaultNestState } from './config';
+import { BUFF_CONFIG, QUEST_CONFIG, levelUpCoinReward, LEAGUE_PROMOTION_REWARDS, NEST_CONFIG, getDefaultNestState, AUTOROLL_TOGGLE } from './config';
 import { RNGSystem } from '../systems/RNGSystem';
 import { ProgressionSystem } from '../systems/ProgressionSystem';
 import { SaveSystem } from '../systems/SaveSystem';
@@ -114,8 +114,12 @@ export class GameManager {
             const newLevel = this.progression.level;
             const newEggKey = getEggImageKey(newLevel);
             const eggChanged = oldEggKey !== newEggKey;
-            const featureUnlock = (oldLevel < NEST_CONFIG.unlockLevel && newLevel >= NEST_CONFIG.unlockLevel)
-                ? 'incubation' : undefined;
+            let featureUnlock: string | undefined;
+            if (oldLevel < AUTOROLL_TOGGLE.unlockLevel && newLevel >= AUTOROLL_TOGGLE.unlockLevel) {
+                featureUnlock = 'autoroll';
+            } else if (oldLevel < NEST_CONFIG.unlockLevel && newLevel >= NEST_CONFIG.unlockLevel) {
+                featureUnlock = 'incubation';
+            }
             const coinReward = (eggChanged || featureUnlock) ? 0 : levelUpCoinReward(newLevel);
             const levelUpData: LevelUpData = {
                 level: newLevel,

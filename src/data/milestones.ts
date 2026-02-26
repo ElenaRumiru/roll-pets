@@ -1,10 +1,11 @@
-import { getVisualTier, VISUAL_TIERS, levelUpCoinReward, NEST_CONFIG } from '../core/config';
+import { getVisualTier, VISUAL_TIERS, levelUpCoinReward, NEST_CONFIG, AUTOROLL_TOGGLE } from '../core/config';
 import { getEggImageKey, getEggNameKey, getEggMinOdds } from './eggs';
 import { getEggTierConfig, formatBuffMultiplier, formatIncubationTime } from './eggTiers';
 
 export interface Milestone {
     level: number;
     type: 'egg' | 'coins' | 'feature';
+    featureKey?: string;
     eggKey?: string;
     eggNameKey?: string;
     eggMinOdds?: string;
@@ -37,8 +38,10 @@ export function getMilestones(currentLevel: number): Milestone[] {
     const milestones: Milestone[] = [];
 
     for (let lvl = 1; lvl <= horizon; lvl++) {
-        if (lvl === NEST_CONFIG.unlockLevel && !isEggLevel(lvl)) {
-            milestones.push({ level: lvl, type: 'feature' });
+        if (lvl === AUTOROLL_TOGGLE.unlockLevel && !isEggLevel(lvl)) {
+            milestones.push({ level: lvl, type: 'feature', featureKey: 'autoroll' });
+        } else if (lvl === NEST_CONFIG.unlockLevel && !isEggLevel(lvl)) {
+            milestones.push({ level: lvl, type: 'feature', featureKey: 'incubation' });
         } else if (isEggLevel(lvl)) {
             const eggKey = getEggImageKey(lvl);
             const tier = getVisualTier(lvl);

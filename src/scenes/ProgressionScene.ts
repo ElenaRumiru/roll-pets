@@ -108,13 +108,20 @@ export class ProgressionScene extends Scene {
         }
         this.trackContainer.add(gfx);
 
+        // Feature info lookup
+        const featureMap: Record<string, { iconKey: string; nameKey: string; descKey: string }> = {
+            autoroll:   { iconKey: 'ui_automod_on', nameKey: 'feature_autoroll', descKey: 'autoroll_hint' },
+            incubation: { iconKey: 'ui_nests_btn', nameKey: 'feature_incubation', descKey: 'nests_hint' },
+        };
+        const fInfo = isFeature ? featureMap[m.featureKey ?? 'incubation'] : null;
+
         // Icon inside circle
-        if (isFeature) {
-            const src = this.textures.get('ui_nests_btn').getSourceImage();
-            const nestW = r * 1.5;
-            const nestH = Math.round(nestW * src.height / src.width);
-            const icon = this.add.image(x, TRACK_Y, 'ui_nests_btn')
-                .setDisplaySize(nestW, nestH);
+        if (isFeature && fInfo) {
+            const src = this.textures.get(fInfo.iconKey).getSourceImage();
+            const iconW = r * 1.5;
+            const iconH = Math.round(iconW * src.height / src.width);
+            const icon = this.add.image(x, TRACK_Y, fInfo.iconKey)
+                .setDisplaySize(iconW, iconH);
             if (!reached) this.applyGrayscale(icon);
             this.trackContainer.add(icon);
         } else if (isEgg && m.eggKey) {
@@ -140,8 +147,8 @@ export class ProgressionScene extends Scene {
 
         // Label below circle
         const labelY = TRACK_Y + r + 17;
-        if (isFeature) {
-            const nameText = this.add.text(x, labelY, t('feature_incubation'), {
+        if (isFeature && fInfo) {
+            const nameText = this.add.text(x, labelY, t(fInfo.nameKey), {
                 fontFamily: UI.FONT_STROKE, fontSize: '20px',
                 color: reached ? '#ffffff' : '#777777',
                 stroke: '#000000', strokeThickness: UI.STROKE_MEDIUM,
@@ -149,7 +156,7 @@ export class ProgressionScene extends Scene {
             fitText(nameText, 180, 20);
             this.trackContainer.add(nameText);
 
-            this.trackContainer.add(this.add.text(x, labelY + 22, t('nests_hint'), {
+            this.trackContainer.add(this.add.text(x, labelY + 22, t(fInfo.descKey), {
                 fontFamily: UI.FONT_BODY, fontSize: '15px',
                 color: reached ? '#aaaaaa' : '#555555',
                 stroke: '#000000', strokeThickness: 1,

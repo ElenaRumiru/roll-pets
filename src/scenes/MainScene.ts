@@ -1,5 +1,5 @@
 import { Scene } from 'phaser';
-import { GAME_WIDTH, GAME_HEIGHT, AUTOROLL_INTERVAL, xpForLevel, UI, ONBOARDING, LEVELUP_CONFIG, NEST_CONFIG } from '../core/config';
+import { GAME_WIDTH, GAME_HEIGHT, AUTOROLL_INTERVAL, xpForLevel, UI, ONBOARDING, LEVELUP_CONFIG, NEST_CONFIG, AUTOROLL_TOGGLE } from '../core/config';
 import { EventBus } from '../core/EventBus';
 import { GameManager } from '../core/GameManager';
 import { TopBar } from '../ui/TopBar';
@@ -105,6 +105,7 @@ export class MainScene extends Scene {
             () => EventBus.emit('autoroll-start'),
             (enabled: boolean) => this.handleAutorollToggle(enabled),
         );
+        this.rightPanel.setLocked(this.manager.progression.level < AUTOROLL_TOGGLE.unlockLevel);
 
         this.collectionBtn = new CollectionButton(this, () => {
             this.manager.buffs.stopAutoroll();
@@ -284,6 +285,7 @@ export class MainScene extends Scene {
     }
 
     private async handleAutorollToggle(enabled: boolean): Promise<void> {
+        if (this.manager.progression.level < AUTOROLL_TOGGLE.unlockLevel) return;
         const sdk = this.registry.get('platformSDK') as PlatformSDK | undefined;
         if (sdk) {
             sdk.gameplayStop();
@@ -569,6 +571,7 @@ export class MainScene extends Scene {
         this.centerStage.updatePedestals(topPets);
         this.questPanel.updateDisplay(this.manager.quests);
         this.dailyBonusBtn.updateBadge(this.manager.dailyBonus.hasUnclaimedReward());
+        this.rightPanel.setLocked(this.manager.progression.level < AUTOROLL_TOGGLE.unlockLevel);
         this.nestsBtn.setLocked(this.manager.progression.level < NEST_CONFIG.unlockLevel);
         this.nestsBtn.updateBadge(this.manager.nests.getReadyCount(), this.manager.nests.hasEmptySlot());
     }

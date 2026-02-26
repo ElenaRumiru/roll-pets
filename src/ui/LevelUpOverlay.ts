@@ -28,6 +28,11 @@ const FREE_DARK = 0x4E8A18;
 const AD_COLOR = 0x7B2FBE;
 const AD_DARK = 0x4A1A72;
 
+const FEATURE_INFO: Record<string, { iconKey: string; nameKey: string; descKey: string }> = {
+    incubation: { iconKey: 'ui_nests_btn', nameKey: 'feature_incubation', descKey: 'nests_hint' },
+    autoroll:   { iconKey: 'ui_automod_on', nameKey: 'feature_autoroll', descKey: 'autoroll_hint' },
+};
+
 export class LevelUpOverlay {
     private scene: Scene;
     private elements: GameObjects.GameObject[] = [];
@@ -168,10 +173,11 @@ export class LevelUpOverlay {
     private buildFeatureUnlockVariant(
         container: GameObjects.Container,
         blocker: GameObjects.Rectangle,
-        _data: LevelUpData,
+        data: LevelUpData,
         titleY: number,
         onComplete: (chosenCoinAmount: number) => void,
     ): void {
+        const info = FEATURE_INFO[data.featureUnlock!];
         let y = titleY + 35;
 
         const subtitle = this.scene.add.text(0, y, t('feature_unlocked'), {
@@ -182,7 +188,7 @@ export class LevelUpOverlay {
         const afterSubtitle = y + 14;
 
         // Icon dimensions (2x size)
-        const src = this.scene.textures.get('ui_nests_btn').getSourceImage();
+        const src = this.scene.textures.get(info.iconKey).getSourceImage();
         const iconW = 180;
         const iconH = Math.round(iconW * src.height / src.width);
 
@@ -191,11 +197,11 @@ export class LevelUpOverlay {
 
         // Feature icon — centered between subtitle and name
         const iconY = (afterSubtitle + nameY) / 2;
-        const icon = this.scene.add.image(0, iconY, 'ui_nests_btn').setDisplaySize(iconW, iconH);
+        const icon = this.scene.add.image(0, iconY, info.iconKey).setDisplaySize(iconW, iconH);
         container.add(icon);
 
         // Feature name
-        const name = this.scene.add.text(0, nameY, t('feature_incubation'), {
+        const name = this.scene.add.text(0, nameY, t(info.nameKey), {
             fontFamily: UI.FONT_STROKE, fontSize: '22px',
             color: '#ffc107', stroke: '#000000', strokeThickness: UI.STROKE_MEDIUM,
         }).setOrigin(0.5);
@@ -203,7 +209,7 @@ export class LevelUpOverlay {
         y = nameY + 25;
 
         // Description — same font as egg effect line
-        const desc = this.scene.add.text(0, y, t('nests_hint'), {
+        const desc = this.scene.add.text(0, y, t(info.descKey), {
             fontFamily: UI.FONT_STROKE, fontSize: '16px',
             color: '#aaaaaa', stroke: '#000000', strokeThickness: UI.STROKE_THIN,
         }).setOrigin(0.5);

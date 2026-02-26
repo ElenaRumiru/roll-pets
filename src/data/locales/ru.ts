@@ -221,6 +221,9 @@ export const ru: Record<string, string> = {
     // Feature Unlock
     'feature_unlocked': 'Новая функция открыта!',
     'feature_incubation': 'Инкубация',
+    'feature_autoroll': 'Авто Ролл',
+    'autoroll_hint': 'Одно нажатие — бесконечный ролл!',
+    'autoroll_locked_level': 'Ур. {level}',
     'nests_locked_level': 'Ур. {level}',
 
     // Buff descriptions

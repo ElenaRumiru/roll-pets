@@ -138,7 +138,7 @@ export const PEDESTAL = {
 export const PET_OFFSET_Y = 8;
 
 export const ROLL_BTN = { x: 487, y: 532, width: 305, height: 67 };
-export const AUTOROLL_TOGGLE = { width: 99, height: 61, gap: 7 };
+export const AUTOROLL_TOGGLE = { width: 99, height: 61, gap: 7, unlockLevel: 3 };
 
 export const BUFF_CONFIG = {
     lucky:    { multiplier: 2, rollsPerAd: 25, color: 0x78C828, colorHex: '#78C828' },
