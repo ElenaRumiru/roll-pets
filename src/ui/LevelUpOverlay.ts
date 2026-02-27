@@ -1,6 +1,7 @@
 import { GameObjects, Scene } from 'phaser';
 import { GAME_WIDTH, GAME_HEIGHT, UI, LEVELUP_CONFIG } from '../core/config';
 import { LevelUpData } from '../types';
+import { AudioSystem } from '../systems/AudioSystem';
 import { getEggNameKey, getEggMinOdds } from '../data/eggs';
 import { t } from '../data/locales';
 import { addButtonFeedback } from './components/buttonFeedback';
@@ -45,6 +46,9 @@ export class LevelUpOverlay {
 
     show(data: LevelUpData, onComplete: (chosenCoinAmount: number) => void): void {
         this.cleanup();
+
+        const audio = this.scene.registry.get('audio') as AudioSystem | undefined;
+        audio?.playSfx('sfx_levelup');
 
         // Fullscreen dark blocker — oversized to avoid sub-pixel gaps
         const blocker = this.scene.add.rectangle(CX, CY, GAME_WIDTH + 4, GAME_HEIGHT + 4, 0x000000, 0.75)

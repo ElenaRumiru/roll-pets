@@ -1,6 +1,7 @@
 import { GameObjects, Scene } from 'phaser';
 import { GAME_WIDTH, GAME_HEIGHT, UI, LEVELUP_CONFIG } from '../core/config';
 import { LeaguePromotionData } from '../types';
+import { AudioSystem } from '../systems/AudioSystem';
 import { LEAGUES } from '../data/leaderboard';
 import { t } from '../data/locales';
 import { addButtonFeedback } from './components/buttonFeedback';
@@ -38,6 +39,9 @@ export class LeaguePromotionOverlay {
 
     show(data: LeaguePromotionData, onComplete: (chosenCoinAmount: number) => void): void {
         this.cleanup();
+
+        const audio = this.scene.registry.get('audio') as AudioSystem | undefined;
+        audio?.playSfx('sfx_levelup');
 
         const league = LEAGUES.find(l => l.tier === data.tier)!;
         const baseAmount = data.coinReward;

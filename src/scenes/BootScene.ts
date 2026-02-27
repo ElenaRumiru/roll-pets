@@ -48,6 +48,7 @@ export class BootScene extends Scene {
         this.load.audio('sfx_wobble', 'assets/audio/sfx_wobble.mp3');
         this.load.audio('sfx_reveal', 'assets/audio/sfx_reveal.mp3');
         this.load.audio('sfx_new_pet', 'assets/audio/sfx_new_pet.mp3');
+        this.load.audio('sfx_levelup', 'assets/audio/sfx_levelup.mp3');
 
         // Grade-specific jackpot SFX (common uses sfx_reveal, no separate file)
         for (const g of GRADE_ORDER) {
