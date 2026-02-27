@@ -17,7 +17,7 @@ const COOLDOWN_MS = 1000;
 const DISPLAY_MS = 1050;
 const FADE_MS = 500;
 const SLOT_H = 40;
-const BASE_Y = Math.round(GAME_HEIGHT * 0.25) + 30;
+const BASE_Y = 25;
 
 const COLOR: Record<ToastType, string> = {
     info: '#ffffff',
@@ -30,7 +30,7 @@ let lastShowTime = 0;
 let timer: ReturnType<typeof setTimeout> | null = null;
 
 function slotY(slot: number): number {
-    return BASE_Y - slot * SLOT_H;
+    return BASE_Y + slot * SLOT_H;
 }
 
 function removeToast(scene: Scene, toast: ActiveToast): void {
@@ -78,7 +78,7 @@ function displayToast(scene: Scene, message: string, type: ToastType): void {
     scene.tweens.add({
         targets: text,
         alpha: 0,
-        y: y - 30,
+        y: y - 20,
         delay: DISPLAY_MS,
         duration: FADE_MS,
         ease: 'Power2',
