@@ -3,6 +3,7 @@ import { GAME_WIDTH, UI, DAILY_BONUS_CONFIG } from '../core/config';
 import { DailyBonusSystem } from '../systems/DailyBonusSystem';
 import { GameManager } from '../core/GameManager';
 import { t } from '../data/locales';
+import { addButtonFeedback } from './components/buttonFeedback';
 import { fitText } from './components/fitText';
 import { DailyBonusReward } from '../types';
 
@@ -157,6 +158,7 @@ function drawMilestoneGift(scene: Scene, x: number, y: number, index: number, ma
             doPulse();
             scene.time.addEvent({ delay: 2000, callback: doPulse, loop: true });
             gift.setInteractive({ useHandCursor: true });
+            addButtonFeedback(scene, gift);
             gift.on('pointerdown', () => {
                 const coins = manager.claimDailyMilestone(index);
                 if (coins > 0) {

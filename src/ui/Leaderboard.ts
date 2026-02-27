@@ -2,6 +2,7 @@ import { GameObjects, Geom, Scene } from 'phaser';
 import { UI, LEFT_PANEL, GRADE, getGradeForChance, getOddsString } from '../core/config';
 import { t } from '../data/locales';
 import { LeaderboardEntry, LeagueConfig } from '../types';
+import { addButtonFeedback } from './components/buttonFeedback';
 
 const PANEL_W = 163;
 const RADIUS = 9;
@@ -108,6 +109,7 @@ export class Leaderboard extends GameObjects.Container {
         this.setInteractive(new Geom.Rectangle(0, 0, PANEL_W, EXPANDED_H), Geom.Rectangle.Contains);
         this.input!.hitArea = new Geom.Rectangle(0, 0, PANEL_W, EXPANDED_H);
         this.on('pointerdown', onClick);
+        addButtonFeedback(scene, this);
 
         scene.add.existing(this);
     }

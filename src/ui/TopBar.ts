@@ -1,6 +1,7 @@
 import { GameObjects, Geom, Scene } from 'phaser';
 import { UI, LEFT_PANEL, XP_HUD, xpForLevel } from '../core/config';
 import { ProgressBar } from './components/ProgressBar';
+import { addButtonFeedback } from './components/buttonFeedback';
 
 const ICON_X = XP_HUD.iconSize * 0.28;
 const CY = XP_HUD.h / 2;
@@ -58,6 +59,7 @@ export class TopBar extends GameObjects.Container {
                 useHandCursor: true,
             });
             this.on('pointerdown', onClick);
+            addButtonFeedback(scene, this);
         }
 
         scene.add.existing(this);
