@@ -1,5 +1,6 @@
 import { GameObjects, Scene } from 'phaser';
 import { UI } from '../../core/config';
+import { AudioSystem } from '../../systems/AudioSystem';
 import { fitText } from './fitText';
 
 const SHADOW_OFFSET = 5;
@@ -55,6 +56,8 @@ export class Button extends GameObjects.Container {
 
         this.on('pointerdown', () => {
             if (!this.enabled) return;
+            const audio = scene.registry.get('audio') as AudioSystem | undefined;
+            audio?.playSfx('sfx_click', 0.7);
             this.pressed = true;
             this.drawButton(true);
             this.drawOutline();

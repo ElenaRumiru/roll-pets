@@ -52,7 +52,7 @@ export function addButtonFeedback(
         target.on('pointerdown', () => {
             scaleTo(click, 60);
             const audio = scene.registry.get('audio') as AudioSystem | undefined;
-            audio?.playSfx('sfx_click', 0.4);
+            audio?.playSfx('sfx_click', 0.7);
         });
         target.on('pointerup', () => scaleTo(1, 80));
     }
