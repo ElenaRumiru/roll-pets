@@ -57,7 +57,7 @@ export class Button extends GameObjects.Container {
         this.on('pointerdown', () => {
             if (!this.enabled) return;
             const audio = scene.registry.get('audio') as AudioSystem | undefined;
-            audio?.playSfx('sfx_click', 0.7);
+            audio?.playSfx('sfx_click', 1.0);
             this.pressed = true;
             this.drawButton(true);
             this.drawOutline();
