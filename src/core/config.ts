@@ -11,6 +11,21 @@ export const GRADE_ORDER: Grade[] = [
     'elite', 'epic', 'heroic', 'mythic', 'ancient', 'legendary',
 ];
 
+// Hold time (ms) before reveal fades out (250ms fade). Matched to SFX duration per grade.
+export const GRADE_HOLD_MS: Record<string, number> = {
+    common:    1100,
+    uncommon:  2000,
+    improved:  3400,
+    rare:      3700,
+    valuable:  4000,
+    elite:     4350,
+    epic:      4700,
+    heroic:    6700,
+    mythic:    7050,
+    ancient:   7400,
+    legendary: 7750,
+};
+
 export const GRADE: Record<string, GradeConfig> = {
     common: {
         color: 0x9e9e9e, colorHex: '#9e9e9e',

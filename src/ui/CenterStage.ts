@@ -1,5 +1,5 @@
 import { GameObjects, Scene } from 'phaser';
-import { GAME_WIDTH, GAME_HEIGHT, GRADE, GRADE_ORDER, getGradeForChance, UI, PEDESTAL, PET_OFFSET_Y, getOddsString } from '../core/config';
+import { GAME_WIDTH, GAME_HEIGHT, GRADE, GRADE_HOLD_MS, getGradeForChance, UI, PEDESTAL, PET_OFFSET_Y, getOddsString } from '../core/config';
 import { PetDef, RollResult } from '../types';
 import { AudioSystem, SfxKey } from '../systems/AudioSystem';
 import { IdleWobbleFX } from './IdleWobbleFX';
@@ -317,9 +317,8 @@ export class CenterStage extends GameObjects.Container {
             });
         }
 
-        // 5) Hold scales with grade: base 1100ms, +400ms per grade from Uncommon onwards
-        const gradeIdx = GRADE_ORDER.indexOf(result.grade);
-        const holdTime = 1100 + Math.max(0, gradeIdx) * 400;
+        // Hold matched to SFX duration per grade
+        const holdTime = GRADE_HOLD_MS[result.grade] ?? 1100;
         scene.time.delayedCall(holdTime, () => {
             // Only fade overlay if nothing is keeping it persistent
             if (!this.autorollOverlayActive && !this.keepOverlay) {
