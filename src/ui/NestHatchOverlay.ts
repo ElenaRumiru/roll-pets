@@ -1,5 +1,5 @@
 import { Scene, GameObjects } from 'phaser';
-import { GAME_WIDTH, GAME_HEIGHT, GRADE, UI, getOddsString } from '../core/config';
+import { GAME_WIDTH, GAME_HEIGHT, GRADE, GRADE_ORDER, UI, getOddsString } from '../core/config';
 import { RollResult } from '../types';
 import { AudioSystem, SfxKey } from '../systems/AudioSystem';
 import { t } from '../data/locales';
@@ -108,8 +108,10 @@ export class NestHatchOverlay {
         const rewards = this.createRewardsLine(result);
         this.objects.push(rewards);
 
-        // 10) Hold then fade
-        scene.time.delayedCall(900, () => {
+        // 10) Hold scales with grade: base 1100ms, +400ms per grade from Uncommon onwards
+        const gradeIdx = GRADE_ORDER.indexOf(result.grade);
+        const holdTime = 1100 + Math.max(0, gradeIdx) * 400;
+        scene.time.delayedCall(holdTime, () => {
             scene.tweens.add({
                 targets: this.objects, alpha: 0, duration: 250,
                 onComplete: () => {
