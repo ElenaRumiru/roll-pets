@@ -1,4 +1,5 @@
 import { Scene, GameObjects, Tweens } from 'phaser';
+import { AudioSystem } from '../../systems/AudioSystem';
 
 interface FeedbackOptions {
     clickScale?: number;
@@ -48,7 +49,11 @@ export function addButtonFeedback(
     };
 
     if (doClick) {
-        target.on('pointerdown', () => scaleTo(click, 60));
+        target.on('pointerdown', () => {
+            scaleTo(click, 60);
+            const audio = scene.registry.get('audio') as AudioSystem | undefined;
+            audio?.playSfx('sfx_click', 0.4);
+        });
         target.on('pointerup', () => scaleTo(1, 80));
     }
 

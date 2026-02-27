@@ -308,7 +308,6 @@ export class MainScene extends Scene {
     }
 
     private onRollRequested(): void {
-        this.audio.playSfx('sfx_click');
         this.hideArrowHint();
         this.idleTimer = 0;
     }
