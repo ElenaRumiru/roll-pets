@@ -1,7 +1,7 @@
 import { Scene, GameObjects } from 'phaser';
 import { GAME_WIDTH, GAME_HEIGHT, GRADE, UI, getOddsString } from '../core/config';
 import { RollResult } from '../types';
-import { AudioSystem } from '../systems/AudioSystem';
+import { AudioSystem, SfxKey } from '../systems/AudioSystem';
 import { t } from '../data/locales';
 import { fitText } from './components/fitText';
 
@@ -65,8 +65,13 @@ export class NestHatchOverlay {
     ): void {
         const scene = this.scene;
 
-        if (result.isNew) audio?.playSfx('sfx_new_pet');
-        else audio?.playSfx('sfx_reveal', 0.4);
+        // Grade-specific jackpot SFX — common uses old reveal, rest get escalating arpeggio
+        if (result.grade === 'common') {
+            audio?.playSfx('sfx_reveal', result.isNew ? 1 : 0.4);
+        } else {
+            const gradeKey = `sfx_grade_${result.grade}` as SfxKey;
+            audio?.playSfx(gradeKey, result.isNew ? 1 : 0.4);
+        }
 
         // 5) Pet image
         const petImg = scene.add.image(CX, CY - 31, result.pet.imageKey)

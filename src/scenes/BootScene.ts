@@ -7,6 +7,7 @@ import { TOTAL_BACKGROUNDS } from '../data/backgrounds';
 import { AudioSystem } from '../systems/AudioSystem';
 import { GameManager } from '../core/GameManager';
 import { setLanguage } from '../data/locales';
+import { GRADE_ORDER } from '../core/config';
 
 export class BootScene extends Scene {
     constructor() {
@@ -47,6 +48,12 @@ export class BootScene extends Scene {
         this.load.audio('sfx_wobble', 'assets/audio/sfx_wobble.mp3');
         this.load.audio('sfx_reveal', 'assets/audio/sfx_reveal.mp3');
         this.load.audio('sfx_new_pet', 'assets/audio/sfx_new_pet.mp3');
+
+        // Grade-specific jackpot SFX (common uses sfx_reveal, no separate file)
+        for (const g of GRADE_ORDER) {
+            if (g === 'common') continue;
+            this.load.audio(`sfx_grade_${g}`, `assets/audio/sfx_grade_${g}.mp3`);
+        }
 
         // UI assets
         this.load.image('ui_roll', 'assets/ui/roll.png');

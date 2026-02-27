@@ -73,7 +73,9 @@
       "mcp__plugin_playwright_playwright__browser_evaluate",
       "mcp__plugin_playwright_playwright__browser_click",
       "Bash(python3:*)",
-      "WebFetch(domain:www.gamerefinery.com)"
+      "WebFetch(domain:www.gamerefinery.com)",
+      "Bash(ffmpeg:*)",
+      "Bash(where ffmpeg:*)"
     ]
   }
 }

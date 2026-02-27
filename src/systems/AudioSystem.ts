@@ -1,4 +1,7 @@
-export type SfxKey = 'sfx_click' | 'sfx_wobble' | 'sfx_reveal' | 'sfx_new_pet';
+import type { Grade } from '../types';
+
+type GradeSfxKey = `sfx_grade_${Grade}`;
+export type SfxKey = 'sfx_click' | 'sfx_wobble' | 'sfx_reveal' | 'sfx_new_pet' | GradeSfxKey;
 
 export class AudioSystem {
     private sound: Phaser.Sound.BaseSoundManager;

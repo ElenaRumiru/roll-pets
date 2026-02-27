@@ -1,7 +1,7 @@
 import { GameObjects, Scene } from 'phaser';
 import { GAME_WIDTH, GAME_HEIGHT, GRADE, getGradeForChance, UI, PEDESTAL, PET_OFFSET_Y, getOddsString } from '../core/config';
 import { PetDef, RollResult } from '../types';
-import { AudioSystem } from '../systems/AudioSystem';
+import { AudioSystem, SfxKey } from '../systems/AudioSystem';
 import { IdleWobbleFX } from './IdleWobbleFX';
 import { t } from '../data/locales';
 import { fitText } from './components/fitText';
@@ -247,11 +247,12 @@ export class CenterStage extends GameObjects.Container {
     private showReveal(result: RollResult, cfg: { colorHex: string; outlineHex: string; label: string }, onComplete: () => void): void {
         const scene = this.scene;
 
-        // Reveal SFX — loud for new pets, quiet for duplicates
-        if (result.isNew) {
-            this.audio?.playSfx('sfx_new_pet');
+        // Grade-specific jackpot SFX — common uses old reveal, rest get escalating arpeggio
+        if (result.grade === 'common') {
+            this.audio?.playSfx('sfx_reveal', result.isNew ? 1 : 0.4);
         } else {
-            this.audio?.playSfx('sfx_reveal', 0.4);
+            const gradeKey = `sfx_grade_${result.grade}` as SfxKey;
+            this.audio?.playSfx(gradeKey, result.isNew ? 1 : 0.4);
         }
 
         // Pet image
