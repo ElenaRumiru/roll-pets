@@ -18,10 +18,6 @@ export interface GradeConfig {
     outlineHex: string;
     strokeThickness: number;
     label: string;
-    xpNewPercent: number;
-    xpDupPercent: number;
-    coinsNew: number;
-    coinsDup: number;
     minChance: number;
     maxChance: number;
 }
@@ -73,6 +69,12 @@ export interface SaveData {
     dailyBonus: DailyBonusState;
     nests: NestState;
     eggInventory: Record<string, number>;
+    rebirthCount: number;
+}
+
+export interface RebirthData {
+    rebirthCount: number;
+    newMultiplier: number;
 }
 
 export interface BuffState {

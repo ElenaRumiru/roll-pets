@@ -9,6 +9,7 @@ export class BuffSystem {
     private counts: Record<CountBuff, number> = { lucky: 0, super: 0, epic: 0 };
     private autorollEnabled = false;
     private autorollRunning = false;
+    private rebirthMultiplier = 1;
 
     private queueIndex = 0;
     private offerActive = false;
@@ -57,9 +58,12 @@ export class BuffSystem {
         }
     }
 
+    setRebirthMultiplier(mult: number): void { this.rebirthMultiplier = mult; }
+    getRebirthMultiplier(): number { return this.rebirthMultiplier; }
+
     /** Consume one charge of each active count buff. Returns combined luck multiplier. */
     consumeForRoll(): number {
-        let mult = 1;
+        let mult = this.rebirthMultiplier;
         if (this.counts.lucky > 0) { this.counts.lucky--; mult *= BUFF_CONFIG.lucky.multiplier; }
         if (this.counts.super > 0) { this.counts.super--; mult *= BUFF_CONFIG.super.multiplier; }
         if (this.counts.epic > 0)  { this.counts.epic--;  mult *= BUFF_CONFIG.epic.multiplier; }
@@ -68,7 +72,7 @@ export class BuffSystem {
 
     /** Preview multiplier without consuming */
     peekMultiplier(): number {
-        let mult = 1;
+        let mult = this.rebirthMultiplier;
         if (this.counts.lucky > 0) mult *= BUFF_CONFIG.lucky.multiplier;
         if (this.counts.super > 0) mult *= BUFF_CONFIG.super.multiplier;
         if (this.counts.epic > 0)  mult *= BUFF_CONFIG.epic.multiplier;

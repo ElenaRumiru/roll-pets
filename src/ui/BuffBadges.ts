@@ -1,5 +1,5 @@
 import { GameObjects, Scene } from 'phaser';
-import { UI, BUFF_CONFIG } from '../core/config';
+import { UI, BUFF_CONFIG, REBIRTH_CONFIG } from '../core/config';
 import { BuffSystem } from '../systems/BuffSystem';
 import { t } from '../data/locales';
 import { fitText } from './components/fitText';
@@ -10,6 +10,7 @@ interface Badge {
     text: GameObjects.Text;
     key: string;
     tooltipKey: string;
+    dynamicTooltip?: string;
 }
 
 const BADGE_W = 67;
@@ -21,6 +22,7 @@ const TOOLTIP_KEYS: Record<string, string> = {
     lucky: 'tip_lucky',
     super: 'tip_super',
     epic: 'tip_epic',
+    samsara: 'tip_samsara',
 };
 
 export class BuffBadges extends GameObjects.Container {
@@ -37,6 +39,7 @@ export class BuffBadges extends GameObjects.Container {
         this.bgPanel = scene.add.graphics();
         this.add(this.bgPanel);
 
+        this.createBadge(scene, 'samsara', REBIRTH_CONFIG.color);
         this.createBadge(scene, 'lucky', BUFF_CONFIG.lucky.color);
         this.createBadge(scene, 'super', BUFF_CONFIG.super.color);
         this.createBadge(scene, 'epic',  BUFF_CONFIG.epic.color);
@@ -84,7 +87,8 @@ export class BuffBadges extends GameObjects.Container {
 
         c.on('pointerdown', () => {
             this.longPressTimer = scene.time.delayedCall(300, () => {
-                this.showTooltip(c, tooltipKey);
+                const b = this.badges.find(bd => bd.key === key);
+                this.showTooltip(c, tooltipKey, b?.dynamicTooltip);
             });
         });
 
@@ -96,8 +100,8 @@ export class BuffBadges extends GameObjects.Container {
         this.badges.push({ container: c, bg, text: txt, key, tooltipKey });
     }
 
-    private showTooltip(badge: GameObjects.Container, localeKey: string): void {
-        const text = t(localeKey);
+    private showTooltip(badge: GameObjects.Container, localeKey: string, dynamicText?: string): void {
+        const text = dynamicText || t(localeKey);
         this.tooltipText.setText(text);
         const padX = 17;
         const padY = 15;
@@ -124,6 +128,14 @@ export class BuffBadges extends GameObjects.Container {
     }
 
     updateFromBuffs(buffs: BuffSystem): void {
+        const rm = buffs.getRebirthMultiplier();
+        this.setBadgeRaw('samsara', rm > 1 ? `${t('badge_samsara')} \u221e` : '', rm > 1);
+        const samsaraBadge = this.badges.find(b => b.key === 'samsara');
+        if (samsaraBadge) {
+            samsaraBadge.dynamicTooltip = rm > 1
+                ? `${t('tip_samsara')} (\u00d7${rm})` : undefined;
+        }
+
         this.setBadge('lucky', t('badge_lucky'), buffs.getCount('lucky'));
         this.setBadge('super', t('badge_super'), buffs.getCount('super'));
         this.setBadge('epic',  t('badge_epic'),  buffs.getCount('epic'));

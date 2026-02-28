@@ -226,6 +226,18 @@ export const ru: Record<string, string> = {
     'autoroll_locked_level': 'Ур. {level}',
     'nests_locked_level': 'Ур. {level}',
 
+    // Rebirth / Samsara
+    'badge_samsara': 'Сансара',
+    'tip_samsara': 'Постоянный множитель удачи от Перерождения',
+    'rebirth_title': 'ПЕРЕРОЖДЕНИЕ!',
+    'rebirth_subtitle': 'Твой путь начинается заново...',
+    'rebirth_multiplier': 'Удача \u00d7{n}',
+    'rebirth_resets': 'Сбрасывается: Уровень, Опыт',
+    'rebirth_keeps': 'Остаётся: Коллекция, Монеты, Яйца и всё остальное',
+    'rebirth_accept': 'ПРИНЯТЬ',
+    'feature_rebirth': 'Перерождение',
+    'rebirth_hint': 'Сброс прогресса за постоянную удачу!',
+
     // Toast notifications
     'toast_level_required': 'Требуется уровень {level}',
     'toast_received': 'Получено: {count}x {item}',

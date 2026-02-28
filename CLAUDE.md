@@ -43,7 +43,7 @@ src/
 │   ├── GameManager.ts              # Creates systems, coordinates roll() logic
 │   └── config.ts                   # All balance constants + UI HUD configs (COIN_HUD, XP_HUD)
 │
-├── types/index.ts                  # All interfaces (Pet, Grade, SaveData, LevelUpData, LeaguePromotionData, etc.)
+├── types/index.ts                  # All interfaces (Pet, Grade, SaveData, LevelUpData, LeaguePromotionData, RebirthData, etc.)
 │
 ├── data/
 │   ├── pets.ts                     # 100 pets (id, name, emoji, imageKey, chance)
@@ -60,9 +60,9 @@ src/
 ├── systems/                        # Pure TS, zero Phaser dependency
 │   ├── RNGSystem.ts                # sfc32 PRNG + weightedRandom
 │   ├── ProgressionSystem.ts        # XP, coins, levels, luck formula
-│   ├── SaveSystem.ts               # localStorage with try/catch (v18)
+│   ├── SaveSystem.ts               # localStorage with try/catch (v19)
 │   ├── AudioSystem.ts              # Play/stop/mute wrapper
-│   ├── BuffSystem.ts               # Buff state (lucky/super/epic multipliers, autoroll toggle)
+│   ├── BuffSystem.ts               # Buff state (lucky/super/epic multipliers, autoroll toggle, rebirth multiplier)
 │   ├── QuestSystem.ts              # Daily quest logic, progress tracking, UTC midnight reset
 │   ├── ShopSystem.ts              # Daily shop: offers, purchases, refresh, UTC midnight reset
 │   ├── NestSystem.ts              # Nest slot management, incubation timers, hatch logic
@@ -89,6 +89,7 @@ src/
 │   ├── QuestClaimPopup.ts         # Quest reward confirmation popup (free vs ad)
 │   ├── LevelUpOverlay.ts          # Level-up popup: feature unlock / egg / coins variants
 │   ├── LeaguePromotionOverlay.ts  # League promotion popup: rating icon + free vs ad coin choice
+│   ├── RebirthOverlay.ts          # Rebirth/Samsara popup: informational overlay with ACCEPT button
 │   ├── NestsButton.ts             # Incubation button (bottom, locked/unlocked states)
 │   ├── NestSlotCard.ts            # Single nest slot card (empty/incubating/ready)
 │   ├── NestHatchOverlay.ts        # Hatch animation overlay for nests
@@ -174,7 +175,7 @@ When official docs are not enough, **search the wider internet**: Reddit, YouTub
 
 **100 pets** distributed: Common(28), Uncommon(24), Improved(14), Rare(12), Valuable(8), Elite(5), Epic(4), Heroic(2), Mythic(1), Ancient(1), Legendary(1). New pets reuse existing 30 sprites via shared `imageKey`.
 
-**Roll algorithm:** Sequential check from rarest to most common, `checkChance = min(1, luckMultiplier / pet.chance)`. First pet to pass = result, fallback = most common in pool. Buff multipliers stack multiplicatively: Lucky x2, Super x3, Epic x5 (max x30). Charges per ad watch: Lucky 25, Super 12, Epic 5 (configured in `BUFF_CONFIG.rollsPerAd`).
+**Roll algorithm:** Sequential check from rarest to most common, `checkChance = min(1, luckMultiplier / pet.chance)`. First pet to pass = result, fallback = most common in pool. Buff multipliers stack multiplicatively: Rebirth (permanent) x Lucky x2 x Super x3 x Epic x5. Max without rebirth: x30. Max with 8 rebirths (x9): x270. Charges per ad watch: Lucky 25, Super 12, Epic 5 (configured in `BUFF_CONFIG.rollsPerAd`).
 
 **Eggs:** Dynamic filter via `getEggFilterForLevel(level)` — each visual tier (1–17) removes one common pet from the pool. XP curve: base 100, multiplier 1.15x per level. New pet = +25% XP bar, duplicate = +0.5-10% based on grade.
 
@@ -185,9 +186,20 @@ When official docs are not enough, **search the wider internet**: Reddit, YouTub
 - **Egg variant** (`eggChanged === true`): double gold ring with level number, "New Egg Unlocked!" subtitle, old→new egg transition, egg name + odds characteristic, "Tap to close (N)" countdown (5s), tap anywhere or auto-close.
 - **Coins variant** (`eggChanged === false`): double ring, "Rewards:" subtitle, two choice cards — FREE (green, `level * 10` coins, auto-accepts after 10s countdown shown in button) and WATCH AD (purple, `level * 10 * 3` coins, +300% badge, rewarded video via PlatformSDK). Coins are **deferred** — not added in `roll()`, but via `GameManager.claimLevelUpCoins(amount)` after player choice. Ad failure falls back to free amount. Overlay depth 500 (above autoroll UI at 105), blocks all clicks behind it. All variants pause autoroll until dismissed.
 
-**League Promotion overlay:** Triggered when a roll causes the player's best pet to cross into a new league tier. Config in `LEAGUE_PROMOTION_REWARDS` (config.ts). Leagues: Bronze (starting, no reward), Silver (500 coins), Gold (5K), Diamond (50K), Master (500K). Detection: `GameManager.roll()` compares `getLeagueForChance(bestChance)` before and after `processRoll()`, emits `league-promotion` event. UI in `LeaguePromotionOverlay.ts`: rating icon (podium), title "LEAGUE PROMOTION!" in league color, subtitle "New League: {name}", two choice cards (FREE with 10s countdown / WATCH AD x3). Coins deferred via `claimLeaguePromoCoins(amount)`. Overlay chaining: if level-up and league promotion both trigger on same roll, level-up shows first, then league promo. Both pause autoroll until dismissed.
+**League Promotion overlay:** Triggered when a roll causes the player's best pet to cross into a new league tier. Config in `LEAGUE_PROMOTION_REWARDS` (config.ts). Leagues: Bronze (starting, no reward), Silver (500 coins), Gold (5K), Diamond (50K), Master (500K). Detection: `GameManager.roll()` compares `getLeagueForChance(bestChance)` before and after `processRoll()`, emits `league-promotion` event. UI in `LeaguePromotionOverlay.ts`: rating icon (podium), title "LEAGUE PROMOTION!" in league color, subtitle "New League: {name}", two choice cards (FREE with 10s countdown / WATCH AD x3). Coins deferred via `claimLeaguePromoCoins(amount)`. Overlay chaining: if level-up, league promotion, and rebirth all trigger on same roll, they show in order: level-up → league promo → rebirth. All pause autoroll until dismissed.
 
-**Progression Window:** Opened by clicking TopBar (top-left panel). Shows horizontal scrollable track of level milestones. Three milestone types: egg milestone (at `VISUAL_TIERS` thresholds — double ring, egg image, name, odds text, incubation stats), feature milestone (at `AUTOROLL_TOGGLE.unlockLevel=3` and `NEST_CONFIG.unlockLevel=5` — double ring, feature icon, name, description via `featureMap` lookup), or coin milestone (`level * 10` coins — single ring, coin icon, amount). Reached levels are yellow/colored, unreached are gray/grayscale. Initial scroll anchors on the last reached level at ~20% from left, showing ~2.5 unearned milestones to the right. Horizon = `max(currentLevel + 5, nextEggLevel + 3)`. Milestone data generated by `data/milestones.ts`. Scene transition follows CollectionScene pattern (stop autoroll, save state, scene.start).
+**Rebirth / Samsara:** Prestige system triggered automatically at level 1000. Config in `REBIRTH_CONFIG` (config.ts). Max 8 rebirths (x9 cap). Save version 19.
+- **Trigger:** When `checkLevelUp()` reaches level 1000, `GameManager.performRebirth()` is called immediately (before emitting event). Cannot be avoided — if player reloads during overlay, constructor detects level >= 1000 and force-rebirths on load.
+- **What resets:** Level → 1, XP → 0 (egg tier & background auto-derive from level). Autoroll disabled.
+- **What persists:** Collection, coins, egg inventory, nest slots, quests, shop, buffs, dailyBonus, settings, totalRolls.
+- **Multiplier:** Permanent luck multiplier = `1 + rebirthCount`. Stacks multiplicatively with all buffs: `rebirth × lucky × super × epic`. 1st rebirth: x2 base (x60 with all buffs). 8th rebirth: x9 base (x270 with all buffs).
+- **BuffSystem:** `rebirthMultiplier` field, set via `setRebirthMultiplier()`, applied in `consumeForRoll()` and `peekMultiplier()`. Also applied to nest hatch rolls.
+- **UI:** `RebirthOverlay.ts` — informational overlay with rebirth icon, title, multiplier display, what resets/keeps description, green ACCEPT button. Does not auto-close — waits for player to click ACCEPT. Plays `sfx_levelup`.
+- **Badge:** "Samsara ∞" purple badge (`REBIRTH_CONFIG.color = 0xd063f0`) in BuffBadges. Long-press tooltip shows multiplier value (e.g., "Permanent luck multiplier from Rebirth (×2)").
+- **Progression:** Milestone at level 1000 shows rebirth icon (`ui_rebirth_md`). Horizon capped at 1000 when `rebirthCount < maxCount`. No levels beyond 1000 are displayed.
+- **Events:** `rebirth-triggered` (RebirthData), `rebirth-complete`. MainScene chains rebirth overlay after level-up and league promo overlays.
+
+**Progression Window:** Opened by clicking TopBar (top-left panel). Shows horizontal scrollable track of level milestones. Four milestone types: egg milestone (at `VISUAL_TIERS` thresholds — double ring, egg image, name, odds text, incubation stats), feature milestone (at `AUTOROLL_TOGGLE.unlockLevel=3`, `NEST_CONFIG.unlockLevel=5`, and `REBIRTH_CONFIG.triggerLevel=1000` — double ring, feature icon, name, description via `featureMap` lookup), coin milestone (`level * 10` coins — single ring, coin icon, amount). Reached levels are yellow/colored, unreached are gray/grayscale. Initial scroll anchors on the last reached level at ~20% from left, showing ~2.5 unearned milestones to the right. Horizon = `min(max(currentLevel + 5, nextEggLevel + 3), 1000)` — capped at 1000 when rebirths available. Milestone data generated by `data/milestones.ts` with `getMilestones(currentLevel, rebirthCount)`. Scene transition follows CollectionScene pattern (stop autoroll, save state, scene.start).
 
 **Shop:** Daily-refreshing store where players buy specific uncollected pets for coins. Managed by `ShopSystem` (pure TS), UI in `ShopScene` + `ShopButton`. Save version 13.
 - Displays up to 5 random uncollected pets from the full 100-pet pool (regardless of player level).
@@ -200,7 +212,7 @@ When official docs are not enough, **search the wider internet**: Reddit, YouTub
 - ShopButton positioned bottom-right (118px wide).
 - Events: `shop-purchase` emitted on successful buy.
 
-**Nests / Incubation:** Unlocks at level 5 (`NEST_CONFIG.unlockLevel`). Players place eggs in nest slots, wait for incubation, and hatch pets with a luck buff. Managed by `NestSystem` (pure TS), UI in `NestsScene` + `NestsButton` + `EggSelectPopup` + `NestSlotCard` + `NestHatchOverlay`. Save version 18.
+**Nests / Incubation:** Unlocks at level 5 (`NEST_CONFIG.unlockLevel`). Players place eggs in nest slots, wait for incubation, and hatch pets with a luck buff. Managed by `NestSystem` (pure TS), UI in `NestsScene` + `NestsButton` + `EggSelectPopup` + `NestSlotCard` + `NestHatchOverlay`. Save version 18. Nest hatch rolls are multiplied by rebirth multiplier (`buffMultiplier × rebirthMultiplier`).
 - 3 nest slots (`NEST_CONFIG.maxSlots`), slot 1 free, slots 2-3 cost coins (`slotPrices: [0, 5K, 50K]`).
 - Eggs are purchasable items with inventory tracking (`eggInventory: Record<string, number>` in save). 17 tiers with price, buffMultiplier, incubationMs defined in `data/eggTiers.ts`. Starter: 3 free tier-1 eggs.
 - Placing egg: consumes from inventory, sets slot duration + buffMultiplier from tier config.

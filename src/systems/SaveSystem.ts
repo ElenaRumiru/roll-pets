@@ -3,7 +3,7 @@ import { PETS } from '../data/pets';
 import { getGradeForChance, getDefaultQuestState, getDefaultDailyBonusState, getDefaultNestState } from '../core/config';
 
 const SAVE_KEY = 'pets_go_lite_save';
-const CURRENT_VERSION = 18;
+const CURRENT_VERSION = 19;
 
 function getDefaults(): SaveData {
     return {
@@ -23,6 +23,7 @@ function getDefaults(): SaveData {
         dailyBonus: getDefaultDailyBonusState(),
         nests: getDefaultNestState(),
         eggInventory: { '1': 3 },
+        rebirthCount: 0,
     };
 }
 
@@ -130,6 +131,10 @@ function migrate(data: SaveData): SaveData {
             });
         }
         data.version = 18;
+    }
+    if (data.version === 18) {
+        data.rebirthCount = data.rebirthCount ?? 0;
+        data.version = 19;
     }
     return data;
 }

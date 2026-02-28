@@ -1,5 +1,5 @@
 import { EventBus } from './EventBus';
-import { BUFF_CONFIG, QUEST_CONFIG, levelUpCoinReward, LEAGUE_PROMOTION_REWARDS, NEST_CONFIG, getDefaultNestState, AUTOROLL_TOGGLE } from './config';
+import { BUFF_CONFIG, QUEST_CONFIG, levelUpCoinReward, LEAGUE_PROMOTION_REWARDS, NEST_CONFIG, getDefaultNestState, AUTOROLL_TOGGLE, REBIRTH_CONFIG } from './config';
 import { RNGSystem } from '../systems/RNGSystem';
 import { ProgressionSystem } from '../systems/ProgressionSystem';
 import { SaveSystem } from '../systems/SaveSystem';
@@ -14,7 +14,7 @@ import { getEggTierConfig } from '../data/eggTiers';
 import { getBgImageKey } from '../data/backgrounds';
 import { getLeagueForChance } from '../data/leaderboard';
 import { PETS } from '../data/pets';
-import { RollResult, LevelUpData, LeaguePromotionData, DailyBonusReward } from '../types';
+import { RollResult, LevelUpData, LeaguePromotionData, RebirthData, DailyBonusReward } from '../types';
 import { getDefaultDailyBonusState } from './config';
 
 export class GameManager {
@@ -29,6 +29,7 @@ export class GameManager {
     nests: NestSystem;
     isRolling = false;
     lastRollCoinGain = 0;
+    pendingRebirthData: RebirthData | null = null;
     private questResetTimer = 0;
     private onlineTimeAccum = 0;
 
@@ -58,6 +59,15 @@ export class GameManager {
 
         this.nests = new NestSystem();
         this.nests.loadFromSave(data.nests ?? getDefaultNestState());
+
+        this.buffs.setRebirthMultiplier(1 + data.rebirthCount);
+
+        // Force rebirth if player reloaded at level >= triggerLevel
+        if (data.level >= REBIRTH_CONFIG.triggerLevel && data.rebirthCount < REBIRTH_CONFIG.maxCount) {
+            const oldCount = data.rebirthCount;
+            this.performRebirth();
+            this.pendingRebirthData = { rebirthCount: oldCount, newMultiplier: oldCount + 2 };
+        }
 
         this.setupListeners();
     }
@@ -112,25 +122,35 @@ export class GameManager {
         const leveledUp = this.progression.checkLevelUp();
         if (leveledUp) {
             const newLevel = this.progression.level;
-            const newEggKey = getEggImageKey(newLevel);
-            const eggChanged = oldEggKey !== newEggKey;
-            let featureUnlock: string | undefined;
-            if (oldLevel < AUTOROLL_TOGGLE.unlockLevel && newLevel >= AUTOROLL_TOGGLE.unlockLevel) {
-                featureUnlock = 'autoroll';
-            } else if (oldLevel < NEST_CONFIG.unlockLevel && newLevel >= NEST_CONFIG.unlockLevel) {
-                featureUnlock = 'incubation';
+            const rebirthCount = this.save.getData().rebirthCount;
+            if (newLevel >= REBIRTH_CONFIG.triggerLevel && rebirthCount < REBIRTH_CONFIG.maxCount) {
+                this.performRebirth();
+                const rebirthData: RebirthData = {
+                    rebirthCount,
+                    newMultiplier: rebirthCount + 2,
+                };
+                EventBus.emit('rebirth-triggered', rebirthData);
+            } else {
+                const newEggKey = getEggImageKey(newLevel);
+                const eggChanged = oldEggKey !== newEggKey;
+                let featureUnlock: string | undefined;
+                if (oldLevel < AUTOROLL_TOGGLE.unlockLevel && newLevel >= AUTOROLL_TOGGLE.unlockLevel) {
+                    featureUnlock = 'autoroll';
+                } else if (oldLevel < NEST_CONFIG.unlockLevel && newLevel >= NEST_CONFIG.unlockLevel) {
+                    featureUnlock = 'incubation';
+                }
+                const coinReward = (eggChanged || featureUnlock) ? 0 : levelUpCoinReward(newLevel);
+                const levelUpData: LevelUpData = {
+                    level: newLevel,
+                    eggKey: newEggKey,
+                    bgKey: getBgImageKey(newLevel),
+                    oldEggKey,
+                    eggChanged,
+                    coinReward,
+                    featureUnlock,
+                };
+                EventBus.emit('level-up', levelUpData);
             }
-            const coinReward = (eggChanged || featureUnlock) ? 0 : levelUpCoinReward(newLevel);
-            const levelUpData: LevelUpData = {
-                level: newLevel,
-                eggKey: newEggKey,
-                bgKey: getBgImageKey(newLevel),
-                oldEggKey,
-                eggChanged,
-                coinReward,
-                featureUnlock,
-            };
-            EventBus.emit('level-up', levelUpData);
         }
 
         const leagueAfter = getLeagueForChance(this.getBestChance());
@@ -232,7 +252,8 @@ export class GameManager {
         const info = this.nests.collectHatch(slotIndex);
         if (!info) return null;
         const eligible = getEligiblePets(info.level);
-        const pet = this.rng.rollPet(eligible, info.buffMultiplier);
+        const mult = info.buffMultiplier * this.buffs.getRebirthMultiplier();
+        const pet = this.rng.rollPet(eligible, mult);
         const result = this.progression.processRoll(pet);
         if (result.isNew) this.save.addNewPet(result.pet.id);
         EventBus.emit('nests-changed');
@@ -261,6 +282,21 @@ export class GameManager {
         inv[key] = (inv[key] ?? 0) + count;
         this.persistSave();
     }
+
+    performRebirth(): void {
+        const data = this.save.getData();
+        data.rebirthCount++;
+        this.progression = new ProgressionSystem(1, 0, this.progression.coins, this.progression.getCollectionArray());
+        this.buffs.setRebirthMultiplier(1 + data.rebirthCount);
+        this.buffs.setAutorollEnabled(false);
+        this.buffs.stopAutoroll();
+        EventBus.emit('buffs-changed');
+        this.persistSave();
+        EventBus.emit('rebirth-complete');
+    }
+
+    getRebirthCount(): number { return this.save.getData().rebirthCount; }
+    getRebirthMultiplier(): number { return this.buffs.getRebirthMultiplier(); }
 
     private applyDailyBonusReward(reward: DailyBonusReward): void {
         if (reward.type === 'coins') {

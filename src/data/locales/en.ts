@@ -226,6 +226,18 @@ export const en: Record<string, string> = {
     'autoroll_locked_level': 'Lvl {level}',
     'nests_locked_level': 'Lvl {level}',
 
+    // Rebirth / Samsara
+    'badge_samsara': 'Samsara',
+    'tip_samsara': 'Permanent luck multiplier from Rebirth',
+    'rebirth_title': 'REBIRTH!',
+    'rebirth_subtitle': 'Your journey begins anew...',
+    'rebirth_multiplier': 'Luck \u00d7{n}',
+    'rebirth_resets': 'Resets: Level, XP',
+    'rebirth_keeps': 'Keeps: Collection, Coins, Eggs, everything else',
+    'rebirth_accept': 'ACCEPT',
+    'feature_rebirth': 'Rebirth',
+    'rebirth_hint': 'Prestige reset for permanent luck!',
+
     // Toast notifications
     'toast_level_required': 'Level {level} required',
     'toast_received': 'Received: {count}x {item}',

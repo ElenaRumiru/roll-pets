@@ -43,9 +43,28 @@ The buff system provides temporary luck multipliers and auto-roll functionality.
 - **Card behavior:** Always visible. After GET, card slides out to the right for 5s (ad time), then slides back in.
 - **Badge:** "Auto {n}s" above Roll button (shows remaining time)
 
+### Samsara / Rebirth (purple, `0xd063f0`)
+- **Effect:** Permanent luck multiplier (`1 + rebirthCount`), applied to every roll and nest hatch
+- **Activation:** Automatic at level 1000 (prestige reset). Max 8 rebirths (x9 cap).
+- **Stacking:** Permanent, not consumed. Multiplies with all other buffs.
+- **Badge:** "Samsara ∞" purple badge. Long-press tooltip shows current multiplier (e.g., "×2").
+- **What resets:** Level → 1, XP → 0, autoroll disabled.
+- **What persists:** Collection, coins, egg inventory, nests, quests, shop, buffs, daily bonus.
+
 ## Multiplier Stacking
 
-All active count buffs are consumed together on each roll. If Lucky (x2), Super (x3), and Epic (x5) are all active, the combined multiplier is **x30** (2 * 3 * 5). One charge of each is consumed per roll.
+All active count buffs are consumed together on each roll. The Samsara (rebirth) multiplier is permanent and always active. Combined formula: `rebirth × lucky × super × epic`.
+
+| Scenario | Multiplier |
+|----------|-----------|
+| No buffs, no rebirth | x1 |
+| All buffs, no rebirth | x30 (2 × 3 × 5) |
+| 1st rebirth, no buffs | x2 |
+| 1st rebirth + all buffs | x60 (2 × 2 × 3 × 5) |
+| 8th rebirth (max), no buffs | x9 |
+| 8th rebirth + all buffs | x270 (9 × 2 × 3 × 5) |
+
+One charge of each count buff (Lucky, Super, Epic) is consumed per roll. Samsara is never consumed.
 
 ## Bonus Panel Layout
 
@@ -74,6 +93,7 @@ Active buffs are shown as small colored badges above the Roll button:
 
 | Buff     | Multiplier | Duration/Timer | Color   |
 |----------|-----------|----------------|---------|
+| Samsara  | x(1+N)    | Permanent      | #d063f0 |
 | Lucky    | x2        | 1 charge/ad    | #27ae60 |
 | Super    | x3        | 15s offer/15s cooldown | #3498db |
 | Epic     | x5        | 30s cooldown   | #ffc107 |
@@ -81,7 +101,9 @@ Active buffs are shown as small colored badges above the Roll button:
 
 ## Key Files
 
-- `src/systems/BuffSystem.ts` -- Pure logic, no Phaser dependency
+- `src/systems/BuffSystem.ts` -- Pure logic, no Phaser dependency (includes rebirthMultiplier)
 - `src/ui/BonusPanel.ts` -- Card UI, animations, layout
-- `src/ui/BuffBadges.ts` -- Badge display above Roll button
-- `src/core/config.ts` -- `BUFF_CONFIG` constants
+- `src/ui/BuffBadges.ts` -- Badge display above Roll button (Samsara + Lucky + Super + Epic)
+- `src/ui/RebirthOverlay.ts` -- Rebirth informational overlay with ACCEPT button
+- `src/core/config.ts` -- `BUFF_CONFIG` + `REBIRTH_CONFIG` constants
+- `src/core/GameManager.ts` -- `performRebirth()`, rebirth detection in `roll()` and constructor

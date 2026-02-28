@@ -3,8 +3,13 @@ import { Grade, GradeConfig, QuestState, DailyBonusState, DailyBonusReward, Nest
 export const GAME_WIDTH = 1031;
 export const GAME_HEIGHT = 580;
 
-export const XP_BASE = 100;
-export const XP_MULTIPLIER = 1.15;
+export const XP_PER_ROLL = 5;
+/** Minimum XP for any level (~4 rolls) */
+export const XP_FLOOR = 20;
+/** XP range above floor (max = FLOOR + SCALE = 1050 → ~210 rolls) */
+export const XP_SCALE = 1030;
+/** Level at which curve reaches midpoint */
+export const XP_KNEE = 20;
 
 export const GRADE_ORDER: Grade[] = [
     'common', 'uncommon', 'improved', 'rare', 'valuable',
@@ -31,88 +36,66 @@ export const GRADE: Record<string, GradeConfig> = {
         color: 0x9e9e9e, colorHex: '#9e9e9e',
         outlineColor: 0x323232, outlineHex: '#323232',
         strokeThickness: 0, label: 'Common',
-        xpNewPercent: 25, xpDupPercent: 0.5,
-        coinsNew: 5, coinsDup: 1,
         minChance: 2, maxChance: 100,
     },
     uncommon: {
         color: 0x88cc55, colorHex: '#88cc55',
         outlineColor: 0x2d4b1b, outlineHex: '#2d4b1b',
         strokeThickness: 2, label: 'Uncommon',
-        xpNewPercent: 25, xpDupPercent: 1,
-        coinsNew: 10, coinsDup: 2,
         minChance: 100, maxChance: 1_000,
     },
     improved: {
         color: 0x2d8a2d, colorHex: '#2d8a2d',
         outlineColor: 0x1a4a1a, outlineHex: '#1a4a1a',
         strokeThickness: 2, label: 'Improved',
-        xpNewPercent: 25, xpDupPercent: 1.5,
-        coinsNew: 25, coinsDup: 3,
         minChance: 1_000, maxChance: 5_000,
     },
     rare: {
         color: 0x42c9c9, colorHex: '#42c9c9',
         outlineColor: 0x1d414b, outlineHex: '#1d414b',
         strokeThickness: 2, label: 'Rare',
-        xpNewPercent: 25, xpDupPercent: 2,
-        coinsNew: 50, coinsDup: 5,
         minChance: 5_000, maxChance: 50_000,
     },
     valuable: {
         color: 0x5dade2, colorHex: '#5dade2',
         outlineColor: 0x1a3d5c, outlineHex: '#1a3d5c',
         strokeThickness: 2, label: 'Valuable',
-        xpNewPercent: 25, xpDupPercent: 3,
-        coinsNew: 100, coinsDup: 10,
         minChance: 50_000, maxChance: 500_000,
     },
     elite: {
         color: 0xa08cda, colorHex: '#a08cda',
         outlineColor: 0x3a2e5c, outlineHex: '#3a2e5c',
         strokeThickness: 2, label: 'Elite',
-        xpNewPercent: 25, xpDupPercent: 4,
-        coinsNew: 250, coinsDup: 25,
         minChance: 500_000, maxChance: 5_000_000,
     },
     epic: {
         color: 0xb060d0, colorHex: '#b060d0',
         outlineColor: 0x461a49, outlineHex: '#461a49',
         strokeThickness: 2, label: 'Epic',
-        xpNewPercent: 25, xpDupPercent: 5,
-        coinsNew: 500, coinsDup: 50,
         minChance: 5_000_000, maxChance: 50_000_000,
     },
     heroic: {
         color: 0xe880a0, colorHex: '#e880a0',
         outlineColor: 0x5c1a2e, outlineHex: '#5c1a2e',
         strokeThickness: 2, label: 'Heroic',
-        xpNewPercent: 25, xpDupPercent: 6,
-        coinsNew: 1_000, coinsDup: 100,
         minChance: 50_000_000, maxChance: 250_000_000,
     },
     mythic: {
         color: 0xffd700, colorHex: '#ffd700',
         outlineColor: 0x5c4a00, outlineHex: '#5c4a00',
         strokeThickness: 2, label: 'Mythic',
-        xpNewPercent: 25, xpDupPercent: 7,
-        coinsNew: 2_500, coinsDup: 250,
         minChance: 250_000_000, maxChance: 500_000_000,
     },
     ancient: {
         color: 0xff8c00, colorHex: '#ff8c00',
         outlineColor: 0x5c3200, outlineHex: '#5c3200',
         strokeThickness: 2, label: 'Ancient',
-        xpNewPercent: 25, xpDupPercent: 8,
-        coinsNew: 5_000, coinsDup: 500,
         minChance: 500_000_000, maxChance: 750_000_000,
     },
     legendary: {
         color: 0xff3333, colorHex: '#ff3333',
         outlineColor: 0x5c1111, outlineHex: '#5c1111',
         strokeThickness: 2, label: 'Legendary',
-        xpNewPercent: 25, xpDupPercent: 10,
-        coinsNew: 10_000, coinsDup: 1_000,
         minChance: 750_000_000, maxChance: 1_000_000_000,
     },
 };
@@ -221,7 +204,8 @@ export function getVisualTier(level: number): number {
 }
 
 export function xpForLevel(level: number): number {
-    return Math.floor(XP_BASE * Math.pow(XP_MULTIPLIER, level - 1));
+    const l2 = level * level;
+    return Math.floor(XP_FLOOR + XP_SCALE * l2 / (l2 + XP_KNEE * XP_KNEE));
 }
 
 export function levelUpCoinReward(level: number): number {
@@ -265,6 +249,13 @@ export function getDefaultDailyBonusState(): DailyBonusState {
         monthMilestonesClaimed: [false, false, false, false],
     };
 }
+
+export const REBIRTH_CONFIG = {
+    triggerLevel: 1000,
+    maxCount: 8,
+    color: 0xd063f0,
+    colorHex: '#d063f0',
+} as const;
 
 export const NEST_CONFIG = {
     maxSlots: 3,

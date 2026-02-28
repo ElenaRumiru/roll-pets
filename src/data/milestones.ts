@@ -1,4 +1,4 @@
-import { getVisualTier, VISUAL_TIERS, levelUpCoinReward, NEST_CONFIG, AUTOROLL_TOGGLE } from '../core/config';
+import { getVisualTier, VISUAL_TIERS, levelUpCoinReward, NEST_CONFIG, AUTOROLL_TOGGLE, REBIRTH_CONFIG } from '../core/config';
 import { getEggImageKey, getEggNameKey, getEggMinOdds } from './eggs';
 import { getEggTierConfig, formatBuffMultiplier, formatIncubationTime } from './eggTiers';
 
@@ -32,13 +32,16 @@ function isEggLevel(level: number): boolean {
  * Generate milestone data from level 1 to a horizon.
  * Horizon = max(currentLevel + 5, nextEggLevel + 3).
  */
-export function getMilestones(currentLevel: number): Milestone[] {
+export function getMilestones(currentLevel: number, rebirthCount = 0): Milestone[] {
     const nextEgg = nextEggLevel(currentLevel);
-    const horizon = Math.max(currentLevel + 5, nextEgg + 3);
+    const maxLevel = rebirthCount < REBIRTH_CONFIG.maxCount ? REBIRTH_CONFIG.triggerLevel : Infinity;
+    const horizon = Math.min(Math.max(currentLevel + 5, nextEgg + 3), maxLevel);
     const milestones: Milestone[] = [];
 
     for (let lvl = 1; lvl <= horizon; lvl++) {
-        if (lvl === AUTOROLL_TOGGLE.unlockLevel && !isEggLevel(lvl)) {
+        if (lvl === REBIRTH_CONFIG.triggerLevel && rebirthCount < REBIRTH_CONFIG.maxCount) {
+            milestones.push({ level: lvl, type: 'feature', featureKey: 'rebirth' });
+        } else if (lvl === AUTOROLL_TOGGLE.unlockLevel && !isEggLevel(lvl)) {
             milestones.push({ level: lvl, type: 'feature', featureKey: 'autoroll' });
         } else if (lvl === NEST_CONFIG.unlockLevel && !isEggLevel(lvl)) {
             milestones.push({ level: lvl, type: 'feature', featureKey: 'incubation' });

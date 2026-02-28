@@ -1,5 +1,5 @@
 import { RollResult, PetDef } from '../types';
-import { GRADE, getGradeForChance, xpForLevel } from '../core/config';
+import { getGradeForChance, XP_PER_ROLL, xpForLevel } from '../core/config';
 
 export class ProgressionSystem {
     level: number;
@@ -17,12 +17,8 @@ export class ProgressionSystem {
     processRoll(pet: PetDef): RollResult {
         const isNew = !this.collection.has(pet.id);
         const grade = getGradeForChance(pet.chance);
-        const cfg = GRADE[grade];
-        const xpNeeded = xpForLevel(this.level);
-
-        const xpPercent = isNew ? cfg.xpNewPercent : cfg.xpDupPercent;
-        const xpGained = Math.max(1, Math.floor((xpPercent / 100) * xpNeeded));
-        const coinsGained = isNew ? cfg.coinsNew : cfg.coinsDup;
+        const xpGained = XP_PER_ROLL;
+        const coinsGained = pet.chance;
 
         if (isNew) this.collection.add(pet.id);
         this.xp += xpGained;

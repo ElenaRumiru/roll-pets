@@ -30,7 +30,7 @@ export class ProgressionScene extends Scene {
     create(): void {
         const manager = this.registry.get('gameManager') as GameManager;
         const playerLevel = manager.progression.level;
-        const milestones = getMilestones(playerLevel);
+        const milestones = getMilestones(playerLevel, manager.getRebirthCount());
 
         this.add.rectangle(GAME_WIDTH / 2, GAME_HEIGHT / 2, GAME_WIDTH, GAME_HEIGHT, 0x12121e);
 
@@ -112,6 +112,7 @@ export class ProgressionScene extends Scene {
         const featureMap: Record<string, { iconKey: string; nameKey: string; descKey: string }> = {
             autoroll:   { iconKey: 'ui_automod_on', nameKey: 'feature_autoroll', descKey: 'autoroll_hint' },
             incubation: { iconKey: 'ui_nests_btn', nameKey: 'feature_incubation', descKey: 'nests_hint' },
+            rebirth:    { iconKey: 'ui_rebirth_md', nameKey: 'feature_rebirth', descKey: 'rebirth_hint' },
         };
         const fInfo = isFeature ? featureMap[m.featureKey ?? 'incubation'] : null;
 

@@ -244,7 +244,7 @@ export class CenterStage extends GameObjects.Container {
         });
     }
 
-    private showReveal(result: RollResult, cfg: { colorHex: string; outlineHex: string; label: string }, onComplete: () => void): void {
+    private showReveal(result: RollResult, cfg: { colorHex: string; outlineHex: string; label: string; strokeThickness: number }, onComplete: () => void): void {
         const scene = this.scene;
 
         // Grade-specific jackpot SFX — common uses old reveal, rest get escalating arpeggio

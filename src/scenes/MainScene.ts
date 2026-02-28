@@ -6,6 +6,7 @@ import { TopBar } from '../ui/TopBar';
 import { CenterStage } from '../ui/CenterStage';
 import { LevelUpOverlay } from '../ui/LevelUpOverlay';
 import { LeaguePromotionOverlay } from '../ui/LeaguePromotionOverlay';
+import { RebirthOverlay } from '../ui/RebirthOverlay';
 import { RightPanel } from '../ui/RightPanel';
 import { CollectionButton } from '../ui/CollectionButton';
 import { ShopButton } from '../ui/ShopButton';
@@ -21,7 +22,7 @@ import { Leaderboard } from '../ui/Leaderboard';
 import { NicknamePrompt } from '../ui/NicknamePrompt';
 import { ArrowHint } from '../ui/ArrowHint';
 import { PETS } from '../data/pets';
-import { PetDef, RollResult, LevelUpData, LeaguePromotionData } from '../types';
+import { PetDef, RollResult, LevelUpData, LeaguePromotionData, RebirthData } from '../types';
 import { PlatformSDK } from '../platform/PlatformSDK';
 import { AudioSystem } from '../systems/AudioSystem';
 import { t } from '../data/locales';
@@ -52,8 +53,10 @@ export class MainScene extends Scene {
     private idleTimer = 0;
     private levelUpOverlay!: LevelUpOverlay;
     private leaguePromoOverlay!: LeaguePromotionOverlay;
+    private rebirthOverlay!: RebirthOverlay;
     private pendingLevelUp: LevelUpData | null = null;
     private pendingLeaguePromo: LeaguePromotionData | null = null;
+    private pendingRebirth: RebirthData | null = null;
 
     constructor() {
         super('MainScene');
@@ -98,6 +101,7 @@ export class MainScene extends Scene {
         this.centerStage = new CenterStage(this);
         this.levelUpOverlay = new LevelUpOverlay(this, this.centerStage.getOverlay());
         this.leaguePromoOverlay = new LeaguePromotionOverlay(this);
+        this.rebirthOverlay = new RebirthOverlay(this);
 
         this.rightPanel = new RightPanel(
             this,
@@ -174,6 +178,7 @@ export class MainScene extends Scene {
         EventBus.on('roll-complete', this.onRollComplete, this);
         EventBus.on('level-up', this.onLevelUp, this);
         EventBus.on('league-promotion', this.onLeaguePromotion, this);
+        EventBus.on('rebirth-triggered', this.onRebirthTriggered, this);
         EventBus.on('buff-activated', this.onBuffActivated, this);
         EventBus.on('buffs-changed', this.onBuffsChanged, this);
         EventBus.on('autoroll-stop', this.onAutorollStop, this);
@@ -220,6 +225,13 @@ export class MainScene extends Scene {
 
         // Initial UI update
         this.refreshUI();
+
+        // Show rebirth overlay if forced on load (reload protection)
+        if (this.manager.pendingRebirthData) {
+            const data = this.manager.pendingRebirthData;
+            this.manager.pendingRebirthData = null;
+            this.rebirthOverlay.show(data, () => { /* already rebirthed */ });
+        }
 
         // Re-open settings if language was just changed
         if (this.registry.get('openSettings')) {
@@ -328,6 +340,8 @@ export class MainScene extends Scene {
                 });
             } else if (this.pendingLeaguePromo) {
                 this.showLeaguePromo();
+            } else if (this.pendingRebirth) {
+                this.showRebirth();
             } else {
                 this.manager.finishRoll();
                 this.rightPanel.setRolling(false);
@@ -368,6 +382,11 @@ export class MainScene extends Scene {
         // Chain to league promotion if pending
         if (this.pendingLeaguePromo) {
             this.showLeaguePromo();
+            return;
+        }
+        // Chain to rebirth if pending
+        if (this.pendingRebirth) {
+            this.showRebirth();
             return;
         }
 
@@ -428,6 +447,43 @@ export class MainScene extends Scene {
     }
 
     private finishLeaguePromo(): void {
+        // Chain to rebirth if pending
+        if (this.pendingRebirth) {
+            this.showRebirth();
+            return;
+        }
+
+        this.centerStage.setKeepOverlay(false);
+        if (!this.manager.buffs.isAutorollActive()) {
+            this.tweens.add({
+                targets: this.centerStage.getOverlay(),
+                fillAlpha: 0,
+                duration: 250,
+            });
+        }
+        this.manager.finishRoll();
+        this.rightPanel.setRolling(false);
+        this.refreshUI();
+    }
+
+    private onRebirthTriggered(data: RebirthData): void {
+        this.pendingRebirth = data;
+        this.centerStage.setKeepOverlay(true);
+    }
+
+    private showRebirth(): void {
+        const data = this.pendingRebirth!;
+        this.pendingRebirth = null;
+        this.rebirthOverlay.show(data, () => {
+            this.finishRebirth();
+        });
+    }
+
+    private finishRebirth(): void {
+        const eggKey = this.manager.getEggImageKey();
+        const bgKey = this.manager.getBgImageKey();
+        this.centerStage.setEggImage(eggKey);
+        this.bgImage.setTexture(bgKey);
         this.centerStage.setKeepOverlay(false);
         if (!this.manager.buffs.isAutorollActive()) {
             this.tweens.add({
@@ -609,6 +665,7 @@ export class MainScene extends Scene {
         EventBus.off('roll-complete', this.onRollComplete, this);
         EventBus.off('level-up', this.onLevelUp, this);
         EventBus.off('league-promotion', this.onLeaguePromotion, this);
+        EventBus.off('rebirth-triggered', this.onRebirthTriggered, this);
         EventBus.off('buff-activated', this.onBuffActivated, this);
         EventBus.off('buffs-changed', this.onBuffsChanged, this);
         EventBus.off('autoroll-stop', this.onAutorollStop, this);
