@@ -4,7 +4,7 @@ import { t } from '../data/locales';
 import { addButtonFeedback } from './components/buttonFeedback';
 import { fitText } from './components/fitText';
 
-const PANEL_W = 128;
+const PANEL_W = 118;
 const BG_H = 67;
 const TOTAL_H = 93;
 const RADIUS = 14;
@@ -26,7 +26,7 @@ export class CollectionButton extends GameObjects.Container {
 
         // Book icon — centered, overlaps dark panel top
         const icon = scene.add.image(PANEL_W / 2, 39, 'ui_collections')
-            .setDisplaySize(132, 110);
+            .setDisplaySize(118, 98);
         this.add(icon);
 
         // "Collection" label — centered in dark panel

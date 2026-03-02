@@ -5,7 +5,7 @@ import { addButtonFeedback } from './components/buttonFeedback';
 import { showToast } from './components/Toast';
 import { fitText } from './components/fitText';
 
-const PANEL_W = 128;
+const PANEL_W = 118;
 const BG_H = 67;
 const TOTAL_H = 93;
 const RADIUS = 14;
@@ -36,7 +36,7 @@ export class NestsButton extends GameObjects.Container {
 
         // Incubation icon
         const src = scene.textures.get('ui_nests_btn').getSourceImage();
-        const iconW = 110;
+        const iconW = 98;
         const iconH = Math.round(iconW * src.height / src.width);
         this.icon = scene.add.image(PANEL_W / 2, 31, 'ui_nests_btn')
             .setDisplaySize(iconW, iconH).setVisible(!locked);
