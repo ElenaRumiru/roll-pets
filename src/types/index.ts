@@ -140,9 +140,10 @@ export interface NestState {
 // ── Daily Bonus ──
 
 export interface DailyBonusReward {
-    type: 'buff' | 'coins';
+    type: 'buff' | 'coins' | 'egg';
     buffType?: 'lucky' | 'super' | 'epic';
     count: number;
+    eggTier?: number;
 }
 
 export interface DailyBonusState {

@@ -76,42 +76,60 @@ function drawCard(scene: Scene, cx: number, cy: number, w: number, h: number,
 
     // Center icon
     const iconY = cy + 2;
-    const iconSize = dayIdx === 6 ? 56 : 40;
+    const iconSize = dayIdx === 6 ? 64 : 46;
 
     if (isDone) {
-        drawClaimedIcon(scene, cx, iconY, iconSize, reward);
+        drawRewardIcon(scene, cx, iconY, iconSize, reward, 0.5);
+        scene.add.image(cx + iconSize / 3, cy - iconSize / 3, 'ui_ok_sm').setDisplaySize(20, 20);
     } else {
-        const giftSize = dayIdx === 6 ? 70 : 44;
+        const giftSize = dayIdx === 6 ? 76 : 50;
         const gift = scene.add.image(cx, iconY, 'ui_gift_md').setDisplaySize(giftSize, giftSize);
         if (!isToday) gift.setAlpha(0.7);
     }
 
-    // Reward text
+    // Reward text — fixed for days 1-6, icon-relative for day 7
+    const textY = dayIdx === 6 ? iconY + 52 : cy + h / 2 - 16;
     const desc = rewardText(reward);
-    const descClr = isDone ? '#666688' : (reward.type === 'buff' && reward.buffType
-        ? BUFF_CLR[reward.buffType] || '#ffffff' : '#ffc107');
-    const descText = scene.add.text(cx, cy + h / 2 - 16, desc, {
+    const descClr = isDone ? '#666688' : getRewardColor(reward);
+    const descText = scene.add.text(cx, textY, desc, {
         fontFamily: UI.FONT_STROKE, fontSize: '11px', color: descClr,
         stroke: '#000000', strokeThickness: 1,
     }).setOrigin(0.5);
     fitText(descText, w - 10, 11);
 }
 
-function drawClaimedIcon(scene: Scene, cx: number, cy: number, size: number, reward: DailyBonusReward): void {
-    if (reward.type === 'buff' && reward.buffType) {
+function drawRewardIcon(scene: Scene, cx: number, cy: number,
+    size: number, reward: DailyBonusReward, alpha: number): void {
+    if (reward.type === 'egg' && reward.eggTier) {
+        const eggSize = Math.round(size * 1.3);
+        scene.add.image(cx, cy, `egg_${reward.eggTier}_sm`)
+            .setDisplaySize(eggSize, eggSize).setAlpha(alpha);
+    } else if (reward.type === 'buff' && reward.buffType) {
         scene.add.image(cx, cy, BUFF_ICON[reward.buffType] || 'ui_x2simple_mid')
-            .setDisplaySize(size, size).setAlpha(0.6);
+            .setDisplaySize(size, size).setAlpha(alpha);
     } else {
-        scene.add.image(cx, cy, 'ui_coin_md').setDisplaySize(size, size).setAlpha(0.6);
+        scene.add.image(cx, cy, 'ui_coin_md').setDisplaySize(size, size).setAlpha(alpha);
     }
-    scene.add.image(cx + size / 3, cy - size / 3, 'ui_ok_sm').setDisplaySize(20, 20);
+}
+
+function getRewardColor(reward: DailyBonusReward): string {
+    if (reward.type === 'buff' && reward.buffType) return BUFF_CLR[reward.buffType] || '#ffffff';
+    if (reward.type === 'egg') return '#e0a050';
+    return '#ffc107';
+}
+
+function rewardText(r: DailyBonusReward): string {
+    if (r.type === 'coins') return `${r.count} ${t('coins')}`;
+    if (r.type === 'egg' && r.eggTier) return `${r.count}x ${t(`egg_tier_${r.eggTier}`)}`;
+    const name = r.buffType === 'lucky' ? 'Lucky' : r.buffType === 'super' ? 'Super' : 'Epic';
+    return `${r.count}x ${name}`;
 }
 
 export function createMilestoneTrack(scene: Scene, trackY: number, manager: GameManager): void {
     const db = manager.dailyBonus;
     const cfg = DAILY_BONUS_CONFIG;
     const maxVal = cfg.monthCycleDays;
-    const trackW = CARD_W * 4 + CARD_GAP * 3; // same width as card grid
+    const trackW = CARD_W * 4 + CARD_GAP * 3;
     const trackX = GAME_WIDTH / 2 - trackW / 2;
     const barY = trackY + 14;
 
@@ -132,7 +150,8 @@ export function createMilestoneTrack(scene: Scene, trackY: number, manager: Game
     }
 }
 
-function drawMilestoneGift(scene: Scene, x: number, y: number, index: number, manager: GameManager): void {
+function drawMilestoneGift(scene: Scene, x: number, y: number,
+    index: number, manager: GameManager): void {
     const cfg = DAILY_BONUS_CONFIG;
     const db = manager.dailyBonus;
     const threshold = cfg.milestoneThresholds[index];
@@ -149,9 +168,11 @@ function drawMilestoneGift(scene: Scene, x: number, y: number, index: number, ma
             const base = gift.scale, pulse = base * 1.08;
             const doPulse = () => {
                 scene.tweens.add({
-                    targets: gift, scale: pulse, duration: 150, yoyo: true, ease: 'Sine.easeInOut',
+                    targets: gift, scale: pulse, duration: 150, yoyo: true,
+                    ease: 'Sine.easeInOut',
                     onComplete: () => scene.tweens.add({
-                        targets: gift, scale: pulse, duration: 150, yoyo: true, ease: 'Sine.easeInOut',
+                        targets: gift, scale: pulse, duration: 150, yoyo: true,
+                        ease: 'Sine.easeInOut',
                     }),
                 });
             };
@@ -174,12 +195,6 @@ function drawMilestoneGift(scene: Scene, x: number, y: number, index: number, ma
         color: reached ? '#ffffff' : '#666688',
         stroke: '#000000', strokeThickness: 1,
     }).setOrigin(0.5);
-}
-
-function rewardText(r: DailyBonusReward): string {
-    if (r.type === 'coins') return `${r.count} ${t('coins')}`;
-    const name = r.buffType === 'lucky' ? 'Lucky' : r.buffType === 'super' ? 'Super' : 'Epic';
-    return `${r.count}x ${name}`;
 }
 
 function showCoinGain(scene: Scene, wx: number, wy: number, amount: number): void {

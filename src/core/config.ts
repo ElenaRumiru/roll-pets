@@ -249,13 +249,13 @@ export const LEAGUE_PROMOTION_REWARDS: Record<string, number> = {
 
 export const DAILY_BONUS_CONFIG = {
     weeklyRewards: [
-        { type: 'buff' as const, buffType: 'lucky' as const, count: 5 },
-        { type: 'buff' as const, buffType: 'super' as const, count: 3 },
-        { type: 'buff' as const, buffType: 'lucky' as const, count: 10 },
-        { type: 'coins' as const, count: 25 },
-        { type: 'buff' as const, buffType: 'super' as const, count: 5 },
-        { type: 'buff' as const, buffType: 'epic' as const, count: 3 },
-        { type: 'buff' as const, buffType: 'epic' as const, count: 5 },
+        { type: 'buff' as const, buffType: 'lucky' as const, count: 30 },
+        { type: 'egg'  as const, eggTier: 2,  count: 3 },
+        { type: 'buff' as const, buffType: 'super' as const, count: 25 },
+        { type: 'egg'  as const, eggTier: 8,  count: 1 },
+        { type: 'buff' as const, buffType: 'epic'  as const, count: 30 },
+        { type: 'egg'  as const, eggTier: 12, count: 1 },
+        { type: 'egg'  as const, eggTier: 14, count: 1 },
     ] as DailyBonusReward[],
     milestoneThresholds: [8, 15, 22, 30],
     milestoneRewards: [500, 2_000, 5_000, 10_000],

@@ -306,6 +306,8 @@ export class GameManager {
             else if (reward.buffType === 'super') this.buffs.addSuper(reward.count);
             else this.buffs.addEpic(reward.count);
             EventBus.emit('buffs-changed');
+        } else if (reward.type === 'egg' && reward.eggTier) {
+            this.addEggs(reward.eggTier, reward.count);
         }
     }
 

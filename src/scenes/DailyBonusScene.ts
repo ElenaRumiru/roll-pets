@@ -87,7 +87,10 @@ export class DailyBonusScene extends Scene {
             wrap.on('pointerdown', () => {
                 const reward = this.manager.claimDailyBonus();
                 if (reward) {
-                    if (reward.type === 'buff' && reward.buffType) {
+                    if (reward.type === 'egg' && reward.eggTier) {
+                        const eggName = t(`egg_tier_${reward.eggTier}`);
+                        showToast(this, t('toast_received', { count: reward.count, item: eggName }), 'info');
+                    } else if (reward.type === 'buff' && reward.buffType) {
                         const name = t(`badge_${reward.buffType}`);
                         showToast(this, t('toast_received', { count: reward.count, item: name }), 'info');
                     } else if (reward.type === 'coins') {

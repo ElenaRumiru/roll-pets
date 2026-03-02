@@ -175,7 +175,7 @@ When official docs are not enough, **search the wider internet**: Reddit, YouTub
 
 **100 pets** distributed: Common(28), Uncommon(24), Extra(14), Rare(12), Superior(8), Elite(5), Epic(4), Heroic(2), Mythic(1), Ancient(1), Legendary(1). New pets reuse existing 30 sprites via shared `imageKey`.
 
-**Roll algorithm:** Sequential check from rarest to most common, `checkChance = min(1, luckMultiplier / pet.chance)`. First pet to pass = result, fallback = most common in pool. Buff multipliers stack multiplicatively: Rebirth (permanent) x Lucky x2 x Super x3 x Epic x5. Max without rebirth: x30. Max with 8 rebirths (x9): x270. Charges per ad watch: Lucky 25, Super 12, Epic 5 (configured in `BUFF_CONFIG.rollsPerAd`).
+**Roll algorithm:** Sequential check from rarest to most common, `checkChance = min(1, luckMultiplier / pet.chance)`. First pet to pass = result, fallback = most common in pool. Buff multipliers stack multiplicatively: Rebirth (permanent) x Lucky x2 x Super x3 x Epic x5. Max without rebirth: x30. Max with 8 rebirths (x9): x270. Charges per ad watch: Lucky 20, Super 15, Epic 12 (configured in `BUFF_CONFIG.rollsPerAd`). Offer cycle: 15s visible → 10s cooldown (~25s per offer, ~144/hour).
 
 **Eggs:** Dynamic filter via `getEggFilterForLevel(level)` — each visual tier (1–17) removes one common pet from the pool. Tiers spread across 1000 levels: `[1, 15, 35, 60, 90, 125, 170, 225, 290, 365, 450, 545, 640, 735, 830, 910, 975]`. XP curve: sigmoid `XP_FLOOR + XP_SCALE * l² / (l² + XP_KNEE²)` (20–1050 range, knee at level 20). New pet = +25% XP bar, duplicate = +0.5-10% based on grade.
 
@@ -221,6 +221,17 @@ When official docs are not enough, **search the wider internet**: Reddit, YouTub
 - **Locked state** (level < 5): NestsButton shows lock icon + "Lvl 5" text, click disabled. Shop shows only Pets tab, no Eggs tab.
 - **Feature unlock**: Detected in `GameManager.roll()` when level crosses `unlockLevel`. Triggers feature unlock variant of LevelUpOverlay.
 - Events: `nest-placed`, `nest-hatched`, `nest-collected` emitted on respective actions.
+
+**Daily Bonus:** 7-day rotating rewards claimed once per day. Managed by `DailyBonusSystem` (pure TS), UI in `DailyBonusScene` + `DailyBonusCards.ts`. Config in `DAILY_BONUS_CONFIG` (config.ts).
+- Odd days (1/3/5) give buffs, even days + day 7 (2/4/6/7) give eggs. Single reward per day.
+- Weekly rewards: Day 1: 30x Lucky, Day 2: 3x Tier 2 (Green Egg), Day 3: 25x Super, Day 4: 1x Tier 8 (Dragon Egg), Day 5: 30x Epic, Day 6: 1x Tier 12 (Pirate Egg), Day 7: 1x Tier 14 (Fire Egg).
+- Reward types: `'buff'` (buffType + count), `'egg'` (eggTier + count), `'coins'` (count). `DailyBonusReward` interface in `types/index.ts`.
+- Card grid: 3+3 regular cards (108×100) + 1 tall Day 7 card (108×210). Unclaimed days show gift icon, today's card has green border, claimed cards show reward icon at 0.5 alpha + checkmark. Text label below icon with reward-colored name+count.
+- Egg icons use `egg_{tier}_sm` textures (170px pre-downscaled), displayed at 1.3× buff icon size for visual balance.
+- Monthly milestones: [8, 15, 22, 30] days → [500, 2K, 5K, 10K] coins. Progress bar + claimable gift icons.
+- `GameManager.applyDailyBonusReward()` handles all three types: coins → `addCoins()`, buff → `addLucky/Super/Epic()`, egg → `addEggs(tier, count)`.
+- Toast on claim shows reward name via locale keys (`egg_tier_N`, `badge_*`, `coins`).
+- UTC midnight reset via `DailyBonusSystem.checkNewDay()`, checked on load and periodic 60s timer.
 
 **Auto Roll:** Unlocks at level 3 (`AUTOROLL_TOGGLE.unlockLevel`). Before unlock, the toggle button area shows a lock overlay (dark rounded rect + lock icon + "Lvl 3" text, same visual pattern as NestsButton locked state). After unlock, toggle switches between `ui_automod_on`/`ui_automod_off` textures. Lock state managed by `RightPanel.setLocked()`, called from MainScene on init and `refreshUI()`. Feature unlock detected in `GameManager.roll()` and triggers feature unlock variant of LevelUpOverlay. Progression track shows autoroll milestone at level 3 with toggle icon.
 
