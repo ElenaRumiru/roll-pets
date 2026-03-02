@@ -59,15 +59,14 @@ export class BootScene extends Scene {
         // UI assets
         this.load.image('ui_roll', 'assets/ui/roll.png');
         this.load.image('ui_collections', 'assets/ui/collections.png');
-        this.load.image('ui_x2chance', 'assets/ui/x2chance.png');
-        this.load.image('ui_x3chance', 'assets/ui/x3chance.png');
-        this.load.image('ui_x5chance', 'assets/ui/x5chance.png');
-        this.load.image('ui_x5chance_ready', 'assets/ui/x5chance_ready.png');
-        this.load.image('ui_x2simple', 'assets/ui/x2chanceSimple.png');
-        this.load.image('ui_x3simple', 'assets/ui/x3chanceSimple.png');
-        this.load.image('ui_x3wow', 'assets/ui/x3wow.png');
-        this.load.image('ui_x5wow', 'assets/ui/x5chanceWow.png');
-        this.load.image('ui_auto', 'assets/ui/auto.png');
+        // Luck clover icons (20 variants)
+        const LUCK_SUFFIXES = [
+            'empty','x2','x3','x4','x5','x6','x7','x8','x9','x10',
+            'x15','x20','x30','x50','x100','x150','x300','x400','x500','x1000',
+        ];
+        for (const s of LUCK_SUFFIXES) {
+            this.load.image(`luck_${s}`, `assets/ui/Luck_${s}.png`);
+        }
         this.load.image('ui_automod_on', 'assets/ui/automod_on.png');
         this.load.image('ui_automod_off', 'assets/ui/automod_off.png');
         this.load.image('ui_arrow', 'assets/ui/arrow.webp');
@@ -156,10 +155,18 @@ export class BootScene extends Scene {
         // Pre-downscale shop icon for crisp rendering (original 1536x1024, ratio 3:2)
         this.downscaleTexture('ui_shop', 'ui_shop_mid', 370, 247);
 
-        // Pre-downscale buff icons → "mid" size (2x BonusPanel display: 102px / 112px)
-        this.downscaleTexture('ui_x2simple', 'ui_x2simple_mid', 126, 126);
-        this.downscaleTexture('ui_x3wow', 'ui_x3wow_mid', 126, 126);
-        this.downscaleTexture('ui_x5wow', 'ui_x5wow_mid', 138, 138);
+        // Trim+downscale luck clover icons → _lg (54px), _md (28px), _sm (16px)
+        const LUCK_SUFFIXES = [
+            'empty','x2','x3','x4','x5','x6','x7','x8','x9','x10',
+            'x15','x20','x30','x50','x100','x150','x300','x400','x500','x1000',
+        ];
+        for (const s of LUCK_SUFFIXES) {
+            this.trimAndDownscaleCoin(`luck_${s}`, [
+                { key: `luck_${s}_lg`, size: 54 },
+                { key: `luck_${s}_md`, size: 28 },
+                { key: `luck_${s}_sm`, size: 16 },
+            ]);
+        }
 
         // Pre-downscale quest icon for crisp rendering
         this.downscaleTexture('ui_quest_icon', 'ui_quest_mid', 260, 174);

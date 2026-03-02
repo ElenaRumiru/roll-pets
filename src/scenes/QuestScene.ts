@@ -24,7 +24,7 @@ const FREE_DRK = 0x4E8A18;
 const AD_CLR = 0x7B2FBE;
 const AD_DRK = 0x4A1A72;
 const BUFF_ICON: Record<string, string> = {
-    lucky: 'ui_x2simple_mid', super: 'ui_x3wow_mid', epic: 'ui_x5wow_mid',
+    lucky: 'luck_x2_lg', super: 'luck_x3_lg', epic: 'luck_x5_lg',
 };
 const BUFF_CLR: Record<string, string> = {
     lucky: '#78C828', super: '#4FC3F7', epic: '#ffc107',
@@ -261,7 +261,7 @@ export class QuestScene extends Scene {
                 fontFamily: UI.FONT_STROKE, fontSize: '13px', color: '#ffffff',
                 stroke: '#000000', strokeThickness: UI.STROKE_THIN,
             }).setOrigin(0.5));
-            const iconKey = BUFF_ICON[cfg.buffType] || 'ui_x2simple_mid';
+            const iconKey = BUFF_ICON[cfg.buffType] || 'luck_x2_lg';
             container.add(this.add.image(rightCX, topY + 54, iconKey).setDisplaySize(57, 57));
         }
         this.questCards.add(container);

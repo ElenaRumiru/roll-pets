@@ -26,7 +26,7 @@ const TAB_H = 17;
 const TAB_R = 6;
 
 const BUFF_ICON: Record<CountBuff, string> = {
-    lucky: 'ui_x2simple_mid', super: 'ui_x3wow_mid', epic: 'ui_x5wow_mid',
+    lucky: 'luck_x2_lg', super: 'luck_x3_lg', epic: 'luck_x5_lg',
 };
 const BUFF_DESC_KEY: Record<CountBuff, string> = {
     lucky: 'buff_desc_lucky', super: 'buff_desc_super', epic: 'buff_desc_epic',
@@ -37,7 +37,7 @@ const BUFF_LABEL_KEY: Record<CountBuff, string> = {
 const TOOLTIP_KEYS: Record<CountBuff, string> = {
     lucky: 'tip_lucky', super: 'tip_super', epic: 'tip_epic',
 };
-const ICON_SIZES: Record<CountBuff, number> = { lucky: 51, super: 57, epic: 59 };
+const ICON_SIZES: Record<CountBuff, number> = { lucky: 54, super: 54, epic: 54 };
 
 export class BonusPanel extends GameObjects.Container {
     private card: GameObjects.Container;
@@ -139,9 +139,8 @@ export class BonusPanel extends GameObjects.Container {
         const color = BUFF_CONFIG[type].color;
         const colorHex = BUFF_CONFIG[type].colorHex;
         const iconSize = ICON_SIZES[type];
-        const iconY = type === 'epic' ? CONTENT_CY + 2 : CONTENT_CY;
 
-        this.icon.setTexture(BUFF_ICON[type]).setDisplaySize(iconSize, iconSize).setY(iconY);
+        this.icon.setTexture(BUFF_ICON[type]).setDisplaySize(iconSize, iconSize).setY(CONTENT_CY);
         this.label.setText(t(BUFF_LABEL_KEY[type], { count: BUFF_CONFIG[type].rollsPerAd }));
         fitText(this.label, ROW_W - AREA_LEFT - PAD + 12, 13);
         this.desc.setText(t(BUFF_DESC_KEY[type])).setColor(colorHex);

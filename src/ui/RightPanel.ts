@@ -111,7 +111,7 @@ export class RightPanel extends GameObjects.Container {
         this.lockLabel.setVisible(false);
 
         // Buff badges above roll button (almost touching top edge)
-        this.badges = new BuffBadges(scene, ROLL_BTN.x, ROLL_BTN.y - ROLL_BTN.height / 2 - 12);
+        this.badges = new BuffBadges(scene, ROLL_BTN.x, ROLL_BTN.y - ROLL_BTN.height / 2 - 14);
         this.add(this.badges);
 
         scene.add.existing(this);

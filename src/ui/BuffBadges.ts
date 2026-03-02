@@ -2,27 +2,34 @@ import { GameObjects, Scene } from 'phaser';
 import { UI, BUFF_CONFIG, REBIRTH_CONFIG } from '../core/config';
 import { BuffSystem } from '../systems/BuffSystem';
 import { t } from '../data/locales';
-import { fitText } from './components/fitText';
 
 interface Badge {
     container: GameObjects.Container;
     bg: GameObjects.Graphics;
+    icon: GameObjects.Image;
     text: GameObjects.Text;
+    color: number;
     key: string;
     tooltipKey: string;
     dynamicTooltip?: string;
 }
 
-const BADGE_W = 67;
-const BADGE_H = 20;
-const BADGE_R = 5;
+const BADGE_H = 28;
+const BADGE_R = 7;
 const BADGE_GAP = 4;
+const ICON_SZ = 23;
+const PAD_X = 6;
+const ICON_TEXT_GAP = 2;
 
 const TOOLTIP_KEYS: Record<string, string> = {
     lucky: 'tip_lucky',
     super: 'tip_super',
     epic: 'tip_epic',
     samsara: 'tip_samsara',
+};
+
+const BADGE_ICON: Record<string, string> = {
+    lucky: 'luck_x2_md', super: 'luck_x3_md', epic: 'luck_x5_md', samsara: 'luck_x2_md',
 };
 
 export class BuffBadges extends GameObjects.Container {
@@ -65,23 +72,23 @@ export class BuffBadges extends GameObjects.Container {
         const c = scene.add.container(0, 0);
 
         const bg = scene.add.graphics();
-        bg.fillStyle(color, 0.85);
-        bg.fillRoundedRect(-BADGE_W / 2, -BADGE_H / 2, BADGE_W, BADGE_H, BADGE_R);
-        bg.lineStyle(1.5, 0x000000, 0.25);
-        bg.strokeRoundedRect(-BADGE_W / 2, -BADGE_H / 2, BADGE_W, BADGE_H, BADGE_R);
         c.add(bg);
 
-        const txt = scene.add.text(0, 0, '', {
+        const icon = scene.add.image(0, 1, BADGE_ICON[key] || 'luck_x2_md')
+            .setDisplaySize(ICON_SZ, ICON_SZ);
+        c.add(icon);
+
+        const txt = scene.add.text(0, 1, '', {
             fontFamily: UI.FONT_STROKE,
-            fontSize: '11px',
+            fontSize: '12px',
             color: '#ffffff',
             stroke: '#000000',
             strokeThickness: UI.STROKE_THIN,
-        }).setOrigin(0.5);
+        }).setOrigin(0, 0.5);
         c.add(txt);
 
         // Long-press tooltip
-        c.setSize(BADGE_W, BADGE_H);
+        c.setSize(60, BADGE_H);
         c.setInteractive();
         const tooltipKey = TOOLTIP_KEYS[key] || '';
 
@@ -97,7 +104,28 @@ export class BuffBadges extends GameObjects.Container {
 
         c.setVisible(false);
         this.add(c);
-        this.badges.push({ container: c, bg, text: txt, key, tooltipKey });
+        this.badges.push({ container: c, bg, icon, text: txt, color, key, tooltipKey });
+    }
+
+    private redrawBadge(badge: Badge): void {
+        const textW = badge.text.width;
+        const contentW = ICON_SZ + ICON_TEXT_GAP + textW;
+        const badgeW = contentW + PAD_X * 2;
+
+        // Position icon + text centered in pill
+        const startX = -contentW / 2;
+        badge.icon.setPosition(startX + ICON_SZ / 2, 1);
+        badge.text.setX(startX + ICON_SZ + ICON_TEXT_GAP);
+
+        badge.bg.clear();
+        badge.bg.fillStyle(badge.color, 0.85);
+        badge.bg.fillRoundedRect(-badgeW / 2, -BADGE_H / 2, badgeW, BADGE_H, BADGE_R);
+        badge.bg.lineStyle(1.5, 0x000000, 0.25);
+        badge.bg.strokeRoundedRect(-badgeW / 2, -BADGE_H / 2, badgeW, BADGE_H, BADGE_R);
+
+        // Update interactive hit area to match new width
+        badge.container.setSize(badgeW, BADGE_H);
+        badge.container.setInteractive();
     }
 
     private showTooltip(badge: GameObjects.Container, localeKey: string, dynamicText?: string): void {
@@ -129,22 +157,23 @@ export class BuffBadges extends GameObjects.Container {
 
     updateFromBuffs(buffs: BuffSystem): void {
         const rm = buffs.getRebirthMultiplier();
-        this.setBadgeRaw('samsara', rm > 1 ? `${t('badge_samsara')} \u221e` : '', rm > 1);
+        this.setBadgeRaw('samsara', rm > 1 ? `\u00d7${rm}` : '', rm > 1);
         const samsaraBadge = this.badges.find(b => b.key === 'samsara');
         if (samsaraBadge) {
+            samsaraBadge.icon.setTexture(`luck_x${rm}_md`);
             samsaraBadge.dynamicTooltip = rm > 1
                 ? `${t('tip_samsara')} (\u00d7${rm})` : undefined;
         }
 
-        this.setBadge('lucky', t('badge_lucky'), buffs.getCount('lucky'));
-        this.setBadge('super', t('badge_super'), buffs.getCount('super'));
-        this.setBadge('epic',  t('badge_epic'),  buffs.getCount('epic'));
+        this.setBadge('lucky', buffs.getCount('lucky'));
+        this.setBadge('super', buffs.getCount('super'));
+        this.setBadge('epic',  buffs.getCount('epic'));
 
         this.layoutBadges();
     }
 
-    private setBadge(key: string, label: string, count: number): void {
-        this.setBadgeRaw(key, count > 0 ? `${label} x${count}` : '', count > 0);
+    private setBadge(key: string, count: number): void {
+        this.setBadgeRaw(key, count > 0 ? `x${count}` : '', count > 0);
     }
 
     private setBadgeRaw(key: string, text: string, visible: boolean): void {
@@ -153,15 +182,23 @@ export class BuffBadges extends GameObjects.Container {
         badge.container.setVisible(visible);
         if (visible) {
             badge.text.setText(text);
-            fitText(badge.text, BADGE_W - 4, 11);
+            this.redrawBadge(badge);
         }
     }
 
     private layoutBadges(): void {
         const visible = this.badges.filter(b => b.container.visible);
-        const totalW = visible.length * BADGE_W + Math.max(0, visible.length - 1) * BADGE_GAP;
-        const startX = -totalW / 2 + BADGE_W / 2;
-        visible.forEach((b, i) => b.container.setX(startX + i * (BADGE_W + BADGE_GAP)));
+        const widths = visible.map(b => {
+            const textW = b.text.width;
+            return ICON_SZ + ICON_TEXT_GAP + textW + PAD_X * 2;
+        });
+        const totalW = widths.reduce((s, w) => s + w, 0)
+            + Math.max(0, visible.length - 1) * BADGE_GAP;
+        let curX = -totalW / 2;
+        visible.forEach((b, i) => {
+            b.container.setX(curX + widths[i] / 2);
+            curX += widths[i] + BADGE_GAP;
+        });
 
         this.bgPanel.clear();
     }

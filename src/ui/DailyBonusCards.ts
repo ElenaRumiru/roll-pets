@@ -10,7 +10,7 @@ import { DailyBonusReward } from '../types';
 const CARD_W = 108, CARD_H = 100, CARD_GAP = 10, CARD_R = 12, trackH = 8;
 const DAY7_H = CARD_H * 2 + CARD_GAP;
 const BUFF_ICON: Record<string, string> = {
-    lucky: 'ui_x2simple_mid', super: 'ui_x3wow_mid', epic: 'ui_x5wow_mid',
+    lucky: 'luck_x2_lg', super: 'luck_x3_lg', epic: 'luck_x5_lg',
 };
 const BUFF_CLR: Record<string, string> = {
     lucky: '#78C828', super: '#4FC3F7', epic: '#ffc107',
