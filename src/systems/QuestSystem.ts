@@ -1,5 +1,5 @@
 import { QuestState, QuestProgress, OnlineQuestProgress, Grade, RollResult } from '../types';
-import { QUEST_CONFIG, getDefaultQuestState, GRADE_ORDER } from '../core/config';
+import { QUEST_CONFIG, getDefaultQuestState, GRADE_ORDER, QuestStepReward } from '../core/config';
 
 export type QuestType = 'roll' | 'grade' | 'online';
 
@@ -26,10 +26,10 @@ export class QuestSystem {
         const today = QuestSystem.getTodayUTC();
         if (this.state.lastResetDate === today) return false;
         this.state.lastResetDate = today;
-        this.state.rollQuest = { current: 0, target: QUEST_CONFIG.rollSequence[0], sequenceIndex: 0 };
-        this.state.gradeQuest = { current: 0, target: 1, sequenceIndex: 0 };
-        const onlineSeq = QUEST_CONFIG.onlineSequence;
-        this.state.onlineQuest = { current: 0, target: onlineSeq[0] * 60, sequenceIndex: 0 };
+        this.state.rollQuest = { current: 0, target: QUEST_CONFIG.rollSteps[0].target, sequenceIndex: 0 };
+        const gs = QUEST_CONFIG.gradeSteps[0];
+        this.state.gradeQuest = { current: 0, target: gs.target, sequenceIndex: 0 };
+        this.state.onlineQuest = { current: 0, target: QUEST_CONFIG.onlineSteps[0].target * 60, sequenceIndex: 0 };
         this.state.milestones = { completedCount: 0, claimedMilestones: [] };
         return true;
     }
@@ -46,7 +46,7 @@ export class QuestSystem {
         if (!this.isComplete(gq)) {
             const required = this.getRequiredGrade();
             if (this.isGradeAtLeast(result.grade, required)) {
-                gq.current = 1;
+                gq.current = Math.min(gq.current + 1, gq.target);
             }
         }
     }
@@ -71,8 +71,9 @@ export class QuestSystem {
         const oq = this.state.onlineQuest;
         if (!this.isOnlineComplete()) return false;
         oq.sequenceIndex++;
-        const seq = QUEST_CONFIG.onlineSequence;
-        oq.target = seq[Math.min(oq.sequenceIndex, seq.length - 1)] * 60;
+        const steps = QUEST_CONFIG.onlineSteps;
+        const step = steps[Math.min(oq.sequenceIndex, steps.length - 1)];
+        oq.target = step.target * 60;
         oq.current = 0;
         return true;
     }
@@ -132,14 +133,29 @@ export class QuestSystem {
         return count;
     }
 
+    // ── Reward getters (per current step) ──
+
+    getReward(type: QuestType): QuestStepReward {
+        if (type === 'roll') {
+            const steps = QUEST_CONFIG.rollSteps;
+            return steps[Math.min(this.state.rollQuest.sequenceIndex, steps.length - 1)];
+        }
+        if (type === 'grade') {
+            const steps = QUEST_CONFIG.gradeSteps;
+            return steps[Math.min(this.state.gradeQuest.sequenceIndex, steps.length - 1)];
+        }
+        const steps = QUEST_CONFIG.onlineSteps;
+        return steps[Math.min(this.state.onlineQuest.sequenceIndex, steps.length - 1)];
+    }
+
     // ── Existing quest methods ──
 
     claimRollQuest(): boolean {
         const q = this.state.rollQuest;
         if (!this.isComplete(q)) return false;
         q.sequenceIndex++;
-        const seq = QUEST_CONFIG.rollSequence;
-        q.target = seq[Math.min(q.sequenceIndex, seq.length - 1)];
+        const steps = QUEST_CONFIG.rollSteps;
+        q.target = steps[Math.min(q.sequenceIndex, steps.length - 1)].target;
         q.current = 0;
         return true;
     }
@@ -148,8 +164,10 @@ export class QuestSystem {
         const q = this.state.gradeQuest;
         if (!this.isComplete(q)) return false;
         q.sequenceIndex++;
+        const steps = QUEST_CONFIG.gradeSteps;
+        const step = steps[Math.min(q.sequenceIndex, steps.length - 1)];
+        q.target = step.target;
         q.current = 0;
-        q.target = 1;
         return true;
     }
 
@@ -160,13 +178,13 @@ export class QuestSystem {
     getGradeQuest(): Readonly<QuestProgress> { return this.state.gradeQuest; }
 
     getRequiredGrade(): Grade {
-        const seq = QUEST_CONFIG.gradeSequence;
-        return seq[Math.min(this.state.gradeQuest.sequenceIndex, seq.length - 1)];
+        const steps = QUEST_CONFIG.gradeSteps;
+        return steps[Math.min(this.state.gradeQuest.sequenceIndex, steps.length - 1)].grade;
     }
 
     getRollTarget(): number {
-        const seq = QUEST_CONFIG.rollSequence;
-        return seq[Math.min(this.state.rollQuest.sequenceIndex, seq.length - 1)];
+        const steps = QUEST_CONFIG.rollSteps;
+        return steps[Math.min(this.state.rollQuest.sequenceIndex, steps.length - 1)].target;
     }
 
     getSecondsUntilReset(): number {

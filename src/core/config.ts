@@ -47,7 +47,7 @@ export const GRADE: Record<string, GradeConfig> = {
     improved: {
         color: 0x2d8a2d, colorHex: '#2d8a2d',
         outlineColor: 0x1a4a1a, outlineHex: '#1a4a1a',
-        strokeThickness: 2, label: 'Improved',
+        strokeThickness: 2, label: 'Extra',
         minChance: 1_000, maxChance: 5_000,
     },
     rare: {
@@ -59,7 +59,7 @@ export const GRADE: Record<string, GradeConfig> = {
     valuable: {
         color: 0x5dade2, colorHex: '#5dade2',
         outlineColor: 0x1a3d5c, outlineHex: '#1a3d5c',
-        strokeThickness: 2, label: 'Valuable',
+        strokeThickness: 2, label: 'Superior',
         minChance: 50_000, maxChance: 500_000,
     },
     elite: {
@@ -154,17 +154,38 @@ export const BONUS_PANEL = {
     gap: 8,
 };
 
+export interface QuestStepReward {
+    freeCount: number;
+    adCount: number;
+    buffType: 'lucky' | 'super' | 'epic';
+}
+
 export const QUEST_CONFIG = {
-    rollSequence: [3, 5, 10],
-    gradeSequence: ['uncommon', 'improved'] as Grade[],
-    onlineSequence: [3, 5, 10],           // minutes, loops at 10
-    rewards: {
-        roll:   { freeCount: 5, adCount: 25, buffType: 'lucky' as const },
-        grade:  { freeCount: 3, adCount: 12, buffType: 'super' as const },
-        online: { freeCount: 1, adCount: 3, buffType: 'epic' as const },
-    },
-    milestonesAt: [2, 4, 6, 8, 10],
-    milestoneRewards: [50, 200, 500, 2_000, 10_000],
+    rollSteps: [
+        { target: 3,  freeCount: 3,  adCount: 5,   buffType: 'lucky' as const },
+        { target: 5,  freeCount: 5,  adCount: 10,  buffType: 'lucky' as const },
+        { target: 10, freeCount: 10, adCount: 20,  buffType: 'lucky' as const },
+        { target: 20, freeCount: 25, adCount: 50,  buffType: 'lucky' as const },
+        { target: 50, freeCount: 25, adCount: 50,  buffType: 'lucky' as const },
+    ],
+    gradeSteps: [
+        { grade: 'uncommon' as Grade, target: 1, freeCount: 3,  adCount: 8,  buffType: 'super' as const },
+        { grade: 'uncommon' as Grade, target: 2, freeCount: 5,  adCount: 12, buffType: 'super' as const },
+        { grade: 'uncommon' as Grade, target: 3, freeCount: 5,  adCount: 12, buffType: 'super' as const },
+        { grade: 'improved' as Grade, target: 1, freeCount: 8,  adCount: 20, buffType: 'super' as const },
+        { grade: 'improved' as Grade, target: 2, freeCount: 10, adCount: 25, buffType: 'super' as const },
+        { grade: 'improved' as Grade, target: 3, freeCount: 12, adCount: 30, buffType: 'super' as const },
+    ],
+    onlineSteps: [
+        { target: 1,  freeCount: 3,  adCount: 6,   buffType: 'epic' as const },
+        { target: 3,  freeCount: 5,  adCount: 10,  buffType: 'epic' as const },
+        { target: 5,  freeCount: 8,  adCount: 15,  buffType: 'epic' as const },
+        { target: 10, freeCount: 15, adCount: 30,  buffType: 'epic' as const },
+        { target: 30, freeCount: 30, adCount: 60,  buffType: 'epic' as const },
+        { target: 60, freeCount: 50, adCount: 100, buffType: 'epic' as const },
+    ],
+    milestonesAt: [3, 6, 9, 12, 15],
+    milestoneRewards: [100, 500, 2_000, 5_000, 15_000],
 };
 
 export const QUEST_PANEL = { x: GAME_WIDTH - 135 - 15, w: 135 };
@@ -174,9 +195,9 @@ export function getDefaultQuestState(): QuestState {
     const today = `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}-${String(d.getUTCDate()).padStart(2, '0')}`;
     return {
         lastResetDate: today,
-        rollQuest: { current: 0, target: QUEST_CONFIG.rollSequence[0], sequenceIndex: 0 },
-        gradeQuest: { current: 0, target: 1, sequenceIndex: 0 },
-        onlineQuest: { current: 0, target: QUEST_CONFIG.onlineSequence[0] * 60, sequenceIndex: 0 },
+        rollQuest: { current: 0, target: QUEST_CONFIG.rollSteps[0].target, sequenceIndex: 0 },
+        gradeQuest: { current: 0, target: QUEST_CONFIG.gradeSteps[0].target, sequenceIndex: 0 },
+        onlineQuest: { current: 0, target: QUEST_CONFIG.onlineSteps[0].target * 60, sequenceIndex: 0 },
         milestones: { completedCount: 0, claimedMilestones: [] },
     };
 }
@@ -192,7 +213,7 @@ export const ONBOARDING = {
 
 /** Level thresholds where egg + background visuals change (17 tiers) */
 export const VISUAL_TIERS = [
-    1, 6, 12, 18, 25, 36, 52, 72, 102, 144, 205, 282, 385, 513, 718, 1026, 1538,
+    1, 15, 35, 60, 90, 125, 170, 225, 290, 365, 450, 545, 640, 735, 830, 910, 975,
 ];
 
 /** Get visual tier index (1-based) for a given player level */
@@ -209,7 +230,8 @@ export function xpForLevel(level: number): number {
 }
 
 export function levelUpCoinReward(level: number): number {
-    return level * 10;
+    const l2 = level * level;
+    return Math.round((5 + 495 * l2 / (l2 + 10000)) / 5) * 5;
 }
 
 export const LEVELUP_CONFIG = {

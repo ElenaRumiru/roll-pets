@@ -1,5 +1,5 @@
 import { EventBus } from './EventBus';
-import { BUFF_CONFIG, QUEST_CONFIG, levelUpCoinReward, LEAGUE_PROMOTION_REWARDS, NEST_CONFIG, getDefaultNestState, AUTOROLL_TOGGLE, REBIRTH_CONFIG } from './config';
+import { BUFF_CONFIG, levelUpCoinReward, LEAGUE_PROMOTION_REWARDS, NEST_CONFIG, getDefaultNestState, AUTOROLL_TOGGLE, REBIRTH_CONFIG } from './config';
 import { RNGSystem } from '../systems/RNGSystem';
 import { ProgressionSystem } from '../systems/ProgressionSystem';
 import { SaveSystem } from '../systems/SaveSystem';
@@ -330,16 +330,16 @@ export class GameManager {
     }
 
     claimQuestReward(questType: 'roll' | 'grade' | 'online', useAd: boolean): void {
-        const cfg = QUEST_CONFIG.rewards[questType];
-        const count = useAd ? cfg.adCount : cfg.freeCount;
+        const reward = this.quests.getReward(questType);
+        const count = useAd ? reward.adCount : reward.freeCount;
         let claimed = false;
         if (questType === 'roll') claimed = this.quests.claimRollQuest();
         else if (questType === 'grade') claimed = this.quests.claimGradeQuest();
         else claimed = this.quests.claimOnlineQuest();
         if (!claimed) return;
 
-        if (cfg.buffType === 'lucky') this.buffs.addLucky(count);
-        else if (cfg.buffType === 'super') this.buffs.addSuper(count);
+        if (reward.buffType === 'lucky') this.buffs.addLucky(count);
+        else if (reward.buffType === 'super') this.buffs.addSuper(count);
         else this.buffs.addEpic(count);
 
         this.quests.incrementMilestoneCount();

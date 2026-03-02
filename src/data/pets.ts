@@ -62,7 +62,7 @@ export const PETS: PetDef[] = [
     { id: 'hyena',      name: 'Hyena',      emoji: '🐺', imageKey: 'pet_0065', chance: 950 },
     { id: 'seahorse',   name: 'Seahorse',   emoji: '🐾', imageKey: 'pet_0081', chance: 980 },
 
-    // ── Improved [1000, 5000) — 16 pets ──
+    // ── Extra [1000, 5000) — 16 pets ──
     { id: 'dolphin',    name: 'Dolphin',    emoji: '🐬', imageKey: 'pet_0014', chance: 1_000 },
     { id: 'chameleon',  name: 'Chameleon',  emoji: '🦎', imageKey: 'pet_0015', chance: 1_200 },
     { id: 'octopus',    name: 'Octopus',    emoji: '🐙', imageKey: 'pet_0033', chance: 1_400 },
@@ -96,7 +96,7 @@ export const PETS: PetDef[] = [
     { id: 'mammoth',    name: 'Mammoth',    emoji: '🦣', imageKey: 'pet_0043', chance: 44_000 },
     { id: 'sabertooth', name: 'Sabertooth', emoji: '🐯', imageKey: 'pet_0105', chance: 48_000 },
 
-    // ── Valuable [50000, 500000) — 10 pets ──
+    // ── Superior [50000, 500000) — 10 pets ──
     { id: 'slime',       name: 'Slime',           emoji: '🟢', imageKey: 'pet_0047', chance: 50_000 },
     { id: 'ghost',       name: 'Ghost',           emoji: '👻', imageKey: 'pet_0093', chance: 75_000 },
     { id: 'skeleton',    name: 'Skeleton',        emoji: '💀', imageKey: 'pet_0094', chance: 100_000 },

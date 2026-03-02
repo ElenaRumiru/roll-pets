@@ -197,7 +197,7 @@ export class QuestScene extends Scene {
     private createQuestCard(cx: number, topY: number, type: QuestType, complete: boolean, cardH: number): void {
         const quests = this.manager.quests;
         const container = this.add.container(0, 0);
-        const cfg = QUEST_CONFIG.rewards[type];
+        const cfg = this.manager.quests.getReward(type);
 
         const bg = this.add.graphics();
         bg.fillStyle(0x1a1a2e, 0.9);
@@ -214,7 +214,9 @@ export class QuestScene extends Scene {
             current = rq.current; target = rq.target;
         } else if (type === 'grade') {
             const gq = quests.getGradeQuest();
-            questName = `\u25C6 ${t('quest_grade', { grade: t(`grade_${quests.getRequiredGrade()}`) })}`;
+            const gradeName = t(`grade_${quests.getRequiredGrade()}`);
+            const key = gq.target > 1 ? 'quest_grade_n' : 'quest_grade';
+            questName = `\u25C6 ${t(key, { grade: gradeName, target: String(gq.target) })}`;
             current = gq.current; target = gq.target;
         } else {
             const oq = quests.getOnlineQuest();

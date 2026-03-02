@@ -60,9 +60,9 @@ const PETS = [
 const GRADES = [
   { name:'Common',    min:2,         max:100,        coinsNew:5,    coinsDup:1,    xpNew:25, xpDup:0.5  },
   { name:'Uncommon',  min:100,       max:1000,       coinsNew:10,   coinsDup:2,    xpNew:25, xpDup:1    },
-  { name:'Improved',  min:1000,      max:5000,       coinsNew:25,   coinsDup:3,    xpNew:25, xpDup:1.5  },
+  { name:'Extra',     min:1000,      max:5000,       coinsNew:25,   coinsDup:3,    xpNew:25, xpDup:1.5  },
   { name:'Rare',      min:5000,      max:50000,      coinsNew:50,   coinsDup:5,    xpNew:25, xpDup:2    },
-  { name:'Valuable',  min:50000,     max:500000,     coinsNew:100,  coinsDup:10,   xpNew:25, xpDup:3    },
+  { name:'Superior',  min:50000,     max:500000,     coinsNew:100,  coinsDup:10,   xpNew:25, xpDup:3    },
   { name:'Elite',     min:500000,    max:5000000,    coinsNew:250,  coinsDup:25,   xpNew:25, xpDup:4    },
   { name:'Epic',      min:5000000,   max:50000000,   coinsNew:500,  coinsDup:50,   xpNew:25, xpDup:5    },
   { name:'Heroic',    min:50000000,  max:250000000,  coinsNew:1000, coinsDup:100,  xpNew:25, xpDup:6    },
@@ -71,9 +71,7 @@ const GRADES = [
   { name:'Legendary', min:750000000, max:1000000000, coinsNew:10000,coinsDup:1000, xpNew:25, xpDup:10   },
 ];
 
-const XP_BASE = 100;
-const XP_MULT = 1.15;
-const VISUAL_TIERS = [1,6,12,18,25,36,52,72,102,144,205,282,385,513,718,1026,1538];
+const VISUAL_TIERS = [1,15,35,60,90,125,170,225,290,365,450,545,640,735,830,910,975];
 const AUTOROLL_MS = 500;
 const BUFF = { lucky:2, super:3, epic:5 };
 const OFFER_DURATION_S = 15;
@@ -90,7 +88,18 @@ function getGrade(chance) {
   return GRADES[0];
 }
 
-function xpForLevel(lv) { return Math.floor(XP_BASE * Math.pow(XP_MULT, lv - 1)); }
+const XP_FLOOR = 20;
+const XP_SCALE = 1030;
+const XP_KNEE = 20;
+function xpForLevel(lv) {
+  const l2 = lv * lv;
+  return Math.floor(XP_FLOOR + XP_SCALE * l2 / (l2 + XP_KNEE * XP_KNEE));
+}
+
+function coinRewardForLevel(lv) {
+  const l2 = lv * lv;
+  return Math.round((5 + 495 * l2 / (l2 + 10000)) / 5) * 5;
+}
 
 function getVisualTier(lv) {
   for (let i = VISUAL_TIERS.length - 1; i >= 0; i--) {
@@ -265,32 +274,88 @@ function gen02_grades() {
 }
 
 // ═══════════════════════════════════════════════════════════════
-// 3. XP PROGRESSION CURVE (levels 1-200)
+// 3. XP PROGRESSION CURVE (levels 1-1000)
 // ═══════════════════════════════════════════════════════════════
 
 function gen03_xp() {
+  const EGG_NAMES = [
+    'White Egg','Green Egg','Blue Egg','Red Egg','Purple Egg','Frosty Egg',
+    'Forest Egg','Dragon Egg','Sandy Egg','Pharaoh Egg','Sheriff Egg',
+    'Pirate Egg','Ice Egg','Fire Egg','Space Egg','Lunar Egg','Toxic Egg',
+  ];
+
   const header = [
-    'Level','XP Needed','Cumulative XP','EggTier','EggTierChange',
-    'Coin Reward (free)','Coin Reward (ad x3)','Pool Size','Removed Pets',
+    'Level','XP Needed','Rolls to Level Up','Time per Level (min)',
+    'Cumulative Time (min)','Cumulative Time (hours)','Cumulative Time (days)',
+    'Reward Type','Reward Detail','Coins (free)','Coins (ad x3)',
+    'Pool Size','Removed Pets',
   ];
   const rows = [];
-  let cumXp = 0;
+  let cumTimeMin = 0;
   let prevTier = 0;
-  for (let lv = 1; lv <= 200; lv++) {
+  let totalCoins = 0;
+  let totalCoinsAd = 0;
+  let totalRolls = 0;
+
+  for (let lv = 1; lv <= 1000; lv++) {
     const xp = xpForLevel(lv);
-    cumXp += xp;
+    const rollsNeeded = Math.ceil(xp / 5);  // XP_PER_ROLL = 5
+    const timeMin = rollsNeeded * AUTOROLL_MS / 1000 / 60;
+    cumTimeMin += timeMin;
+    totalRolls += rollsNeeded;
+
     const tier = getVisualTier(lv);
     const tierChanged = tier !== prevTier;
     const pool = getEligiblePets(lv);
-    const coinsFree = lv * 10;
+    const coinsFree = coinRewardForLevel(lv);
     const coinsAd = coinsFree * 3;
+
+    let rewardType = '';
+    let rewardDetail = '';
+    let coinsF = coinsFree;
+    let coinsA = coinsAd;
+
+    if (lv === 3) {
+      rewardType = 'Feature';
+      rewardDetail = 'Auto Roll';
+      coinsF = 0; coinsA = 0;
+    } else if (lv === 5) {
+      rewardType = 'Feature';
+      rewardDetail = 'Incubation';
+      coinsF = 0; coinsA = 0;
+    } else if (lv === 1000) {
+      rewardType = 'Feature';
+      rewardDetail = 'Rebirth / Samsara';
+      coinsF = 0; coinsA = 0;
+    } else if (tierChanged) {
+      rewardType = 'Egg';
+      rewardDetail = EGG_NAMES[tier - 1] || ('Tier ' + tier);
+      coinsF = 0; coinsA = 0;
+    } else {
+      rewardType = 'Coins';
+      rewardDetail = '+' + coinsFree;
+    }
+
+    totalCoins += coinsF;
+    totalCoinsAd += coinsA;
+
     rows.push([
-      lv, xp, cumXp, tier, tierChanged ? 'YES' : '',
-      tierChanged ? 0 : coinsFree, tierChanged ? 0 : coinsAd,
-      pool.length, 100 - pool.length,
+      lv, xp, rollsNeeded, timeMin.toFixed(2),
+      cumTimeMin.toFixed(1), (cumTimeMin / 60).toFixed(2), (cumTimeMin / 60 / 24).toFixed(3),
+      rewardType, rewardDetail, coinsF, coinsA,
+      pool.length, PETS.length - pool.length,
     ]);
     prevTier = tier;
   }
+
+  // Totals row
+  rows.push([
+    'TOTAL', '', totalRolls, (totalRolls * AUTOROLL_MS / 1000 / 60).toFixed(1),
+    cumTimeMin.toFixed(1), (cumTimeMin / 60).toFixed(2), (cumTimeMin / 60 / 24).toFixed(3),
+    '', '', totalCoins, totalCoinsAd,
+    '', '',
+  ]);
+
   writeCSV('03_xp_progression.csv', header, rows);
 }
 
@@ -437,7 +502,7 @@ function gen07_buffs() {
     const xpVet = expectedXpPercentPerRoll(pool, c.mult, scenarioVet);
 
     const gp = gradeProbabilities(pool, c.mult);
-    const pRarePlus = (gp['Rare']||0)+(gp['Valuable']||0)+(gp['Elite']||0)+(gp['Epic']||0)+(gp['Heroic']||0)+(gp['Mythic']||0)+(gp['Ancient']||0)+(gp['Legendary']||0);
+    const pRarePlus = (gp['Rare']||0)+(gp['Superior']||0)+(gp['Elite']||0)+(gp['Epic']||0)+(gp['Heroic']||0)+(gp['Mythic']||0)+(gp['Ancient']||0)+(gp['Legendary']||0);
     const pEpicPlus = (gp['Epic']||0)+(gp['Heroic']||0)+(gp['Mythic']||0)+(gp['Ancient']||0)+(gp['Legendary']||0);
     const pLeg = gp['Legendary'] || 0;
 
@@ -495,9 +560,10 @@ function gen08_strategies() {
   const coinsManual = coinsBase;
 
   // Strategy 5: Autoroll + occasionally grab free quest buffs
-  // Quest gives 1 lucky per 3/5/10 rolls (free). Assume every 10 rolls = 1 lucky buff.
-  // So effectively 1/10 rolls has x2 mult, rest x1
-  const questBuffedFraction = 1 / 10;
+  // Roll quest gives Lucky buffs: 5/10/20/50/50 per step, targets 3/5/10/20/50.
+  // Weighted average: ~(5+10+20+50+50)/(3+5+10+20+50) = 135/88 ≈ 1.53 lucky per roll cycle.
+  // Conservatively assume ~1 in 8 rolls is buffed with x2.
+  const questBuffedFraction = 1 / 8;
   const coinsQuestMix = coinsBase * (1 - questBuffedFraction) + coinsX2 * questBuffedFraction;
 
   // Time frames
@@ -515,7 +581,7 @@ function gen08_strategies() {
   const gp30 = gradeProbabilities(pool, 30);
 
   function pRarePlus(gp) {
-    return (gp['Rare']||0)+(gp['Valuable']||0)+(gp['Elite']||0)+(gp['Epic']||0)+(gp['Heroic']||0)+(gp['Mythic']||0)+(gp['Ancient']||0)+(gp['Legendary']||0);
+    return (gp['Rare']||0)+(gp['Superior']||0)+(gp['Elite']||0)+(gp['Epic']||0)+(gp['Heroic']||0)+(gp['Mythic']||0)+(gp['Ancient']||0)+(gp['Legendary']||0);
   }
   function pEpicPlus(gp) {
     return (gp['Epic']||0)+(gp['Heroic']||0)+(gp['Mythic']||0)+(gp['Ancient']||0)+(gp['Legendary']||0);
@@ -680,7 +746,7 @@ function gen09_goldenPath() {
     cumCoins += coinsThisLevel;
 
     // Level-up reward
-    const coinReward = tierChanged ? 0 : lv * 10;
+    const coinReward = tierChanged ? 0 : coinRewardForLevel(lv);
     cumCoins += coinReward;
 
     // Time
@@ -810,14 +876,14 @@ function gen12_overnight() {
     'Duration', 'Total Rolls',
     'Coins (new player)', 'Coins (veteran)',
     'XP levels gained (vet, lv10)', 'XP levels gained (vet, lv50)', 'XP levels gained (vet, lv100)',
-    'Expected Rare+ hits', 'Expected Valuable+ hits', 'Expected Elite+ hits',
+    'Expected Rare+ hits', 'Expected Superior+ hits', 'Expected Elite+ hits',
     'Expected Epic+ hits', 'Expected Heroic+ hits',
     'P(at least 1 Legendary)',
   ];
 
   const gp = gradeProbabilities(pool, 1);
-  const pRarePlus = ['Rare','Valuable','Elite','Epic','Heroic','Mythic','Ancient','Legendary'].reduce((s,g) => s + (gp[g]||0), 0);
-  const pValPlus = ['Valuable','Elite','Epic','Heroic','Mythic','Ancient','Legendary'].reduce((s,g) => s + (gp[g]||0), 0);
+  const pRarePlus = ['Rare','Superior','Elite','Epic','Heroic','Mythic','Ancient','Legendary'].reduce((s,g) => s + (gp[g]||0), 0);
+  const pValPlus = ['Superior','Elite','Epic','Heroic','Mythic','Ancient','Legendary'].reduce((s,g) => s + (gp[g]||0), 0);
   const pElitePlus = ['Elite','Epic','Heroic','Mythic','Ancient','Legendary'].reduce((s,g) => s + (gp[g]||0), 0);
   const pEpicPlus = ['Epic','Heroic','Mythic','Ancient','Legendary'].reduce((s,g) => s + (gp[g]||0), 0);
   const pHeroicPlus = ['Heroic','Mythic','Ancient','Legendary'].reduce((s,g) => s + (gp[g]||0), 0);
@@ -903,14 +969,14 @@ function gen13_coinBalance() {
   const xpVet = expectedXpPercentPerRoll(pool, 1, vetSet);
   const rollsPerLevel = 100 / xpVet;
 
-  // Average level-up reward (assuming ~level 50 average)
-  const avgLevelReward = 50 * 10; // level * 10
+  // Average level-up reward = rolls needed for that level = ceil(xpForLevel / 5)
+  const avgLevelReward = coinRewardForLevel(50); // sigmoid coin reward at lv50
 
   const rows = [
     ['Roll coins (duplicate)', 'SOURCE', coinsPerRoll.toFixed(2) + '/roll', rollsPerHour.toFixed(0) + ' rolls/h',
      (coinsPerRoll * rollsPerHour).toFixed(0), 'Main income for veterans'],
     ['Level-up coins (free)', 'SOURCE', avgLevelReward + ' (at lv50)', '1 per ' + Math.round(rollsPerLevel) + ' rolls',
-     (avgLevelReward / rollsPerLevel * rollsPerHour).toFixed(0), 'level * 10 coins; 0 if egg changes'],
+     (avgLevelReward / rollsPerLevel * rollsPerHour).toFixed(0), 'ceil(xpForLevel/5) coins; 0 if egg changes'],
     ['Level-up coins (ad x3)', 'SOURCE', avgLevelReward * 3 + ' (at lv50)', '1 per ' + Math.round(rollsPerLevel) + ' rolls',
      (avgLevelReward * 3 / rollsPerLevel * rollsPerHour).toFixed(0), 'Requires watching ad'],
     ['Quest reward (Lucky buff)', 'SOURCE (indirect)', '0 coins', 'Every 10 rolls', '0',
@@ -918,9 +984,9 @@ function gen13_coinBalance() {
     ['Shop purchase (Common)', 'SINK', '4-186 coins', 'Manual', 'Variable',
      'Price = chance * 2; cheapest: Cat = 4 coins'],
     ['Shop purchase (Uncommon)', 'SINK', '200-1960 coins', 'Manual', 'Variable', ''],
-    ['Shop purchase (Improved)', 'SINK', '2K-9.6K coins', 'Manual', 'Variable', ''],
+    ['Shop purchase (Extra)', 'SINK', '2K-9.6K coins', 'Manual', 'Variable', ''],
     ['Shop purchase (Rare)', 'SINK', '10K-96K coins', 'Manual', 'Variable', ''],
-    ['Shop purchase (Valuable)', 'SINK', '100K-960K coins', 'Manual', 'Variable', ''],
+    ['Shop purchase (Superior)', 'SINK', '100K-960K coins', 'Manual', 'Variable', ''],
     ['Shop purchase (Elite)', 'SINK', '1M-9M coins', 'Manual', 'Variable',
      'Extremely expensive — months of autoroll'],
     ['Shop purchase (Epic+)', 'SINK', '10M+ coins', 'Manual', 'Variable',
@@ -936,9 +1002,9 @@ function gen13_coinBalance() {
 
 function gen14_quests() {
   const header = [
-    'Quest', 'Target', 'Reward (free)', 'Reward (ad)',
-    'Buff mult', 'E[coins uplift per buff use] (vet)',
-    'Value: free vs ad', 'Optimal choice',
+    'Quest', 'Step', 'Target', 'Reward (free)', 'Reward (ad)',
+    'Buff type', 'Buff mult', 'E[coins uplift per buff] (vet)',
+    'Free total uplift', 'Ad total uplift', 'Notes',
   ];
 
   const pool = getEligiblePets(1);
@@ -946,32 +1012,80 @@ function gen14_quests() {
   const coinsBase = expectedCoinsPerRoll(pool, 1, vetSet);
   const coinsX2 = expectedCoinsPerRoll(pool, 2, vetSet);
   const coinsX3 = expectedCoinsPerRoll(pool, 3, vetSet);
+  const coinsX5 = expectedCoinsPerRoll(pool, 5, vetSet);
 
   const luckyUplift = coinsX2 - coinsBase;
   const superUplift = coinsX3 - coinsBase;
+  const epicUplift = coinsX5 - coinsBase;
 
-  const rows = [
-    ['Roll Quest (cycle 1)', '3 rolls', '1x Lucky', '5x Lucky',
-     'x2', luckyUplift.toFixed(4),
-     `Free: ${luckyUplift.toFixed(4)} coins uplift / Ad: ${(5*luckyUplift).toFixed(4)} coins uplift`,
-     'Ad gives 5x value for ~30s investment'],
-    ['Roll Quest (cycle 2)', '5 rolls', '1x Lucky', '5x Lucky',
-     'x2', luckyUplift.toFixed(4),
-     `Free: ${luckyUplift.toFixed(4)} / Ad: ${(5*luckyUplift).toFixed(4)}`,
-     'Ad if you want rare pets; Free if impatient'],
-    ['Roll Quest (cycle 3+)', '10 rolls', '1x Lucky', '5x Lucky',
-     'x2', luckyUplift.toFixed(4),
-     `Free: ${luckyUplift.toFixed(4)} / Ad: ${(5*luckyUplift).toFixed(4)}`,
-     'Loops at 10; always claim for buffs'],
-    ['Grade Quest (cycle 1)', '1x Uncommon+', '1x Super', '3x Super',
-     'x3', superUplift.toFixed(4),
-     `Free: ${superUplift.toFixed(4)} / Ad: ${(3*superUplift).toFixed(4)}`,
-     'Very easy to complete; Ad is great value'],
-    ['Grade Quest (cycle 2+)', '1x Improved+', '1x Super', '3x Super',
-     'x3', superUplift.toFixed(4),
-     `Free: ${superUplift.toFixed(4)} / Ad: ${(3*superUplift).toFixed(4)}`,
-     'Harder; may take many rolls at low level'],
+  const rollSteps = [
+    { target: 3,  free: 3,  ad: 5 },
+    { target: 5,  free: 5,  ad: 10 },
+    { target: 10, free: 10, ad: 20 },
+    { target: 20, free: 25, ad: 50 },
+    { target: 50, free: 25, ad: 50 },
   ];
+  const gradeSteps = [
+    { grade: 'Uncommon', target: 1, free: 3,  ad: 8 },
+    { grade: 'Uncommon', target: 2, free: 5,  ad: 12 },
+    { grade: 'Uncommon', target: 3, free: 5,  ad: 12 },
+    { grade: 'Extra',    target: 1, free: 8,  ad: 20 },
+    { grade: 'Extra',    target: 2, free: 10, ad: 25 },
+    { grade: 'Extra',    target: 3, free: 12, ad: 30 },
+  ];
+  const onlineSteps = [
+    { target: 1,  free: 3,  ad: 6 },
+    { target: 3,  free: 5,  ad: 10 },
+    { target: 5,  free: 8,  ad: 15 },
+    { target: 10, free: 15, ad: 30 },
+    { target: 30, free: 30, ad: 60 },
+    { target: 60, free: 50, ad: 100 },
+  ];
+
+  const rows = [];
+
+  rollSteps.forEach((s, i) => {
+    const loop = i === rollSteps.length - 1 ? ' (loops)' : '';
+    rows.push([
+      'Roll', `${i+1}${loop}`, `${s.target} rolls`,
+      `${s.free}x Lucky`, `${s.ad}x Lucky`,
+      'Lucky', 'x2', luckyUplift.toFixed(4),
+      (s.free * luckyUplift).toFixed(2), (s.ad * luckyUplift).toFixed(2),
+      i === 0 ? 'Quick early quest' : '',
+    ]);
+  });
+
+  gradeSteps.forEach((s, i) => {
+    const loop = i === gradeSteps.length - 1 ? ' (loops)' : '';
+    rows.push([
+      'Grade', `${i+1}${loop}`, `${s.target}x ${s.grade}+`,
+      `${s.free}x Super`, `${s.ad}x Super`,
+      'Super', 'x3', superUplift.toFixed(4),
+      (s.free * superUplift).toFixed(2), (s.ad * superUplift).toFixed(2),
+      s.grade === 'Extra' ? 'Harder; requires Extra+ grade' : '',
+    ]);
+  });
+
+  onlineSteps.forEach((s, i) => {
+    const loop = i === onlineSteps.length - 1 ? ' (loops)' : '';
+    rows.push([
+      'Online', `${i+1}${loop}`, `${s.target} min`,
+      `${s.free}x Epic`, `${s.ad}x Epic`,
+      'Epic', 'x5', epicUplift.toFixed(4),
+      (s.free * epicUplift).toFixed(2), (s.ad * epicUplift).toFixed(2),
+      s.target >= 10 ? 'Long session quest' : 'Retention driver (>4min)',
+    ]);
+  });
+
+  // Milestones summary
+  rows.push([]);
+  rows.push(['MILESTONES', 'At quest #', 'Coin reward', '', '', '', '', '', '', '', '']);
+  const msAt = [3, 6, 9, 12, 15];
+  const msRewards = [100, 500, 2000, 5000, 15000];
+  msAt.forEach((at, i) => {
+    rows.push(['Milestone', `${at} quests`, `${msRewards[i]} coins`, '', '', '', '', '', '', '', '']);
+  });
+  rows.push(['TOTAL milestone coins', '', `${msRewards.reduce((a,b)=>a+b, 0)}`, '', '', '', '', '', '', '', '']);
 
   writeCSV('14_quest_analysis.csv', header, rows);
 }
@@ -1021,7 +1135,7 @@ function gen15_collection() {
     let note = '';
     if (target === 28) note = 'All Commons';
     if (target === 52) note = 'All Commons + Uncommons';
-    if (target === 68) note = '+ All Improved';
+    if (target === 68) note = '+ All Extra';
     if (target === 82) note = '+ All Rare';
     if (target === 100) note = 'Full collection (incl. Legendary)';
     if (target === 96) note = 'Everything except top 4 (Heroic+)';

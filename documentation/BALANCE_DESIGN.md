@@ -701,9 +701,9 @@ Level 50: 108,366 XP
 |-------|-----------|----------|
 | Common | 5 | 1 |
 | Uncommon | 10 | 2 |
-| Improved | 25 | 3 |
+| Extra | 25 | 3 |
 | Rare | 50 | 5 |
-| Valuable | 100 | 10 |
+| Superior | 100 | 10 |
 | Elite | 250 | 25 |
 | Epic | 500 | 50 |
 | Heroic | 1,000 | 100 |

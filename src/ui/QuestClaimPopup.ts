@@ -1,5 +1,5 @@
 import { GameObjects, Scene } from 'phaser';
-import { UI, GAME_WIDTH, GAME_HEIGHT, QUEST_CONFIG, BUFF_CONFIG } from '../core/config';
+import { UI, GAME_WIDTH, GAME_HEIGHT, BUFF_CONFIG, QuestStepReward } from '../core/config';
 import { t } from '../data/locales';
 import { addButtonFeedback } from './components/buttonFeedback';
 import { fitText } from './components/fitText';
@@ -26,7 +26,8 @@ export class QuestClaimPopup {
 
     constructor(
         scene: Scene,
-        questType: 'roll' | 'grade' | 'online',
+        _questType: 'roll' | 'grade' | 'online',
+        reward: QuestStepReward,
         onFree: () => void,
         onAd: () => void,
         private onDismiss?: () => void,
@@ -72,8 +73,8 @@ export class QuestClaimPopup {
         this.container.add(sub);
 
         // Reward config
-        const cfg = QUEST_CONFIG.rewards[questType];
-        const buffKey = cfg.buffType as 'lucky' | 'super' | 'epic';
+        const cfg = reward;
+        const buffKey = cfg.buffType;
         const descKey = `buff_desc_${buffKey}`;
         const descColor = BUFF_CONFIG[buffKey].colorHex;
 

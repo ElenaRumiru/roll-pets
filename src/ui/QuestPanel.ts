@@ -178,7 +178,8 @@ export class QuestPanel extends GameObjects.Container {
                 row.label.setText(`${DIAMOND} ${t('quest_roll', { target: String(vq.target) })}`);
             } else if (vq.type === 'grade') {
                 const gradeName = t(`grade_${quests.getRequiredGrade()}`);
-                row.label.setText(`${DIAMOND} ${t('quest_grade', { grade: gradeName })}`);
+                const key = vq.target > 1 ? 'quest_grade_n' : 'quest_grade';
+                row.label.setText(`${DIAMOND} ${t(key, { grade: gradeName, target: String(vq.target) })}`);
             } else {
                 const mins = Math.round(vq.target / 60);
                 row.label.setText(`${DIAMOND} ${t('quest_online', { target: String(mins) })}`);

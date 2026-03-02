@@ -1,5 +1,5 @@
 import { Scene } from 'phaser';
-import { GAME_WIDTH, GAME_HEIGHT, AUTOROLL_INTERVAL, xpForLevel, UI, ONBOARDING, LEVELUP_CONFIG, NEST_CONFIG, AUTOROLL_TOGGLE, QUEST_CONFIG, BUFF_CONFIG } from '../core/config';
+import { GAME_WIDTH, GAME_HEIGHT, AUTOROLL_INTERVAL, xpForLevel, UI, ONBOARDING, LEVELUP_CONFIG, NEST_CONFIG, AUTOROLL_TOGGLE, BUFF_CONFIG } from '../core/config';
 import { EventBus } from '../core/EventBus';
 import { GameManager } from '../core/GameManager';
 import { TopBar } from '../ui/TopBar';
@@ -528,12 +528,12 @@ export class MainScene extends Scene {
 
     private handleQuestClaim(type: 'roll' | 'grade' | 'online'): void {
         if (this.questPopup) return;
-        const cfg = QUEST_CONFIG.rewards[type];
-        const buffName = t(`badge_${cfg.buffType}`);
-        this.questPopup = new QuestClaimPopup(this, type,
+        const reward = this.manager.quests.getReward(type);
+        const buffName = t(`badge_${reward.buffType}`);
+        this.questPopup = new QuestClaimPopup(this, type, reward,
             () => {
                 this.manager.claimQuestReward(type, false);
-                showToast(this, t('toast_received', { count: cfg.freeCount, item: buffName }), 'info');
+                showToast(this, t('toast_received', { count: reward.freeCount, item: buffName }), 'info');
                 this.questPopup = null;
             },
             () => {
@@ -541,13 +541,13 @@ export class MainScene extends Scene {
                 if (sdk) {
                     sdk.showRewardedBreak().then((success: boolean) => {
                         this.manager.claimQuestReward(type, success);
-                        const count = success ? cfg.adCount : cfg.freeCount;
+                        const count = success ? reward.adCount : reward.freeCount;
                         showToast(this, t('toast_received', { count, item: buffName }), 'info');
                         this.questPopup = null;
                     });
                 } else {
                     this.manager.claimQuestReward(type, true);
-                    showToast(this, t('toast_received', { count: cfg.adCount, item: buffName }), 'info');
+                    showToast(this, t('toast_received', { count: reward.adCount, item: buffName }), 'info');
                     this.questPopup = null;
                 }
             },

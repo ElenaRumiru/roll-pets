@@ -13,12 +13,6 @@ export class DailyBonusSystem {
             ...state,
             monthMilestonesClaimed: [...state.monthMilestonesClaimed],
         };
-        // Fix: old saves incremented totalLogins on login before claim.
-        // Compensate by decrementing if today's reward hasn't been claimed yet.
-        if (!this.state.claimedToday && this.state.totalLogins > 0
-            && this.state.lastLoginDate !== '') {
-            this.state.totalLogins--;
-        }
         this.checkNewDay();
     }
 
