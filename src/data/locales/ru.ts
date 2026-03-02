@@ -243,6 +243,12 @@ export const ru: Record<string, string> = {
     'toast_level_required': 'Требуется уровень {level}',
     'toast_received': 'Получено: {count}x {item}',
 
+    // Dream buff (thought bubble)
+    'badge_dream': 'Мечта',
+    'tip_dream': 'Повышает шанс в 100 раз для следующего ролла',
+    'buff_desc_dream': 'x100 шанс',
+    'thought_claim': 'ЗАБРАТЬ',
+
     // Buff descriptions
     'buff_desc_lucky': 'x2 шанс',
     'buff_desc_super': 'x3 шанс',

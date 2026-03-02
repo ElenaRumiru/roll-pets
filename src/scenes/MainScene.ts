@@ -21,6 +21,7 @@ import { QuestClaimPopup } from '../ui/QuestClaimPopup';
 import { Leaderboard } from '../ui/Leaderboard';
 import { NicknamePrompt } from '../ui/NicknamePrompt';
 import { ArrowHint } from '../ui/ArrowHint';
+import { PetThought } from '../ui/PetThought';
 import { PETS } from '../data/pets';
 import { PetDef, RollResult, LevelUpData, LeaguePromotionData, RebirthData } from '../types';
 import { PlatformSDK } from '../platform/PlatformSDK';
@@ -49,6 +50,7 @@ export class MainScene extends Scene {
     private isPaused = false;
     private wasAutorollActive = false;
     private pauseOverlay!: Phaser.GameObjects.Container;
+    private petThought!: PetThought;
     private arrowHint: ArrowHint | null = null;
     private idleTimer = 0;
     private levelUpOverlay!: LevelUpOverlay;
@@ -99,6 +101,7 @@ export class MainScene extends Scene {
             this.scene.start('LeaderboardScene');
         });
         this.centerStage = new CenterStage(this);
+        this.petThought = new PetThought(this, () => this.handleThoughtClaim());
         this.levelUpOverlay = new LevelUpOverlay(this, this.centerStage.getOverlay());
         this.leaguePromoOverlay = new LeaguePromotionOverlay(this);
         this.rebirthOverlay = new RebirthOverlay(this);
@@ -221,6 +224,7 @@ export class MainScene extends Scene {
             this.shopBtn.setDepth(105);
             this.dailyBonusBtn.setDepth(105);
             this.coinDisplay.setDepth(105);
+            this.petThought.setDepth(105);
         }
 
         // Initial UI update
@@ -269,6 +273,7 @@ export class MainScene extends Scene {
             this.shopBtn.setDepth(105);
             this.dailyBonusBtn.setDepth(105);
             this.coinDisplay.setDepth(105);
+            this.petThought.setDepth(105);
         } else if (!autoActive && this.wasAutorollActive) {
             this.centerStage.setAutorollOverlay(false);
             this.rightPanel.setDepth(0);
@@ -281,12 +286,14 @@ export class MainScene extends Scene {
             this.shopBtn.setDepth(0);
             this.dailyBonusBtn.setDepth(0);
             this.coinDisplay.setDepth(0);
+            this.petThought.setDepth(0);
         }
         this.wasAutorollActive = autoActive;
 
         // Update buff displays
         this.rightPanel.updateBuffDisplay(this.manager.buffs);
         this.bonusPanel.updateBuffDisplay(this.manager.buffs);
+        this.petThought.tick(delta);
 
         // Idle arrow hint
         this.idleTimer += delta;
@@ -514,6 +521,18 @@ export class MainScene extends Scene {
         }
     }
 
+    private async handleThoughtClaim(): Promise<void> {
+        this.manager.claimThoughtBuff();
+        showToast(this, t('toast_received', { count: 1, item: t('badge_dream') }), 'info');
+        this.petThought.onClaimed();
+        const sdk = this.registry.get('platformSDK') as PlatformSDK | undefined;
+        if (sdk) {
+            sdk.gameplayStop();
+            try { await sdk.commercialBreak(); } catch { /* ad failed, buff already claimed */ }
+            sdk.gameplayStart();
+        }
+    }
+
     private onNicknameChanged(_name: string): void {
         this.updateLeaderboard();
     }
@@ -568,6 +587,7 @@ export class MainScene extends Scene {
         this.shopBtn.setDepth(0);
         this.dailyBonusBtn.setDepth(0);
         this.coinDisplay.setDepth(0);
+        this.petThought.setDepth(0);
         this.rightPanel.updateBuffDisplay(this.manager.buffs);
         this.rightPanel.setRolling(this.manager.isRolling);
     }
@@ -637,6 +657,7 @@ export class MainScene extends Scene {
 
         const topPets = this.getTopPets();
         this.centerStage.updatePedestals(topPets);
+        this.petThought.setHasPets(topPets.length > 0);
         this.questPanel.updateDisplay(this.manager.quests);
         this.dailyBonusBtn.updateBadge(this.manager.dailyBonus.hasUnclaimedReward());
         this.rightPanel.setLocked(this.manager.progression.level < AUTOROLL_TOGGLE.unlockLevel);

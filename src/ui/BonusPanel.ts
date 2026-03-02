@@ -1,6 +1,6 @@
 import { GameObjects, Geom, Scene } from 'phaser';
 import { UI, BONUS_PANEL, BUFF_CONFIG } from '../core/config';
-import { BuffSystem, CountBuff } from '../systems/BuffSystem';
+import { BuffSystem } from '../systems/BuffSystem';
 import { t } from '../data/locales';
 import { addButtonFeedback } from './components/buttonFeedback';
 import { fitText } from './components/fitText';
@@ -25,19 +25,20 @@ const TAB_W = 53;
 const TAB_H = 17;
 const TAB_R = 6;
 
-const BUFF_ICON: Record<CountBuff, string> = {
+type OfferBuff = 'lucky' | 'super' | 'epic';
+const BUFF_ICON: Record<OfferBuff, string> = {
     lucky: 'luck_x2_lg', super: 'luck_x3_lg', epic: 'luck_x5_lg',
 };
-const BUFF_DESC_KEY: Record<CountBuff, string> = {
+const BUFF_DESC_KEY: Record<OfferBuff, string> = {
     lucky: 'buff_desc_lucky', super: 'buff_desc_super', epic: 'buff_desc_epic',
 };
-const BUFF_LABEL_KEY: Record<CountBuff, string> = {
+const BUFF_LABEL_KEY: Record<OfferBuff, string> = {
     lucky: 'buff_lucky', super: 'buff_super', epic: 'buff_epic',
 };
-const TOOLTIP_KEYS: Record<CountBuff, string> = {
+const TOOLTIP_KEYS: Record<OfferBuff, string> = {
     lucky: 'tip_lucky', super: 'tip_super', epic: 'tip_epic',
 };
-const ICON_SIZES: Record<CountBuff, number> = { lucky: 54, super: 54, epic: 54 };
+const ICON_SIZES: Record<OfferBuff, number> = { lucky: 54, super: 54, epic: 54 };
 
 export class BonusPanel extends GameObjects.Container {
     private card: GameObjects.Container;
@@ -49,7 +50,7 @@ export class BonusPanel extends GameObjects.Container {
     private timerTabBg: GameObjects.Graphics;
     private timerTab: GameObjects.Container;
     private timerText: GameObjects.Text;
-    private currentType: CountBuff = 'lucky';
+    private currentType: OfferBuff = 'lucky';
     private wasOfferActive = false;
     private lastSec = -1;
     private tooltipBg: GameObjects.Graphics;
@@ -134,7 +135,7 @@ export class BonusPanel extends GameObjects.Container {
         scene.add.existing(this);
     }
 
-    private configureCard(type: CountBuff): void {
+    private configureCard(type: OfferBuff): void {
         this.currentType = type;
         const color = BUFF_CONFIG[type].color;
         const colorHex = BUFF_CONFIG[type].colorHex;
@@ -170,7 +171,7 @@ export class BonusPanel extends GameObjects.Container {
         const offered = buffs.isOfferActive();
 
         if (offered && !this.wasOfferActive) {
-            this.configureCard(buffs.getCurrentOffer());
+            this.configureCard(buffs.getCurrentOffer() as OfferBuff);
             this.lastSec = -1;
             this.timerTab.setVisible(true);
             this.card.x = ROW_W + 20;

@@ -98,6 +98,7 @@ src/
 │   ├── ShopEggsTab.ts             # Egg cards builder for shop Eggs tab
 │   ├── Leaderboard.ts             # Mini leaderboard widget with rating icon on main screen
 │   ├── PetCard.ts                  # Single pet card with image sprite (for collection grid)
+│   ├── PetThought.ts               # Dream buff thought bubble (x100, 15min timer, alternates sides)
 │   └── components/
 │       ├── Button.ts               # Reusable button with tween
 │       ├── ProgressBar.ts          # Reusable progress bar
@@ -175,7 +176,7 @@ When official docs are not enough, **search the wider internet**: Reddit, YouTub
 
 **100 pets** distributed: Common(28), Uncommon(24), Extra(14), Rare(12), Superior(8), Elite(5), Epic(4), Heroic(2), Mythic(1), Ancient(1), Legendary(1). New pets reuse existing 30 sprites via shared `imageKey`.
 
-**Roll algorithm:** Sequential check from rarest to most common, `checkChance = min(1, luckMultiplier / pet.chance)`. First pet to pass = result, fallback = most common in pool. Buff multipliers stack multiplicatively: Rebirth (permanent) x Lucky x2 x Super x3 x Epic x5. Max without rebirth: x30. Max with 8 rebirths (x9): x270. Charges per ad watch: Lucky 20, Super 15, Epic 12 (configured in `BUFF_CONFIG.rollsPerAd`). Offer cycle: 15s visible → 10s cooldown (~25s per offer, ~144/hour).
+**Roll algorithm:** Sequential check from rarest to most common, `checkChance = min(1, luckMultiplier / pet.chance)`. First pet to pass = result, fallback = most common in pool. Buff multipliers stack multiplicatively: Rebirth (permanent) x Lucky x2 x Super x3 x Epic x5 x Dream x100. Max without rebirth or dream: x30. Max with 8 rebirths (x9) + dream: x27,000. Charges per ad watch: Lucky 20, Super 15, Epic 12 (configured in `BUFF_CONFIG.rollsPerAd`). Dream buff grants 1 charge via thought bubble (no ad). Offer cycle: 15s visible → 10s cooldown (~25s per offer, ~144/hour).
 
 **Eggs:** Dynamic filter via `getEggFilterForLevel(level)` — each visual tier (1–17) removes one common pet from the pool. Tiers spread across 1000 levels: `[1, 15, 35, 60, 90, 125, 170, 225, 290, 365, 450, 545, 640, 735, 830, 910, 975]`. XP curve: sigmoid `XP_FLOOR + XP_SCALE * l² / (l² + XP_KNEE²)` (20–1050 range, knee at level 20). New pet = +25% XP bar, duplicate = +0.5-10% based on grade.
 
@@ -198,6 +199,17 @@ When official docs are not enough, **search the wider internet**: Reddit, YouTub
 - **Badge:** "Samsara ∞" purple badge (`REBIRTH_CONFIG.color = 0xd063f0`) in BuffBadges. Long-press tooltip shows multiplier value (e.g., "Permanent luck multiplier from Rebirth (×2)").
 - **Progression:** Milestone at level 1000 shows rebirth icon (`ui_rebirth_md`). Horizon capped at 1000 when `rebirthCount < maxCount`. No levels beyond 1000 are displayed.
 - **Events:** `rebirth-triggered` (RebirthData), `rebirth-complete`. MainScene chains rebirth overlay after level-up and league promo overlays.
+
+**Dream Buff / Thought Bubble:** Retention mechanic — a thought bubble appears from the 1st-place pet on the pedestal, offering a free x100 luck buff. Config in `THOUGHT_BUBBLE_CONFIG` (config.ts). UI in `PetThought.ts`.
+- **Timer:** 15 minutes (`timerMs: 900_000`). After 3s initial delay (`initialDelayMs`), bubble appears with x100 icon and countdown "in Xm Ys". When timer expires, CLAIM button replaces the countdown.
+- **Claim flow:** Player taps CLAIM → 1 charge of Dream buff granted → `commercialBreak()` interstitial ad → toast notification → bubble fades out.
+- **Cooldown:** 15s (`cooldownMs`) after claim, bubble reappears on the opposite side of the pet. Alternates right↔left each cycle.
+- **Multiplier:** x100, stacks multiplicatively with all other buffs (rebirth × lucky × super × epic × dream). 1 charge per claim, consumed on next roll.
+- **Persistence:** Timer state (phase/timer/side) persists across scene transitions via `game.registry` with `Date.now()` elapsed time accounting. Session-only — resets on page reload.
+- **Guard:** Bubble only appears if player has at least 1 pet in collection (`setHasPets()`).
+- **Positioning:** Right side (658, 110), left side (380, 110) — diagonally above the 1st-place pedestal. Content offset: cx±4 per side.
+- **Badge:** "Dream" in BuffBadges with `luck_x100_md` icon, orange color (`0xF5A623`).
+- **Events:** `buffs-changed` emitted on claim. No dedicated event — uses existing buff system.
 
 **Progression Window:** Opened by clicking TopBar (top-left panel). Shows horizontal scrollable track of level milestones. Four milestone types: egg milestone (at `VISUAL_TIERS` thresholds — double ring, egg image, name, odds text, incubation stats), feature milestone (at `AUTOROLL_TOGGLE.unlockLevel=3`, `NEST_CONFIG.unlockLevel=5`, and `REBIRTH_CONFIG.triggerLevel=1000` — double ring, feature icon, name, description via `featureMap` lookup), coin milestone (`levelUpCoinReward(level)` coins — single ring, coin icon, amount). Reached levels are yellow/colored, unreached are gray/grayscale. Initial scroll anchors on the last reached level at ~20% from left, showing ~2.5 unearned milestones to the right. Horizon = `min(max(currentLevel + 5, nextEggLevel + 3), 1000)` — capped at 1000 when rebirths available. Milestone data generated by `data/milestones.ts` with `getMilestones(currentLevel, rebirthCount)`. Scene transition follows CollectionScene pattern (stop autoroll, save state, scene.start).
 

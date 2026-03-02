@@ -243,6 +243,12 @@ export const en: Record<string, string> = {
     'toast_level_required': 'Level {level} required',
     'toast_received': 'Received: {count}x {item}',
 
+    // Dream buff (thought bubble)
+    'badge_dream': 'Dream',
+    'tip_dream': 'Increases chance x100 for the next roll',
+    'buff_desc_dream': 'x100 chance',
+    'thought_claim': 'CLAIM',
+
     // Buff descriptions
     'buff_desc_lucky': 'x2 chance',
     'buff_desc_super': 'x3 chance',

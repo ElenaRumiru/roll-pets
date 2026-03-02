@@ -183,6 +183,12 @@ export class GameManager {
         this.persistSave();
     }
 
+    claimThoughtBuff(): void {
+        this.buffs.addDream(1);
+        EventBus.emit('buffs-changed');
+        this.persistSave();
+    }
+
     purchasePet(petId: string): boolean {
         const price = this.shop.purchase(petId, this.progression.coins);
         if (price === null) return false;

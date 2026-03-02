@@ -14,7 +14,7 @@ function getDefaults(): SaveData {
         collection: [],
         totalRolls: 0,
         settings: { music: true, sfx: true, volume: 0.3, sfxVolume: 0.2, language: 'en' },
-        buffs: { lucky: 0, super: 0, epic: 0, autorollEnabled: false, autorollRunning: false, queueIndex: 0 },
+        buffs: { lucky: 0, super: 0, epic: 0, dream: 0, autorollEnabled: false, autorollRunning: false, queueIndex: 0 },
         rollLog: [],
         nickname: '',
         newPets: [],
@@ -69,6 +69,7 @@ function migrate(data: SaveData): SaveData {
             lucky: data.buffs.lucky,
             super: data.buffs.super,
             epic: data.buffs.epic,
+            dream: 0,
             autorollEnabled: false,
             autorollRunning: false,
         };

@@ -142,6 +142,7 @@ export const BUFF_CONFIG = {
     lucky:    { multiplier: 2, rollsPerAd: 20, color: 0x78C828, colorHex: '#78C828' },
     super:    { multiplier: 3, rollsPerAd: 15, color: 0x3498db, colorHex: '#3498db' },
     epic:     { multiplier: 5, rollsPerAd: 12, color: 0xffc107, colorHex: '#ffc107' },
+    dream:    { multiplier: 100, rollsPerAd: 1, color: 0xF5A623, colorHex: '#F5A623' },
     autoroll: { color: 0xff9d43, colorHex: '#ff9d43' },
     offer:    { duration: 15_000, cooldown: 10_000 },
 } as const;
@@ -277,6 +278,12 @@ export const REBIRTH_CONFIG = {
     maxCount: 8,
     color: 0xd063f0,
     colorHex: '#d063f0',
+} as const;
+
+export const THOUGHT_BUBBLE_CONFIG = {
+    timerMs: 900_000,
+    cooldownMs: 15_000,
+    initialDelayMs: 3_000,
 } as const;
 
 export const NEST_CONFIG = {

@@ -1,12 +1,12 @@
 import { BUFF_CONFIG } from '../core/config';
 import { BuffState } from '../types';
 
-export type CountBuff = 'lucky' | 'super' | 'epic';
+export type CountBuff = 'lucky' | 'super' | 'epic' | 'dream';
 
 const OFFER_QUEUE: CountBuff[] = ['lucky', 'super', 'epic'];
 
 export class BuffSystem {
-    private counts: Record<CountBuff, number> = { lucky: 0, super: 0, epic: 0 };
+    private counts: Record<CountBuff, number> = { lucky: 0, super: 0, epic: 0, dream: 0 };
     private autorollEnabled = false;
     private autorollRunning = false;
     private rebirthMultiplier = 1;
@@ -26,6 +26,10 @@ export class BuffSystem {
 
     addEpic(n: number): void {
         this.counts.epic += n;
+    }
+
+    addDream(n: number): void {
+        this.counts.dream += n;
     }
 
     setAutorollEnabled(enabled: boolean): void {
@@ -67,6 +71,7 @@ export class BuffSystem {
         if (this.counts.lucky > 0) { this.counts.lucky--; mult *= BUFF_CONFIG.lucky.multiplier; }
         if (this.counts.super > 0) { this.counts.super--; mult *= BUFF_CONFIG.super.multiplier; }
         if (this.counts.epic > 0)  { this.counts.epic--;  mult *= BUFF_CONFIG.epic.multiplier; }
+        if (this.counts.dream > 0) { this.counts.dream--; mult *= BUFF_CONFIG.dream.multiplier; }
         return mult;
     }
 
@@ -76,6 +81,7 @@ export class BuffSystem {
         if (this.counts.lucky > 0) mult *= BUFF_CONFIG.lucky.multiplier;
         if (this.counts.super > 0) mult *= BUFF_CONFIG.super.multiplier;
         if (this.counts.epic > 0)  mult *= BUFF_CONFIG.epic.multiplier;
+        if (this.counts.dream > 0) mult *= BUFF_CONFIG.dream.multiplier;
         return mult;
     }
 
@@ -117,6 +123,7 @@ export class BuffSystem {
         this.counts.lucky = buffs.lucky;
         this.counts.super = buffs.super;
         this.counts.epic = buffs.epic;
+        this.counts.dream = buffs.dream ?? 0;
         this.autorollEnabled = buffs.autorollEnabled ?? false;
         this.autorollRunning = buffs.autorollRunning ?? false;
         this.queueIndex = (buffs.queueIndex ?? 0) % OFFER_QUEUE.length;
@@ -127,6 +134,7 @@ export class BuffSystem {
             lucky: this.counts.lucky,
             super: this.counts.super,
             epic: this.counts.epic,
+            dream: this.counts.dream,
             autorollEnabled: this.autorollEnabled,
             autorollRunning: this.autorollRunning,
             queueIndex: this.queueIndex,

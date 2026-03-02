@@ -90,6 +90,8 @@ export class BootScene extends Scene {
         this.load.image('ui_lock_raw', 'assets/ui/lock_icon.png');
         this.load.image('ui_shock_raw', 'assets/ui/shock_icon.png');
         this.load.image('ui_rebirth_raw', 'assets/ui/rebirth.png');
+        this.load.image('ui_dialog_right_raw', 'assets/ui/dialog_icon.png');
+        this.load.image('ui_dialog_left_raw', 'assets/ui/dialog_icon_2.png');
 
         // Pet images (deduplicate — multiple pets share sprites)
         const loadedKeys = new Set<string>();
@@ -226,6 +228,10 @@ export class BootScene extends Scene {
 
         // Trim rebirth icon
         this.trimToWidth('ui_rebirth_raw', 'ui_rebirth_md', 120);
+
+        // Trim dialog bubble icons for PetThought
+        this.trimToWidth('ui_dialog_right_raw', 'ui_dialog_right', 160);
+        this.trimToWidth('ui_dialog_left_raw', 'ui_dialog_left', 160);
 
         // Trim lock icon for nest slots
         this.trimAndDownscaleCoin('ui_lock_raw', [

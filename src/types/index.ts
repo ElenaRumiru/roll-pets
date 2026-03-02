@@ -81,6 +81,7 @@ export interface BuffState {
     lucky: number;
     super: number;
     epic: number;
+    dream: number;
     autorollEnabled: boolean;
     autorollRunning: boolean;
     queueIndex?: number;
