@@ -59,10 +59,11 @@ export class BootScene extends Scene {
         // UI assets
         this.load.image('ui_roll', 'assets/ui/roll.png');
         this.load.image('ui_collections', 'assets/ui/collections.png');
-        // Luck clover icons (20 variants)
+        // Luck clover icons (24 variants)
         const LUCK_SUFFIXES = [
             'empty','x2','x3','x4','x5','x6','x7','x8','x9','x10',
-            'x15','x20','x30','x50','x100','x150','x300','x400','x500','x1000',
+            'x15','x20','x25','x30','x50','x75','x100','x150','x200','x300',
+            'x400','x500','x1000','x3000',
         ];
         for (const s of LUCK_SUFFIXES) {
             this.load.image(`luck_${s}`, `assets/ui/Luck_${s}.png`);

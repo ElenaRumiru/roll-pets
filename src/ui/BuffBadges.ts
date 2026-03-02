@@ -18,7 +18,7 @@ const BADGE_H = 28;
 const BADGE_R = 7;
 const BADGE_GAP = 4;
 const ICON_SZ = 23;
-const PAD_X = 6;
+const PAD_X = 5;
 const ICON_TEXT_GAP = 2;
 
 const TOOLTIP_KEYS: Record<string, string> = {
