@@ -1,8 +1,8 @@
 import { LeagueConfig } from '../types';
 
 export const LEAGUES: LeagueConfig[] = [
-    { tier: 'bronze',  label: 'league_bronze',  color: 0xcd7f32, colorHex: '#cd7f32', minChance: 2,           maxChance: 1_000 },
-    { tier: 'silver',  label: 'league_silver',  color: 0xc0c0c0, colorHex: '#c0c0c0', minChance: 1_000,       maxChance: 50_000 },
+    { tier: 'bronze',  label: 'league_bronze',  color: 0xcd7f32, colorHex: '#cd7f32', minChance: 2,           maxChance: 5_000 },
+    { tier: 'silver',  label: 'league_silver',  color: 0xc0c0c0, colorHex: '#c0c0c0', minChance: 5_000,       maxChance: 50_000 },
     { tier: 'gold',    label: 'league_gold',    color: 0xffd700, colorHex: '#ffd700', minChance: 50_000,      maxChance: 5_000_000 },
     { tier: 'diamond', label: 'league_diamond', color: 0x00bfff, colorHex: '#00bfff', minChance: 5_000_000,   maxChance: 250_000_000 },
     { tier: 'master',  label: 'league_master',  color: 0xff4444, colorHex: '#ff4444', minChance: 250_000_000, maxChance: 1_000_000_000 },
