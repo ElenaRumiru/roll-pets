@@ -7,15 +7,22 @@ export interface CollectionEvent {
 
 export class CollectionTracker {
     private claimed: Record<string, boolean> = {};
-    private seenPets: Record<string, number> = {};
+    private seenPets: Record<string, string[]> = {};
 
-    loadFromSave(claimed: Record<string, boolean>, seenPets: Record<string, number>): void {
+    loadFromSave(claimed: Record<string, boolean>, seenPets: Record<string, string[]>): void {
         this.claimed = { ...claimed };
-        this.seenPets = { ...seenPets };
+        this.seenPets = {};
+        for (const [k, v] of Object.entries(seenPets)) {
+            this.seenPets[k] = Array.isArray(v) ? [...v] : [];
+        }
     }
 
     toSaveClaimed(): Record<string, boolean> { return { ...this.claimed }; }
-    toSaveSeenPets(): Record<string, number> { return { ...this.seenPets }; }
+    toSaveSeenPets(): Record<string, string[]> {
+        const out: Record<string, string[]> = {};
+        for (const [k, v] of Object.entries(this.seenPets)) out[k] = [...v];
+        return out;
+    }
 
     /**
      * Called after a new pet is added to the player's collection.
@@ -26,9 +33,7 @@ export class CollectionTracker {
         const affected = getCollectionsByPetId(petId);
         for (const coll of affected) {
             const progress = this.getProgress(coll, playerCollection);
-            // Discovered: exactly 1 pet collected (the one just added)
             if (progress.current === 1) result.discovered.push(coll.id);
-            // Completed: all pets collected and not yet claimed
             if (progress.current === progress.total && !this.claimed[coll.id]) {
                 result.completed.push(coll.id);
             }
@@ -67,18 +72,24 @@ export class CollectionTracker {
 
     isClaimed(collId: string): boolean { return this.claimed[collId] === true; }
 
-    /** Mark that the player has "seen" the current count in a collection detail view. */
-    markSeen(collId: string, currentCount: number): void {
-        this.seenPets[collId] = currentCount;
+    /** Mark all owned pets of this collection as "seen". */
+    markSeen(collId: string, playerCollection: Set<string>): void {
+        const coll = COLLECTIONS.find(c => c.id === collId);
+        if (!coll) return;
+        this.seenPets[collId] = coll.petIds.filter(id => playerCollection.has(id));
+    }
+
+    /** Get pet IDs that are owned but not yet seen in this collection. */
+    getUnseenPetIds(collId: string, playerCollection: Set<string>): string[] {
+        const coll = COLLECTIONS.find(c => c.id === collId);
+        if (!coll) return [];
+        const seen = new Set(this.seenPets[collId] ?? []);
+        return coll.petIds.filter(id => playerCollection.has(id) && !seen.has(id));
     }
 
     /** Number of unseen new pets in a specific collection. */
     getUnseenCount(collId: string, playerCollection: Set<string>): number {
-        const coll = COLLECTIONS.find(c => c.id === collId);
-        if (!coll) return 0;
-        const collected = coll.petIds.filter(id => playerCollection.has(id)).length;
-        const seen = this.seenPets[collId] ?? 0;
-        return Math.max(0, collected - seen);
+        return this.getUnseenPetIds(collId, playerCollection).length;
     }
 
     /** Whether any discovered collection has unseen pets. */
@@ -117,9 +128,9 @@ export class CollectionTracker {
     /** Sort group: 0=claimable, 1=unseen, 2=incomplete, 3=claimed */
     private getSortGroup(coll: CollectionDef, pc: Set<string>): number {
         const complete = coll.petIds.every(id => pc.has(id));
-        if (complete && !this.claimed[coll.id]) return 0; // claimable
-        if (this.claimed[coll.id]) return 3; // claimed
-        if (this.getUnseenCount(coll.id, pc) > 0) return 1; // unseen
-        return 2; // incomplete
+        if (complete && !this.claimed[coll.id]) return 0;
+        if (this.claimed[coll.id]) return 3;
+        if (this.getUnseenCount(coll.id, pc) > 0) return 1;
+        return 2;
     }
 }

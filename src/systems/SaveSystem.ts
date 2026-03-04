@@ -3,7 +3,7 @@ import { PETS } from '../data/pets';
 import { getGradeForChance, getDefaultQuestState, getDefaultDailyBonusState, getDefaultNestState } from '../core/config';
 
 const SAVE_KEY = 'pets_go_lite_save';
-const CURRENT_VERSION = 20;
+const CURRENT_VERSION = 21;
 
 function getDefaults(): SaveData {
     return {
@@ -144,6 +144,17 @@ function migrate(data: SaveData): SaveData {
         data.collectionsSeenPets = data.collectionsSeenPets ?? {};
         data.version = 20;
     }
+    if (data.version === 20) {
+        // Migrate collectionsSeenPets from Record<string,number> to Record<string,string[]>
+        const old = data.collectionsSeenPets as unknown as Record<string, number | string[]>;
+        const migrated: Record<string, string[]> = {};
+        for (const [k, v] of Object.entries(old)) {
+            if (Array.isArray(v)) migrated[k] = v;
+            else migrated[k] = []; // drop count-based data, will rebuild on next view
+        }
+        data.collectionsSeenPets = migrated;
+        data.version = 21;
+    }
     return data;
 }
 
@@ -214,6 +225,12 @@ export class SaveSystem {
 
     clearNewPets(): void {
         this.data.newPets = [];
+        this.save();
+    }
+
+    removeNewPets(ids: readonly string[]): void {
+        const toRemove = new Set(ids);
+        this.data.newPets = this.data.newPets.filter(id => !toRemove.has(id));
         this.save();
     }
 

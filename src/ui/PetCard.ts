@@ -38,12 +38,12 @@ export class PetCard extends GameObjects.Container {
             this.add(img);
 
             if (isNew) {
-                const newBadge = scene.add.text(CARD_W / 2 - 8, -CARD_H / 2 + 6, t('new_pet'), {
+                const newBadge = scene.add.text(CARD_W / 2 - 6, -CARD_H / 2 - 1, 'NEW!', {
                     fontFamily: UI.FONT_STROKE,
-                    fontSize: '11px',
-                    color: '#ffc107',
+                    fontSize: '14px',
+                    color: '#ff3333',
                     stroke: '#000000',
-                    strokeThickness: 2,
+                    strokeThickness: 3,
                 }).setOrigin(0.5);
                 this.add(newBadge);
             }

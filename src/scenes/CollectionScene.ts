@@ -18,6 +18,7 @@ export class CollectionScene extends Scene {
     private activeTab: CollTab = 'collections';
     private colTabBtn!: Button;
     private allTabBtn!: Button;
+    private allBadge!: Phaser.GameObjects.Container;
     private content!: Phaser.GameObjects.Container;
     private detailContainer: Phaser.GameObjects.Container | null = null;
     private tabCleanup: (() => void) | null = null;
@@ -47,7 +48,6 @@ export class CollectionScene extends Scene {
 
         new Button(this, 68, 31, 111, 39, `\u2190 ${t('collection_back')}`, 0x444455, () => {
             this.cleanupAll();
-            this.manager.save.clearNewPets();
             this.scene.start('MainScene');
         });
 
@@ -78,6 +78,23 @@ export class CollectionScene extends Scene {
                 if (this.detailContainer) this.hideDetail();
                 if (this.activeTab !== 'all') this.switchTab('all');
             });
+
+        // Red notification badge on All tab
+        const bx = cx + tabW + gap / 2 - 4;
+        const by = y - 14;
+        const badgeR = 9;
+        this.allBadge = this.add.container(0, 0);
+        const bg = this.add.graphics();
+        bg.fillStyle(0xcc0000, 1);
+        bg.fillCircle(bx, by, badgeR);
+        bg.lineStyle(2, 0x000000, 0.7);
+        bg.strokeCircle(bx, by, badgeR);
+        this.allBadge.add(bg);
+        this.allBadge.add(this.add.text(bx, by, '!', {
+            fontFamily: UI.FONT_STROKE, fontSize: '13px', color: '#ffffff',
+            stroke: '#000000', strokeThickness: 2,
+        }).setOrigin(0.5));
+        this.updateAllBadge();
     }
 
     private switchTab(tab: CollTab): void {
@@ -107,6 +124,10 @@ export class CollectionScene extends Scene {
         const newPetIds = new Set(this.manager.save.getNewPets());
         const result = buildAllTab(this, this.content, this.collection, newPetIds);
         this.tabCleanup = result.cleanup;
+
+        // Clear NEW! markers only (doesn't affect "!" badges on collection cards)
+        this.manager.save.clearNewPets();
+        this.updateAllBadge();
     }
 
     private showDetail(collId: string): void {
@@ -117,14 +138,13 @@ export class CollectionScene extends Scene {
 
         const discovered = this.manager.collectionTracker.getDiscoveredSorted(this.collection);
         const idx = discovered.findIndex(c => c.id === collId);
+        const coll = discovered[idx] ?? COLLECTIONS.find(c => c.id === collId)!;
 
         this.detailContainer = this.add.container(0, 0).setDepth(500);
 
-        const newPetIds = new Set(this.manager.save.getNewPets());
         const result = buildDetailView(
-            this, this.detailContainer,
-            discovered[idx] ?? COLLECTIONS.find(c => c.id === collId)!,
-            this.manager.collectionTracker, this.collection, newPetIds,
+            this, this.detailContainer, coll,
+            this.manager.collectionTracker, this.collection,
             (dir) => {
                 const next = (idx + dir + discovered.length) % discovered.length;
                 this.showDetail(discovered[next].id);
@@ -133,6 +153,7 @@ export class CollectionScene extends Scene {
             () => this.hideDetail(),
         );
         this.detailCleanup = result.cleanup;
+
         this.manager.saveState();
     }
 
@@ -149,6 +170,11 @@ export class CollectionScene extends Scene {
             if (coll) showToast(this, t('col_complete', { name: t(coll.nameKey) }), 'info');
             this.showDetail(collId);
         }
+    }
+
+    private updateAllBadge(): void {
+        const hasNew = this.manager.save.getNewPets().length > 0;
+        this.allBadge.setVisible(hasNew);
     }
 
     private cleanupTab(): void {

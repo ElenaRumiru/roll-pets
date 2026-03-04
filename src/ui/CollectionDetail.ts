@@ -30,7 +30,6 @@ export function buildDetailView(
     coll: CollectionDef,
     tracker: CollectionTracker,
     playerCollection: Set<string>,
-    newPetIds: Set<string>,
     onNav: (direction: -1 | 1) => void,
     onClaim: (collId: string) => void,
     onClose: () => void,
@@ -41,7 +40,9 @@ export function buildDetailView(
     const isClaimable = isComplete && !isClaimed;
     const ratio = progress.total > 0 ? progress.current / progress.total : 0;
 
-    tracker.markSeen(coll.id, progress.current);
+    // Determine unseen pets BEFORE marking as seen
+    const unseenIds = new Set(tracker.getUnseenPetIds(coll.id, playerCollection));
+    tracker.markSeen(coll.id, playerCollection);
 
     const px = GAME_WIDTH / 2;
     const py = GAME_HEIGHT / 2;
@@ -187,7 +188,7 @@ export function buildDetailView(
         const x = startX + col * PET_CARD_SX;
         const y = gridStartY + row * PET_CARD_SY;
         const found = playerCollection.has(pet.id);
-        const card = new PetCard(scene, x, y, pet, found, found && newPetIds.has(pet.id));
+        const card = new PetCard(scene, x, y, pet, found, found && unseenIds.has(pet.id));
         gridContainer.add(card);
     });
 

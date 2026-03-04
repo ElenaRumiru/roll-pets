@@ -71,7 +71,7 @@ export interface SaveData {
     eggInventory: Record<string, number>;
     rebirthCount: number;
     collectionsClaimed: Record<string, boolean>;
-    collectionsSeenPets: Record<string, number>;
+    collectionsSeenPets: Record<string, string[]>;
 }
 
 export interface RebirthData {
