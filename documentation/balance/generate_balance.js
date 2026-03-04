@@ -8,8 +8,8 @@
  * XP per roll = flat 5 (XP_PER_ROLL, regardless of new/dup/grade)
  */
 
-const fs = require('fs');
 const path = require('path');
+const ExcelJS = require('exceljs');
 
 // ═══════════════════════════════════════════════════════════════
 // DATA (mirrored from src/)
@@ -252,21 +252,52 @@ function expectedCoinsPerRoll(pool, mult) {
 }
 
 // ═══════════════════════════════════════════════════════════════
-// CSV WRITERS
+// XLSX WORKBOOK
 // ═══════════════════════════════════════════════════════════════
 
-const OUT = path.join(__dirname);
+const workbook = new ExcelJS.Workbook();
+workbook.creator = 'PETS GO Lite Balance Calculator';
 
-function writeCSV(filename, header, rows) {
-  const lines = [header.join(',')];
+const HEADER_FILL = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF1B1B3A' } };
+const HEADER_FONT = { bold: true, color: { argb: 'FFFFFFFF' }, size: 11 };
+const HEADER_BORDER = {
+  bottom: { style: 'thin', color: { argb: 'FF555577' } },
+};
+
+function addSheet(name, header, rows) {
+  const sheet = workbook.addWorksheet(name);
+  // Header row
+  const headerRow = sheet.addRow(header);
+  headerRow.eachCell(cell => {
+    cell.fill = HEADER_FILL;
+    cell.font = HEADER_FONT;
+    cell.border = HEADER_BORDER;
+    cell.alignment = { horizontal: 'center', vertical: 'middle' };
+  });
+  headerRow.height = 22;
+  // Data rows
   for (const row of rows) {
-    lines.push(row.map(v => {
-      const s = String(v);
-      return s.includes(',') || s.includes('"') ? `"${s.replace(/"/g,'""')}"` : s;
-    }).join(','));
+    const dataRow = sheet.addRow(row);
+    dataRow.eachCell(cell => {
+      cell.alignment = { vertical: 'middle' };
+    });
   }
-  fs.writeFileSync(path.join(OUT, filename), '\ufeff' + lines.join('\n'), 'utf8');
-  console.log(`  -> ${filename} (${rows.length} rows)`);
+  // Auto-fit column widths (approximate)
+  sheet.columns.forEach((col, i) => {
+    let maxLen = String(header[i] || '').length;
+    for (const row of rows) {
+      const val = String(row[i] ?? '');
+      maxLen = Math.max(maxLen, val.length);
+    }
+    col.width = Math.min(Math.max(maxLen + 2, 8), 40);
+  });
+  // Freeze header row
+  sheet.views = [{ state: 'frozen', ySplit: 1 }];
+  // Auto-filter
+  if (rows.length > 0) {
+    sheet.autoFilter = { from: { row: 1, column: 1 }, to: { row: 1, column: header.length } };
+  }
+  console.log(`  -> ${name} (${rows.length} rows)`);
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -286,7 +317,7 @@ function gen01_pets() {
       p.chance, XP_PER_ROLL, p.chance * 2, league.tier, cols,
     ]);
   });
-  writeCSV('01_pets.csv', header, rows);
+  addSheet('Pets', header, rows);
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -312,7 +343,7 @@ function gen02_grades() {
       fmtNum(pets.reduce((s, p) => s + p.chance * 2, 0)),
     ]);
   }
-  writeCSV('02_grades_summary.csv', header, rows);
+  addSheet('Grades', header, rows);
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -369,7 +400,7 @@ function gen03_xp() {
     prevTier = tier;
   }
 
-  writeCSV('03_xp_progression.csv', header, rows);
+  addSheet('XP Progression', header, rows);
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -398,7 +429,7 @@ function gen04_eggs() {
       rarest.id, rarest.chance, oddsStr(rarest.chance),
     ]);
   }
-  writeCSV('04_egg_tiers.csv', header, rows);
+  addSheet('Egg Tiers', header, rows);
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -427,7 +458,7 @@ function gen05_probabilities() {
     }
     rows.push(row);
   }
-  writeCSV('05_roll_probabilities.csv', header, rows);
+  addSheet('Roll Probabilities', header, rows);
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -449,7 +480,7 @@ function gen06_economy() {
     }
     rows.push(row);
   }
-  writeCSV('06_economy_ev_per_roll.csv', header, rows);
+  addSheet('Economy EV', header, rows);
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -493,7 +524,7 @@ function gen07_buffs() {
       pLeg.toExponential(4),
     ]);
   }
-  writeCSV('07_buff_analysis.csv', header, rows);
+  addSheet('Buff Analysis', header, rows);
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -538,7 +569,7 @@ function gen08_strategies() {
     row.push((pRarePlus(s.gp)*100).toFixed(4) + '%');
     rows.push(row);
   }
-  writeCSV('08_strategies_comparison.csv', header, rows);
+  addSheet('Strategies', header, rows);
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -585,7 +616,7 @@ function gen09_goldenPath() {
       coinReward, milestone,
     ]);
   }
-  writeCSV('09_golden_path.csv', header, rows);
+  addSheet('Golden Path', header, rows);
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -616,7 +647,7 @@ function gen10_petProbabilities() {
     }
     rows.push(row);
   });
-  writeCSV('10_pet_probabilities.csv', header, rows);
+  addSheet('Pet Probabilities', header, rows);
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -653,7 +684,7 @@ function gen11_shop() {
       verdict,
     ]);
   }
-  writeCSV('11_shop_economy.csv', header, rows);
+  addSheet('Shop Economy', header, rows);
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -700,7 +731,7 @@ function gen12_overnight() {
       (1 - Math.pow(1 - pLeg, rolls)).toExponential(4),
     ]);
   }
-  writeCSV('12_overnight_autoroll.csv', header, rows);
+  addSheet('Overnight Autoroll', header, rows);
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -729,7 +760,7 @@ function gen13_coinBalance() {
     ['Nest slot unlock', 'SINK', '5K / 50K', 'One-time',
      'One-time', 'Slot 2: 5K, Slot 3: 50K'],
   ];
-  writeCSV('13_coin_sources_sinks.csv', header, rows);
+  addSheet('Coin Balance', header, rows);
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -775,7 +806,7 @@ function gen14_quests() {
   [3,6,9,12,15].forEach((at, i) => {
     rows.push(['Milestone', at, [100,500,2000,5000,15000][i] + ' coins','','','','','']);
   });
-  writeCSV('14_quest_analysis.csv', header, rows);
+  addSheet('Quests', header, rows);
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -825,33 +856,40 @@ function gen15_collection() {
       fmtNum(rollsForLastPet), note,
     ]);
   }
-  writeCSV('15_collection_completion.csv', header, rows);
+  addSheet('Collection', header, rows);
 }
 
 // ═══════════════════════════════════════════════════════════════
 // RUN ALL
 // ═══════════════════════════════════════════════════════════════
 
-console.log('PETS GO Lite — Balance Calculator\n');
-console.log(`Total pets: ${PETS.length}`);
-console.log(`Grades: ${GRADES.length}`);
-console.log(`Egg tiers: ${VISUAL_TIERS.length}`);
-console.log(`Leagues: ${LEAGUES.length}\n`);
+async function main() {
+  console.log('PETS GO Lite — Balance Calculator\n');
+  console.log(`Total pets: ${PETS.length}`);
+  console.log(`Grades: ${GRADES.length}`);
+  console.log(`Egg tiers: ${VISUAL_TIERS.length}`);
+  console.log(`Leagues: ${LEAGUES.length}\n`);
 
-console.log('Generating CSV files...\n');
-gen01_pets();
-gen02_grades();
-gen03_xp();
-gen04_eggs();
-gen05_probabilities();
-gen06_economy();
-gen07_buffs();
-gen08_strategies();
-gen09_goldenPath();
-gen10_petProbabilities();
-gen11_shop();
-gen12_overnight();
-gen13_coinBalance();
-gen14_quests();
-gen15_collection();
-console.log('\nDone! All CSV files saved to documentation/balance/');
+  console.log('Generating sheets...\n');
+  gen01_pets();
+  gen02_grades();
+  gen03_xp();
+  gen04_eggs();
+  gen05_probabilities();
+  gen06_economy();
+  gen07_buffs();
+  gen08_strategies();
+  gen09_goldenPath();
+  gen10_petProbabilities();
+  gen11_shop();
+  gen12_overnight();
+  gen13_coinBalance();
+  gen14_quests();
+  gen15_collection();
+
+  const outPath = path.join(__dirname, 'balance.xlsx');
+  await workbook.xlsx.writeFile(outPath);
+  console.log(`\nDone! Saved to ${outPath}`);
+}
+
+main().catch(err => { console.error(err); process.exit(1); });

@@ -1,4 +1,0 @@
-﻿Strategy,Mult,Rolls/hour,Coins/hour,Coins in 1h,Coins in 4h,Coins in 8h,Coins in 12h,Coins in 24h,P(Rare+)/roll
-Autoroll (AFK),x1,7200.0,726.08K,726.08K,2.90M,5.81M,8.71M,17.43M,0.1008%
-Manual (1/sec),x1,3600.0,363.04K,363.04K,1.45M,2.90M,4.36M,8.71M,0.1008%
-Full buff stack (x30),x30,23.2,47.91K,47.91K,191.66K,383.32K,574.98K,1.15M,2.9836%

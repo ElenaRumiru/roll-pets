@@ -1,8 +1,0 @@
-﻿Source/Sink,Type,Amount,Frequency,Coins/hour (autoroll),Notes
-Roll coins,SOURCE,100.84/roll,7200/h,726.08K,Coins = pet.chance value
-Level-up coins,SOURCE,105 (at lv50),Per level,Variable,Formula: sigmoid 5-500 range
-League promotion,SOURCE,500-500K,One-time per league,One-time,"Silver 500, Gold 5K, Diamond 50K, Master 500K"
-Quest milestones,SOURCE,100-15K,At 3/6/9/12/15 quests,One-time,"Total: 22,600 coins"
-Shop purchase,SINK,chance*2,Manual,Variable,Price = pet.chance * 2
-Egg purchase,SINK,10-1000,Manual,Variable,"Tier 1: 10, Tier 17: 1000"
-Nest slot unlock,SINK,5K / 50K,One-time,One-time,"Slot 2: 5K, Slot 3: 50K"
