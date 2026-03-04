@@ -20,6 +20,12 @@ const BAR_CORNER_R = 6;
 const BAR_GREEN = 0x78C828;
 const BAR_GREEN_DARK = 0x5A9A1E;
 
+function formatReward(n: number): string {
+    if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(n % 1_000_000 === 0 ? 0 : 1)}M`;
+    if (n >= 1_000) return `${(n / 1_000).toFixed(n % 1_000 === 0 ? 0 : 1)}K`;
+    return String(n);
+}
+
 export interface DetailResult {
     cleanup: () => void;
 }
@@ -126,13 +132,28 @@ export function buildDetailView(
         stroke: '#000000', strokeThickness: 2,
     }).setOrigin(0.5));
 
-    // Coin icon at bar end + amount below — use ui_coin_md (54px) for sharp display
-    if (!isClaimed && scene.textures.exists('ui_coin_md')) {
-        const coinSz = Math.round(BAR_H_DETAIL * 1.68) + 3;
-        const coinX = px + BAR_W / 2 - 1;
-        container.add(scene.add.image(coinX, barY - 1, 'ui_coin_md').setDisplaySize(coinSz, coinSz));
-        container.add(scene.add.text(coinX, barY + coinSz / 2 + 6, String(coll.reward.coins), {
-            fontFamily: UI.FONT_STROKE, fontSize: '11px', color: '#f5c842',
+    // Coin reward circle at bar end — triple outline matching bar style
+    if (!isClaimed) {
+        const circleR = 16;
+        const circleX = px + BAR_W / 2;
+        const circleY = barY;
+        const coinGfx = scene.add.graphics();
+
+        coinGfx.lineStyle(1.5, 0x000000, 0.9);
+        coinGfx.strokeCircle(circleX, circleY, circleR + 3.5);
+        coinGfx.lineStyle(2.5, 0xFEBF07, 1);
+        coinGfx.strokeCircle(circleX, circleY, circleR + 1.5);
+        coinGfx.lineStyle(1.5, 0x000000, 0.9);
+        coinGfx.strokeCircle(circleX, circleY, circleR);
+        coinGfx.fillStyle(0x12121e, 1);
+        coinGfx.fillCircle(circleX, circleY, circleR);
+        container.add(coinGfx);
+
+        if (scene.textures.exists('ui_coin_md')) {
+            container.add(scene.add.image(circleX, circleY - 4, 'ui_coin_md').setDisplaySize(23, 23));
+        }
+        container.add(scene.add.text(circleX, circleY + 9, formatReward(coll.reward.coins), {
+            fontFamily: UI.FONT_STROKE, fontSize: '10px', color: '#f5c842',
             stroke: '#000000', strokeThickness: 2,
         }).setOrigin(0.5));
     }
@@ -141,8 +162,8 @@ export function buildDetailView(
     createArrowImg(scene, container, px - POPUP_W / 2 - 28, py, 'ui_arrow_l', () => onNav(-1));
     createArrowImg(scene, container, px + POPUP_W / 2 + 28, py, 'ui_arrow_r', () => onNav(1));
 
-    // === CLAIM BUTTON ===
-    let gridTopOffset = 80;
+    // === STATUS BUTTON ===
+    const gridTopOffset = 122;
     const claimY = top + 102;
 
     if (isClaimed) {
@@ -150,14 +171,15 @@ export function buildDetailView(
             '\u2713 ' + t('col_claimed'), 0x8a7530, () => {});
         claimedBtn.setAlpha(0.7);
         container.add(claimedBtn);
-        gridTopOffset = 122;
-    }
-
-    if (isClaimable) {
+    } else if (isClaimable) {
         const claimBtn = new Button(scene, px, claimY, 112, 32,
             t('col_claim'), 0x78C828, () => onClaim(coll.id));
         container.add(claimBtn);
-        gridTopOffset = 122;
+    } else {
+        const progressBtn = new Button(scene, px, claimY, 112, 32,
+            t('col_in_progress'), 0x2a5a1a, () => {});
+        progressBtn.setAlpha(0.5);
+        container.add(progressBtn);
     }
 
     // === PET GRID ===

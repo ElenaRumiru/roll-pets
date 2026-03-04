@@ -46,6 +46,7 @@ export const en: Record<string, string> = {
     'col_tab_all': 'All',
     'col_claim': 'CLAIM',
     'col_claimed': 'Claimed',
+    'col_in_progress': 'In progress',
     'col_done': 'Done!',
     'col_complete_label': 'COMPLETE',
     'col_reward': 'Reward:',

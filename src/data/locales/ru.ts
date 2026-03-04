@@ -46,6 +46,7 @@ export const ru: Record<string, string> = {
     'col_tab_all': 'Все',
     'col_claim': 'ЗАБРАТЬ',
     'col_claimed': 'Получено',
+    'col_in_progress': 'В процессе',
     'col_done': 'Готово!',
     'col_complete_label': 'ГОТОВО',
     'col_reward': 'Награда:',

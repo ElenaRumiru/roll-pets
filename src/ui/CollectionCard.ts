@@ -23,6 +23,12 @@ const BAR_GREEN_DARK = 0x5A9A1E;  // claimed
 const BADGE_GREEN = 0x98CD5B;
 const BADGE_RED = 0xcc0000;
 
+function formatReward(n: number): string {
+    if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(n % 1_000_000 === 0 ? 0 : 1)}M`;
+    if (n >= 1_000) return `${(n / 1_000).toFixed(n % 1_000 === 0 ? 0 : 1)}K`;
+    return String(n);
+}
+
 export class CollectionCard extends GameObjects.Container {
     constructor(
         scene: Scene, x: number, y: number,
@@ -130,14 +136,41 @@ export class CollectionCard extends GameObjects.Container {
         fitText(countText, bW - 12, 13, 9);
         this.add(countText);
 
-        // Gift icon at bar end — when reward not yet claimed
-        if (!isClaimed && scene.textures.exists('ui_gift_md')) {
-            const giftSz = Math.round(BAR_H * 1.68) + 3;
-            const giftX = bLeft + bW - 1;
-            const gift = scene.add.image(giftX, barY - 1, 'ui_gift_md').setDisplaySize(giftSz, giftSz);
-            if (dimmed) gift.setAlpha(0.35);
-            else if (!isClaimable) gift.setTint(0x777777);
-            this.add(gift);
+        // Coin reward circle at bar end — triple outline matching bar style
+        if (!isClaimed) {
+            const circleR = 14;
+            const circleX = bLeft + bW;
+            const circleY = barY;
+            const circleGfx = scene.add.graphics();
+
+            // Triple outline: black → yellow → black (same as bar)
+            circleGfx.lineStyle(1.5, 0x000000, 0.9);
+            circleGfx.strokeCircle(circleX, circleY, circleR + 3.5);
+            circleGfx.lineStyle(2.5, 0xFEBF07, dimmed ? 0.4 : 1);
+            circleGfx.strokeCircle(circleX, circleY, circleR + 1.5);
+            circleGfx.lineStyle(1.5, 0x000000, 0.9);
+            circleGfx.strokeCircle(circleX, circleY, circleR);
+
+            // Dark fill
+            circleGfx.fillStyle(0x12121e, 1);
+            circleGfx.fillCircle(circleX, circleY, circleR);
+            this.add(circleGfx);
+
+            // Coin icon — upper portion of circle
+            if (scene.textures.exists('ui_coin_md')) {
+                const coinSz = 21;
+                const coin = scene.add.image(circleX, circleY - 4, 'ui_coin_md').setDisplaySize(coinSz, coinSz);
+                if (dimmed) coin.setAlpha(0.35);
+                this.add(coin);
+            }
+
+            // Reward amount — lower portion of circle
+            const amountText = scene.add.text(circleX, circleY + 8, formatReward(coll.reward.coins), {
+                fontFamily: UI.FONT_STROKE, fontSize: '9px', color: '#f5c842',
+                stroke: '#000000', strokeThickness: 2,
+            }).setOrigin(0.5);
+            if (dimmed) amountText.setAlpha(0.35);
+            this.add(amountText);
         }
 
         // Notification badges — follow project patterns
