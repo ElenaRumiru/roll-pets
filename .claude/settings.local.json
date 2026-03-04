@@ -76,7 +76,10 @@
       "WebFetch(domain:www.gamerefinery.com)",
       "Bash(ffmpeg:*)",
       "Bash(where ffmpeg:*)",
-      "mcp__plugin_playwright_playwright__browser_wait_for"
+      "mcp__plugin_playwright_playwright__browser_wait_for",
+      "Bash(node:*)",
+      "Bash(npx vite:*)",
+      "Bash(git status:*)"
     ]
   }
 }
