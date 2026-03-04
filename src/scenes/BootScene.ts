@@ -8,6 +8,7 @@ import { AudioSystem } from '../systems/AudioSystem';
 import { GameManager } from '../core/GameManager';
 import { setLanguage } from '../data/locales';
 import { GRADE_ORDER } from '../core/config';
+import { COL_ICON_NAMES } from '../data/collections';
 
 export class BootScene extends Scene {
     constructor() {
@@ -92,6 +93,13 @@ export class BootScene extends Scene {
         this.load.image('ui_rebirth_raw', 'assets/ui/rebirth.png');
         this.load.image('ui_dialog_right_raw', 'assets/ui/dialog_icon.png');
         this.load.image('ui_dialog_left_raw', 'assets/ui/dialog_icon_2.png');
+        this.load.image('ui_arrow_l_raw', 'assets/ui/arrow_l.png');
+        this.load.image('ui_arrow_r_raw', 'assets/ui/arrow_r.png');
+
+        // Collection icons (24 themed medallions)
+        for (const name of COL_ICON_NAMES) {
+            this.load.image(`col_${name}_raw`, `assets/ui/collections/${name}.png`);
+        }
 
         // Pet images (deduplicate — multiple pets share sprites)
         const loadedKeys = new Set<string>();
@@ -232,6 +240,20 @@ export class BootScene extends Scene {
         // Trim dialog bubble icons for PetThought
         this.trimToWidth('ui_dialog_right_raw', 'ui_dialog_right', 160);
         this.trimToWidth('ui_dialog_left_raw', 'ui_dialog_left', 160);
+
+        // Trim arrow icons for collection detail nav (preserve aspect ratio)
+        this.trimToHeight('ui_arrow_l_raw', 'ui_arrow_l', 56);
+        this.trimToHeight('ui_arrow_r_raw', 'ui_arrow_r', 56);
+
+        // Collection icons — copy at full resolution, let GPU handle display scaling
+        for (const name of COL_ICON_NAMES) {
+            const src = this.textures.get(`col_${name}_raw`).getSourceImage() as HTMLImageElement;
+            const c = document.createElement('canvas');
+            c.width = src.width;
+            c.height = src.height;
+            c.getContext('2d')!.drawImage(src, 0, 0);
+            this.textures.addCanvas(`col_${name}`, c);
+        }
 
         // Trim lock icon for nest slots
         this.trimAndDownscaleCoin('ui_lock_raw', [

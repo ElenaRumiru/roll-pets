@@ -70,6 +70,8 @@ export interface SaveData {
     nests: NestState;
     eggInventory: Record<string, number>;
     rebirthCount: number;
+    collectionsClaimed: Record<string, boolean>;
+    collectionsSeenPets: Record<string, number>;
 }
 
 export interface RebirthData {

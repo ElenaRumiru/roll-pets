@@ -116,7 +116,7 @@ export class NestsButton extends GameObjects.Container {
         }
         if (readyCount > 0) {
             this.badgeGfx.clear();
-            this.badgeGfx.fillStyle(0x27ae60, 1);
+            this.badgeGfx.fillStyle(0x98CD5B, 1);
             this.badgeGfx.fillCircle(BADGE_X, BADGE_Y, BADGE_R);
             this.badgeGfx.lineStyle(2, 0x000000, 1);
             this.badgeGfx.strokeCircle(BADGE_X, BADGE_Y, BADGE_R);

@@ -9,6 +9,8 @@ import { ShopSystem } from '../systems/ShopSystem';
 import { LeaderboardSystem } from '../systems/LeaderboardSystem';
 import { DailyBonusSystem } from '../systems/DailyBonusSystem';
 import { NestSystem } from '../systems/NestSystem';
+import { CollectionTracker } from '../systems/CollectionTracker';
+import { COLLECTIONS } from '../data/collections';
 import { getEligiblePets, getEggImageKey } from '../data/eggs';
 import { getEggTierConfig } from '../data/eggTiers';
 import { getBgImageKey } from '../data/backgrounds';
@@ -27,6 +29,7 @@ export class GameManager {
     leaderboard: LeaderboardSystem;
     dailyBonus: DailyBonusSystem;
     nests: NestSystem;
+    collectionTracker: CollectionTracker;
     isRolling = false;
     lastRollCoinGain = 0;
     pendingRebirthData: RebirthData | null = null;
@@ -59,6 +62,9 @@ export class GameManager {
 
         this.nests = new NestSystem();
         this.nests.loadFromSave(data.nests ?? getDefaultNestState());
+
+        this.collectionTracker = new CollectionTracker();
+        this.collectionTracker.loadFromSave(data.collectionsClaimed ?? {}, data.collectionsSeenPets ?? {});
 
         this.buffs.setRebirthMultiplier(1 + data.rebirthCount);
 
@@ -109,7 +115,10 @@ export class GameManager {
         const luckMultiplier = this.buffs.consumeForRoll();
         const pet = this.rng.rollPet(eligible, luckMultiplier);
         const result = this.progression.processRoll(pet);
-        if (result.isNew) this.save.addNewPet(result.pet.id);
+        if (result.isNew) {
+            this.save.addNewPet(result.pet.id);
+            this.emitCollectionEvents(result.pet.id);
+        }
 
         EventBus.emit('roll-complete', result);
         EventBus.emit('buffs-changed');
@@ -195,6 +204,7 @@ export class GameManager {
         this.progression.addCoins(-price);
         this.progression.collection.add(petId);
         this.save.addNewPet(petId);
+        this.emitCollectionEvents(petId);
         EventBus.emit('shop-purchase', petId);
         this.persistSave();
         return true;
@@ -261,7 +271,10 @@ export class GameManager {
         const mult = info.buffMultiplier * this.buffs.getRebirthMultiplier();
         const pet = this.rng.rollPet(eligible, mult);
         const result = this.progression.processRoll(pet);
-        if (result.isNew) this.save.addNewPet(result.pet.id);
+        if (result.isNew) {
+            this.save.addNewPet(result.pet.id);
+            this.emitCollectionEvents(result.pet.id);
+        }
         EventBus.emit('nests-changed');
         this.persistSave();
         return result;
@@ -315,6 +328,31 @@ export class GameManager {
         } else if (reward.type === 'egg' && reward.eggTier) {
             this.addEggs(reward.eggTier, reward.count);
         }
+    }
+
+    private emitCollectionEvents(petId: string): void {
+        const ev = this.collectionTracker.onPetCollected(petId, this.progression.collection);
+        if (ev.discovered.length > 0 || ev.completed.length > 0) {
+            EventBus.emit('collections-changed', ev);
+        }
+    }
+
+    claimCollection(collId: string): boolean {
+        const coll = COLLECTIONS.find(c => c.id === collId);
+        if (!coll) return false;
+        if (!this.collectionTracker.isComplete(collId, this.progression.collection)) return false;
+        if (!this.collectionTracker.claim(collId)) return false;
+        if (coll.reward.coins > 0) this.progression.addCoins(coll.reward.coins);
+        if (coll.reward.buff) {
+            const { type, charges } = coll.reward.buff;
+            if (type === 'lucky') this.buffs.addLucky(charges);
+            else if (type === 'super') this.buffs.addSuper(charges);
+            else this.buffs.addEpic(charges);
+            EventBus.emit('buffs-changed');
+        }
+        EventBus.emit('collection-claimed', collId);
+        this.persistSave();
+        return true;
     }
 
     private activateBuff(buff: string): void {
@@ -377,6 +415,8 @@ export class GameManager {
         data.shop = this.shop.toSave();
         data.dailyBonus = this.dailyBonus.toSave();
         data.nests = this.nests.toSave();
+        data.collectionsClaimed = this.collectionTracker.toSaveClaimed();
+        data.collectionsSeenPets = this.collectionTracker.toSaveSeenPets();
 
         if (result) {
             data.totalRolls++;

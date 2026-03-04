@@ -74,10 +74,29 @@ export class CollectionButton extends GameObjects.Container {
         scene.add.existing(this);
     }
 
-    updateCount(newCount: number): void {
-        if (newCount > 0) {
-            this.badgeText.setText(String(newCount));
-            this.badgeText.setFontSize(newCount >= 10 ? '11px' : '13px');
+    updateBadge(hasUnseen: boolean, claimableCount: number): void {
+        const badgeX = PANEL_W - 2;
+        const badgeY = TOTAL_H - BG_H + 7;
+        const badgeR = 12;
+
+        if (claimableCount > 0) {
+            this.badgeGfx.clear();
+            this.badgeGfx.lineStyle(2, 0x000000, 1);
+            this.badgeGfx.fillStyle(0x98CD5B, 1);
+            this.badgeGfx.fillCircle(badgeX, badgeY, badgeR);
+            this.badgeGfx.strokeCircle(badgeX, badgeY, badgeR);
+            this.badgeText.setText(String(claimableCount));
+            this.badgeText.setFontSize(claimableCount >= 10 ? '11px' : '13px');
+            this.badgeGfx.setVisible(true);
+            this.badgeText.setVisible(true);
+        } else if (hasUnseen) {
+            this.badgeGfx.clear();
+            this.badgeGfx.lineStyle(2, 0x000000, 1);
+            this.badgeGfx.fillStyle(0xcc0000, 1);
+            this.badgeGfx.fillCircle(badgeX, badgeY, badgeR);
+            this.badgeGfx.strokeCircle(badgeX, badgeY, badgeR);
+            this.badgeText.setText('!');
+            this.badgeText.setFontSize('13px');
             this.badgeGfx.setVisible(true);
             this.badgeText.setVisible(true);
         } else {

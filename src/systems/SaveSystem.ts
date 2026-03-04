@@ -3,7 +3,7 @@ import { PETS } from '../data/pets';
 import { getGradeForChance, getDefaultQuestState, getDefaultDailyBonusState, getDefaultNestState } from '../core/config';
 
 const SAVE_KEY = 'pets_go_lite_save';
-const CURRENT_VERSION = 19;
+const CURRENT_VERSION = 20;
 
 function getDefaults(): SaveData {
     return {
@@ -24,6 +24,8 @@ function getDefaults(): SaveData {
         nests: getDefaultNestState(),
         eggInventory: { '1': 3 },
         rebirthCount: 0,
+        collectionsClaimed: {},
+        collectionsSeenPets: {},
     };
 }
 
@@ -137,6 +139,11 @@ function migrate(data: SaveData): SaveData {
         data.rebirthCount = data.rebirthCount ?? 0;
         data.version = 19;
     }
+    if (data.version === 19) {
+        data.collectionsClaimed = data.collectionsClaimed ?? {};
+        data.collectionsSeenPets = data.collectionsSeenPets ?? {};
+        data.version = 20;
+    }
     return data;
 }
 
@@ -172,6 +179,8 @@ export class SaveSystem {
         data.dailyBonus = data.dailyBonus ?? getDefaultDailyBonusState();
         data.nests = data.nests ?? getDefaultNestState();
         data.eggInventory = data.eggInventory ?? {};
+        data.collectionsClaimed = data.collectionsClaimed ?? {};
+        data.collectionsSeenPets = data.collectionsSeenPets ?? {};
         return data;
     }
 

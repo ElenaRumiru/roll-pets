@@ -52,10 +52,10 @@ export class SettingsPanel extends GameObjects.Container {
         }).setOrigin(0.5);
         this.add(title);
 
-        // Close button
-        const closeBtn = scene.add.text(px + PANEL_W - 25, py + 25, '\u2715', {
-            fontFamily: UI.FONT_STROKE, fontSize: '22px', color: '#aaaaaa',
-            stroke: '#000000', strokeThickness: UI.STROKE_THIN,
+        // Close button — same height and thickness as title
+        const closeBtn = scene.add.text(px + PANEL_W - 25, py + 35, '\u2715', {
+            fontFamily: UI.FONT_STROKE, fontSize: '25px', color: '#aaaaaa',
+            stroke: '#000000', strokeThickness: UI.STROKE_MEDIUM,
         }).setOrigin(0.5).setInteractive({ useHandCursor: true });
         closeBtn.on('pointerdown', () => this.hide());
         closeBtn.on('pointerover', () => closeBtn.setColor('#ffffff'));

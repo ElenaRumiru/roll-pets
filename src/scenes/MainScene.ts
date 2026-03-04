@@ -23,6 +23,7 @@ import { NicknamePrompt } from '../ui/NicknamePrompt';
 import { ArrowHint } from '../ui/ArrowHint';
 import { PetThought } from '../ui/PetThought';
 import { PETS } from '../data/pets';
+import { COLLECTIONS } from '../data/collections';
 import { PetDef, RollResult, LevelUpData, LeaguePromotionData, RebirthData } from '../types';
 import { PlatformSDK } from '../platform/PlatformSDK';
 import { AudioSystem } from '../systems/AudioSystem';
@@ -188,6 +189,8 @@ export class MainScene extends Scene {
         EventBus.on('nickname-changed', this.onNicknameChanged, this);
         EventBus.on('quests-changed', this.onQuestsChanged, this);
         EventBus.on('daily-bonus-changed', this.onDailyBonusChanged, this);
+        EventBus.on('collections-changed', this.onCollectionsChanged, this);
+        EventBus.on('collection-claimed', () => this.refreshUI(), this);
         this.events.on('shutdown', this.shutdown, this);
 
         // Pause overlay
@@ -545,6 +548,18 @@ export class MainScene extends Scene {
         this.dailyBonusBtn.updateBadge(this.manager.dailyBonus.hasUnclaimedReward());
     }
 
+    private onCollectionsChanged(ev: { discovered: string[]; completed: string[] }): void {
+        for (const collId of ev.discovered) {
+            const coll = COLLECTIONS.find(c => c.id === collId);
+            if (coll) showToast(this, t('col_discovered', { name: t(coll.nameKey) }), 'info');
+        }
+        for (const collId of ev.completed) {
+            const coll = COLLECTIONS.find(c => c.id === collId);
+            if (coll) showToast(this, t('col_complete', { name: t(coll.nameKey) }), 'info');
+        }
+        this.refreshUI();
+    }
+
     private handleQuestClaim(type: 'roll' | 'grade' | 'online'): void {
         if (this.questPopup) return;
         const reward = this.manager.quests.getReward(type);
@@ -651,7 +666,12 @@ export class MainScene extends Scene {
         const needed = xpForLevel(p.level);
         this.topBar.updateDisplay(p.level, p.getXpProgress(), p.xp, needed);
         this.coinDisplay.updateCoins(p.coins);
-        this.collectionBtn.updateCount(this.manager.save.getNewPets().length);
+        const tracker = this.manager.collectionTracker;
+        const playerColl = this.manager.progression.collection;
+        this.collectionBtn.updateBadge(
+            tracker.hasAnyUnseen(playerColl),
+            tracker.getClaimableCount(playerColl),
+        );
 
         this.updateLeaderboard();
 
@@ -693,5 +713,7 @@ export class MainScene extends Scene {
         EventBus.off('nickname-changed', this.onNicknameChanged, this);
         EventBus.off('quests-changed', this.onQuestsChanged, this);
         EventBus.off('daily-bonus-changed', this.onDailyBonusChanged, this);
+        EventBus.off('collections-changed', this.onCollectionsChanged, this);
+        EventBus.off('collection-claimed');
     }
 }

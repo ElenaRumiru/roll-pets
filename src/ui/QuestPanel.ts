@@ -24,7 +24,7 @@ const BAR_BG = 0x222244;
 const CLAIM_COLOR = 0x78C828;
 const CLAIM_DARK = 0x4E8A18;
 const BAR_CX = PW / 2;
-const BADGE_COLOR = 0x78C828;
+const BADGE_COLOR = 0x98CD5B;
 const BADGE_R = 12;
 
 interface QuestRow {

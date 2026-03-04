@@ -43,7 +43,7 @@ export class DailyBonusButton extends GameObjects.Container {
         const badgeX = PANEL_W - 2;
         const badgeY = TOTAL_H - BG_H + 7;
         this.badgeGfx = scene.add.graphics();
-        this.badgeGfx.fillStyle(0x78C828, 1);
+        this.badgeGfx.fillStyle(0x98CD5B, 1);
         this.badgeGfx.fillCircle(badgeX, badgeY, 11);
         this.badgeGfx.lineStyle(2, 0x000000, 1);
         this.badgeGfx.strokeCircle(badgeX, badgeY, 11);
