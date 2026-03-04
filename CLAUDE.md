@@ -162,7 +162,7 @@ All design documents are in `documentation/`:
 - `ABOUT_WEB_GAME_REQUIREMENTS.md` — Market analysis, portal requirements (Poki/CrazyGames/Yandex), monetization economics
 - `_PETS GO!_ (1).pdf` — Original game reference
 - `Таблицы _PETS GO_.xlsx` — Pet data tables
-- `balance/` — Generated CSV tables (run `node documentation/balance/generate_balance.js`): pet stats, grade distribution, XP curve, roll probabilities, buff economics, golden path simulation
+- `balance/balance.xlsx` — Single Excel workbook with 15 sheets (run `node documentation/balance/generate_balance.js`): pet stats, grade distribution, XP curve, egg tiers, roll probabilities, buff economics, golden path simulation
 
 ## Research Protocol
 
