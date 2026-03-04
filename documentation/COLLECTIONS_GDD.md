@@ -359,19 +359,111 @@ export const COLLECTIONS: CollectionDef[] = [
 
 ## Adding New Content (Procedure)
 
-When new pets are added to the game:
+### Rules
 
-1. Add new pets to `pets.ts` with id, name, chance, imageKey
-2. Create **new** collections in `collections.ts` that include the new pets
-3. New collections may also reference existing old pets (a pet can be in multiple collections)
-4. **Never modify** the `petIds` of existing collections
-5. Add locale keys for new collection names
-6. Add collection icon assets (see Icon Assets section below)
+- **Never modify** `petIds` of existing collections — this prevents progress regression
+- New pets go into **new** collections, not existing ones
+- New collections may reference existing old pets (one pet can be in multiple collections)
+- Every new pet should appear in at least one collection
 
-Example: Adding Fox, Monkey, Elephant →
-- "Foxes" collection: Fox, Fennec Fox, Kitsune, Red Panda (new + existing pets)
-- "Primates" collection: Monkey, Gorilla, Lemur (new + existing pets)
-- Old "Forest" collection stays unchanged at 12 pets
+---
+
+### A. Adding a New Pet (Step-by-Step)
+
+**1. Pet sprite**
+- Place the sprite PNG in `public/assets/pets/` (e.g. `pet_0120.png`)
+- Or reuse an existing `imageKey` if the sprite is shared (30 sprites are shared among 100+ pets)
+
+**2. `src/data/pets.ts`** — add entry to the correct grade section:
+```typescript
+{ id: 'fox', name: 'Fox', emoji: '🦊', imageKey: 'pet_0120', chance: 250 },
+```
+- `id` — unique snake_case identifier, used everywhere (collections, saves, shop, etc.)
+- `chance` — determines grade automatically: 2-99 Common, 100-999 Uncommon, 1K-5K Extra, 5K-50K Rare, 50K-500K Superior, 500K-5M Elite, 5M-50M Epic, 50M-250M Heroic, 250M-500M Mythic, 500M-750M Ancient, 750M-1B Legendary
+- Keep the list sorted by `chance` within each grade section
+
+**3. `src/scenes/BootScene.ts`** — if using a NEW sprite (not reusing existing `imageKey`):
+- Find the pet loading loop (`for (let i = ...`) and ensure the range covers the new number
+- Or add a manual load: `this.load.image('pet_0120', 'assets/pets/pet_0120.png');`
+
+**4. Verify:** The pet will automatically appear in rolls, shop offers, and the "All" tab. No other changes needed for the pet itself.
+
+---
+
+### B. Adding a New Collection (Step-by-Step)
+
+**1. Collection icon**
+- Create a circular medallion icon with transparent background (match existing style: gold/black ring border)
+- Place the source PNG in `public/assets/ui/collections/` (e.g. `foxes_pets.png`)
+
+**2. `src/data/collections.ts`** — add to the appropriate difficulty array (EASY/MEDIUM/HARD):
+```typescript
+{
+    id: 'foxes',                          // unique snake_case id
+    nameKey: 'col_foxes',                 // locale key (must match en.ts/ru.ts)
+    icon: 'col_foxes_pets',               // texture key = 'col_' + icon filename without .png
+    petIds: ['fox', 'fennec_fox', 'kitsune', 'red_panda'],  // exact ids from pets.ts
+    difficulty: 'easy',                   // easy | medium | hard
+    reward: { coins: 1_000 },            // coin reward on completion
+},
+```
+
+**3. `src/data/collections.ts`** — add icon name to `COL_ICON_NAMES` array:
+```typescript
+export const COL_ICON_NAMES = [
+    // ... existing names ...
+    'foxes_pets',   // ← add here (filename without .png)
+] as const;
+```
+This array drives both BootScene loading and the `petToCollections` index.
+
+**4. `src/scenes/BootScene.ts`** — NO changes needed! The icon loading loop iterates `COL_ICON_NAMES` automatically:
+```typescript
+for (const name of COL_ICON_NAMES) {
+    this.load.image(`col_${name}_raw`, `assets/ui/collections/${name}.png`);
+}
+// ... and in create():
+// Icons are copied at full resolution, GPU handles display scaling
+```
+
+**5. `src/data/locales/en.ts`** — add collection name:
+```typescript
+'col_foxes': 'Foxes',
+```
+
+**6. `src/data/locales/ru.ts`** — add Russian translation:
+```typescript
+'col_foxes': 'Лисы',
+```
+
+**7. Verify:**
+- Collection auto-appears when player collects first pet from its `petIds`
+- Progress bar tracks completion
+- CLAIM button appears when all pets collected
+- Difficulty stars show on card (1/2/3 based on difficulty)
+- No save migration needed — new collections discovered at runtime
+
+---
+
+### C. Difficulty & Reward Guidelines
+
+| Difficulty | Stars | Typical pets | Pet count | Coin reward range |
+|------------|-------|-------------|-----------|-------------------|
+| Easy | 1 | Common–Uncommon | 5–13 | 500–1,500 |
+| Medium | 2 | Uncommon–Rare | 6–10 | 3,000–10,000 |
+| Hard | 3 | Rare+ and above | 2–11 | 15,000–50,000 |
+
+Difficulty is set manually based on the rarest pet in the collection, not computed.
+
+---
+
+### D. What NOT to Do
+
+- **Don't change `petIds` of existing collections** — players who completed them would lose progress
+- **Don't change a pet's `id`** — breaks saves, collections, shop history
+- **Don't change a pet's `chance`** — shifts grade boundaries, affects all balance
+- **Don't forget locale keys** — missing keys show raw key string in UI
+- **Don't reuse collection `id`** — claimed state is stored by id in saves
 
 ---
 
