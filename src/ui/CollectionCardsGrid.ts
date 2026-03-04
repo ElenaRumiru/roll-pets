@@ -4,11 +4,11 @@ import { CollectionTracker } from '../systems/CollectionTracker';
 import { CollectionCard, COL_CARD_W, COL_CARD_H } from './CollectionCard';
 import { t } from '../data/locales';
 
-const GRID_TOP = 115;
+const GRID_TOP = 109;
 const GRID_H = GAME_HEIGHT - GRID_TOP;
-const COLS = 4;
-const GAP_X = 14;
-const GAP_Y = 14;
+const COLS = 5;
+const GAP_X = 12;
+const GAP_Y = 12;
 const CARD_SX = COL_CARD_W + GAP_X;
 const CARD_SY = COL_CARD_H + GAP_Y;
 

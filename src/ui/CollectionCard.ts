@@ -5,17 +5,17 @@ import { fitText } from './components/fitText';
 import { addButtonFeedback } from './components/buttonFeedback';
 import { t } from '../data/locales';
 
-export const COL_CARD_W = 230;
-export const COL_CARD_H = 276;
-const CARD_R = 14;
-const PAD = 8;
+export const COL_CARD_W = 184;
+export const COL_CARD_H = 221;
+const CARD_R = 11;
+const PAD = 6;
 const INNER_W = COL_CARD_W - PAD * 2;
 const CONTENT_W = Math.round(INNER_W * 0.96); // banner 4% narrower than icon
 const BAR_W = Math.round(CONTENT_W * 0.87);   // bar 13% narrower than banner
 const BANNER_H = Math.round(CONTENT_W * 0.18);
-const CORNER_R = 6;
+const CORNER_R = 5;
 const BAR_H = Math.round(BANNER_H * 0.75 * 0.95);
-const BANNER_BAR_GAP = 6;
+const BANNER_BAR_GAP = 5;
 
 const BAR_GREEN = 0x78C828;       // in progress + complete
 const BAR_GREEN_DARK = 0x5A9A1E;  // claimed
@@ -54,17 +54,17 @@ export class CollectionCard extends GameObjects.Container {
         // Yellow name banner — triple outline: black → yellow → black
         const bannerY = iconY + INNER_W / 2 - BANNER_H * 0.35;
         const bannerGfx = scene.add.graphics();
-        bannerGfx.lineStyle(4, 0x000000, 0.9);
+        bannerGfx.lineStyle(3, 0x000000, 0.9);
         bannerGfx.strokeRoundedRect(
-            -CONTENT_W / 2 - 6, bannerY - BANNER_H / 2 - 6,
-            CONTENT_W + 12, BANNER_H + 12, CORNER_R + 4,
+            -CONTENT_W / 2 - 5, bannerY - BANNER_H / 2 - 5,
+            CONTENT_W + 10, BANNER_H + 10, CORNER_R + 4,
         );
-        bannerGfx.lineStyle(5, 0xFEBF07, dimmed ? 0.4 : 1);
+        bannerGfx.lineStyle(4, 0xFEBF07, dimmed ? 0.4 : 1);
         bannerGfx.strokeRoundedRect(
             -CONTENT_W / 2 - 3, bannerY - BANNER_H / 2 - 3,
             CONTENT_W + 6, BANNER_H + 6, CORNER_R + 2,
         );
-        bannerGfx.lineStyle(4, 0x000000, 0.9);
+        bannerGfx.lineStyle(3, 0x000000, 0.9);
         bannerGfx.strokeRoundedRect(
             -CONTENT_W / 2, bannerY - BANNER_H / 2,
             CONTENT_W, BANNER_H, CORNER_R,
@@ -74,10 +74,10 @@ export class CollectionCard extends GameObjects.Container {
         this.add(bannerGfx);
 
         const nameText = scene.add.text(0, bannerY, t(coll.nameKey), {
-            fontFamily: UI.FONT_STROKE, fontSize: '18px', color: '#ffffff',
+            fontFamily: UI.FONT_STROKE, fontSize: '15px', color: '#ffffff',
             stroke: '#000000', strokeThickness: 3,
         }).setOrigin(0.5);
-        fitText(nameText, CONTENT_W - 14, 18, 10);
+        fitText(nameText, CONTENT_W - 12, 15, 9);
         this.add(nameText);
 
         // Progress bar — trim 4px from right, left edge stays fixed
@@ -85,7 +85,7 @@ export class CollectionCard extends GameObjects.Container {
         const fillColor = isClaimed ? BAR_GREEN_DARK : BAR_GREEN;
         const barGfx = scene.add.graphics();
         const bLeft = -BAR_W / 2;
-        const bW = BAR_W - 13;
+        const bW = BAR_W - 10;
         const bCx = bLeft + bW / 2;
 
         barGfx.lineStyle(1.5, 0x000000, 0.9);
@@ -124,10 +124,10 @@ export class CollectionCard extends GameObjects.Container {
         // Count text inside bar
         const barLabel = isClaimed ? t('col_claimed') : isComplete ? t('col_done') : `${progress.current}/${progress.total}`;
         const countText = scene.add.text(bCx, barY, barLabel, {
-            fontFamily: UI.FONT_STROKE, fontSize: '16px', color: '#ffffff',
+            fontFamily: UI.FONT_STROKE, fontSize: '13px', color: '#ffffff',
             stroke: '#000000', strokeThickness: 2,
         }).setOrigin(0.5);
-        fitText(countText, bW - 16, 16, 10);
+        fitText(countText, bW - 12, 13, 9);
         this.add(countText);
 
         // Gift icon at bar end — when reward not yet claimed
@@ -161,15 +161,15 @@ export class CollectionCard extends GameObjects.Container {
         const angle = Math.PI / 4;
         const bx = Math.round(r * Math.sin(angle)) + 3;
         const by = Math.round(iconY - r * Math.cos(angle)) - 3;
-        const dotR = 18;
+        const dotR = 15;
         const g = scene.add.graphics();
         g.fillStyle(color, 1);
         g.fillCircle(bx, by, dotR);
-        g.lineStyle(2.5, 0x000000, 0.7);
+        g.lineStyle(2, 0x000000, 0.7);
         g.strokeCircle(bx, by, dotR);
         this.add(g);
         const txt = scene.add.text(bx, by, label, {
-            fontFamily: UI.FONT_STROKE, fontSize: '22px', color: '#ffffff',
+            fontFamily: UI.FONT_STROKE, fontSize: '18px', color: '#ffffff',
             stroke: '#000000', strokeThickness: 3,
         }).setOrigin(0.5);
         this.add(txt);
