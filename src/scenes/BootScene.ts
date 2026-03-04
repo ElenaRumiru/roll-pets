@@ -83,6 +83,8 @@ export class BootScene extends Scene {
         this.load.image('ui_rating_3', 'assets/ui/Rating_icon_3.png');
         this.load.image('ui_quest_icon', 'assets/ui/quests_icon.png');
         this.load.image('ui_gift_raw', 'assets/ui/gift_green2_icon.png');
+        this.load.image('ui_star_active_raw', 'assets/ui/star_active.png');
+        this.load.image('ui_star_inactive_raw', 'assets/ui/star_not_active.png');
         this.load.image('ui_ok_raw', 'assets/ui/ok_icon.png');
         this.load.image('ui_settings_raw', 'assets/ui/settings_icon.png');
         this.load.image('ui_daily_raw', 'assets/ui/daily_icon.png');
@@ -244,6 +246,10 @@ export class BootScene extends Scene {
         // Trim arrow icons for collection detail nav (preserve aspect ratio)
         this.trimToHeight('ui_arrow_l_raw', 'ui_arrow_l', 56);
         this.trimToHeight('ui_arrow_r_raw', 'ui_arrow_r', 56);
+
+        // Trim star icons for collection difficulty display
+        this.trimToHeight('ui_star_active_raw', 'ui_star_active', 28);
+        this.trimToHeight('ui_star_inactive_raw', 'ui_star_inactive', 28);
 
         // Collection icons — copy at full resolution, let GPU handle display scaling
         for (const name of COL_ICON_NAMES) {

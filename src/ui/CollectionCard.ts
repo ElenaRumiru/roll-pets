@@ -173,6 +173,9 @@ export class CollectionCard extends GameObjects.Container {
             this.add(amountText);
         }
 
+        // Difficulty stars — top center of card
+        this.addStars(scene, coll.difficulty, isClaimed, dimmed);
+
         // Notification badges — follow project patterns
         if (isClaimable && claimableCount > 0) {
             this.addBadge(scene, iconY, BADGE_GREEN, String(claimableCount));
@@ -187,6 +190,39 @@ export class CollectionCard extends GameObjects.Container {
         this.on('pointerdown', onClick);
         addButtonFeedback(scene, this, { clickScale: 0.95 });
         scene.add.existing(this);
+    }
+
+    private addStars(scene: Scene, difficulty: 'easy' | 'medium' | 'hard', claimed: boolean, dimmed: boolean): void {
+        const count = difficulty === 'easy' ? 1 : difficulty === 'medium' ? 2 : 3;
+        const tex = claimed ? 'ui_star_active' : 'ui_star_inactive';
+        if (!scene.textures.exists(tex)) return;
+        const sz = 22;
+        const starY = -COL_CARD_H / 2 + sz / 2 - 2;
+        const gap = sz * 0.75;
+
+        if (count === 1) {
+            const s = scene.add.image(0, starY, tex).setDisplaySize(sz, sz);
+            if (dimmed) s.setAlpha(0.35);
+            this.add(s);
+        } else if (count === 2) {
+            for (const side of [-1, 1]) {
+                const s = scene.add.image(side * gap * 0.55, starY, tex).setDisplaySize(sz, sz);
+                if (dimmed) s.setAlpha(0.35);
+                this.add(s);
+            }
+        } else {
+            // Side stars: lower + rotated, added first (behind center)
+            for (const side of [-1, 1]) {
+                const s = scene.add.image(side * gap * 1.07, starY + 4, tex).setDisplaySize(sz, sz);
+                s.setAngle(side * 12);
+                if (dimmed) s.setAlpha(0.35);
+                this.add(s);
+            }
+            // Center star: on top, higher
+            const c = scene.add.image(0, starY, tex).setDisplaySize(sz, sz);
+            if (dimmed) c.setAlpha(0.35);
+            this.add(c);
+        }
     }
 
     private addBadge(scene: Scene, iconY: number, color: number, label: string): void {
