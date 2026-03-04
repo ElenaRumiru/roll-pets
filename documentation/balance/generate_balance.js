@@ -2,6 +2,10 @@
  * PETS GO Lite — Full Balance Calculator
  * Run: node documentation/balance/generate_balance.js
  * Outputs CSV files into documentation/balance/
+ *
+ * IMPORTANT: All values mirrored from src/ — keep in sync!
+ * Coins per roll = pet.chance (always, regardless of new/dup)
+ * XP per roll = flat 5 (XP_PER_ROLL, regardless of new/dup/grade)
  */
 
 const fs = require('fs');
@@ -58,24 +62,88 @@ const PETS = [
 ];
 
 const GRADES = [
-  { name:'Common',    min:2,         max:100,        coinsNew:5,    coinsDup:1,    xpNew:25, xpDup:0.5  },
-  { name:'Uncommon',  min:100,       max:1000,       coinsNew:10,   coinsDup:2,    xpNew:25, xpDup:1    },
-  { name:'Extra',     min:1000,      max:5000,       coinsNew:25,   coinsDup:3,    xpNew:25, xpDup:1.5  },
-  { name:'Rare',      min:5000,      max:50000,      coinsNew:50,   coinsDup:5,    xpNew:25, xpDup:2    },
-  { name:'Superior',  min:50000,     max:500000,     coinsNew:100,  coinsDup:10,   xpNew:25, xpDup:3    },
-  { name:'Elite',     min:500000,    max:5000000,    coinsNew:250,  coinsDup:25,   xpNew:25, xpDup:4    },
-  { name:'Epic',      min:5000000,   max:50000000,   coinsNew:500,  coinsDup:50,   xpNew:25, xpDup:5    },
-  { name:'Heroic',    min:50000000,  max:250000000,  coinsNew:1000, coinsDup:100,  xpNew:25, xpDup:6    },
-  { name:'Mythic',    min:250000000, max:500000000,  coinsNew:2500, coinsDup:250,  xpNew:25, xpDup:7    },
-  { name:'Ancient',   min:500000000, max:750000000,  coinsNew:5000, coinsDup:500,  xpNew:25, xpDup:8    },
-  { name:'Legendary', min:750000000, max:1000000000, coinsNew:10000,coinsDup:1000, xpNew:25, xpDup:10   },
+  { name:'Common',    min:2,         max:100 },
+  { name:'Uncommon',  min:100,       max:1000 },
+  { name:'Extra',     min:1000,      max:5000 },
+  { name:'Rare',      min:5000,      max:50000 },
+  { name:'Superior',  min:50000,     max:500000 },
+  { name:'Elite',     min:500000,    max:5000000 },
+  { name:'Epic',      min:5000000,   max:50000000 },
+  { name:'Heroic',    min:50000000,  max:250000000 },
+  { name:'Mythic',    min:250000000, max:500000000 },
+  { name:'Ancient',   min:500000000, max:750000000 },
+  { name:'Legendary', min:750000000, max:1000000000 },
 ];
+
+const EGG_TIERS = [
+  { tier:1,  price:10,  buffMult:50,        incMs:3600000 },
+  { tier:2,  price:20,  buffMult:100,       incMs:5400000 },
+  { tier:3,  price:35,  buffMult:200,       incMs:7200000 },
+  { tier:4,  price:55,  buffMult:500,       incMs:9000000 },
+  { tier:5,  price:80,  buffMult:1000,      incMs:12600000 },
+  { tier:6,  price:110, buffMult:2500,      incMs:14400000 },
+  { tier:7,  price:150, buffMult:5000,      incMs:18000000 },
+  { tier:8,  price:200, buffMult:10000,     incMs:21600000 },
+  { tier:9,  price:270, buffMult:25000,     incMs:28800000 },
+  { tier:10, price:350, buffMult:50000,     incMs:36000000 },
+  { tier:11, price:450, buffMult:150000,    incMs:43200000 },
+  { tier:12, price:560, buffMult:500000,    incMs:57600000 },
+  { tier:13, price:680, buffMult:2500000,   incMs:72000000 },
+  { tier:14, price:800, buffMult:10000000,  incMs:86400000 },
+  { tier:15, price:880, buffMult:50000000,  incMs:86400000 },
+  { tier:16, price:940, buffMult:150000000, incMs:86400000 },
+  { tier:17, price:1000,buffMult:500000000, incMs:86400000 },
+];
+
+const LEAGUES = [
+  { tier:'Bronze',  min:2,         max:5000 },
+  { tier:'Silver',  min:5000,      max:50000 },
+  { tier:'Gold',    min:50000,     max:5000000 },
+  { tier:'Diamond', min:5000000,   max:250000000 },
+  { tier:'Master',  min:250000000, max:1000000000 },
+];
+const LEAGUE_REWARDS = { Silver:500, Gold:5000, Diamond:50000, Master:500000 };
+
+// Collections (mirrored from COLLECTIONS_GDD.md)
+const COLLECTIONS = [
+  { id:'house_pets',     name:'House Pets',     petIds:['cat','beagle','mouse','hamster','hare','shiba','goldfish','turtle','ferret'] },
+  { id:'farm',           name:'Farm',           petIds:['sheep','goat','cow','pig','duck','turkey','hare','beagle','ram'] },
+  { id:'forest',         name:'Forest',         petIds:['squirrel','badger','mole','raccoon','owl','bear','wolf','moose','beaver','porcupine','opossum','bat'] },
+  { id:'birds',          name:'Birds',          petIds:['pigeon','duck','turkey','owl','heron','kiwi','swan','pelican','toucan','falcon','raven','hummingbird','penguin'] },
+  { id:'bugs',           name:'Bugs',           petIds:['bee','ladybug','grasshopper','spider','scorpion'] },
+  { id:'scaled',         name:'Scaled',         petIds:['turtle','snake','chameleon','crocodile','cobra','axolotl'] },
+  { id:'rodents',        name:'Rodents',        petIds:['mouse','hamster','squirrel','beaver','capybara','porcupine'] },
+  { id:'river_pond',     name:'River & Pond',   petIds:['frog','beaver','otter','axolotl','duck','hippo','crocodile','swan'] },
+  { id:'exotic',         name:'Exotic',         petIds:['axolotl','chameleon','capybara','red_panda','pallas_cat','fennec_fox','koala','kangaroo'] },
+  { id:'latin_america',  name:'Latin America',  petIds:['llama','toucan','capybara','jaguar','axolotl','anteater'] },
+  { id:'desert',         name:'Desert',         petIds:['camel','fennec_fox','scorpion','cobra','meerkat'] },
+  { id:'ocean',          name:'Ocean',          petIds:['seahorse','dolphin','octopus','pufferfish','shark','whale','jellyfish','squid','anglerfish','seal'] },
+  { id:'savanna',        name:'Savanna',        petIds:['giraffe','zebra','lion','cheetah','hyena','hippo','rhino','gorilla','meerkat'] },
+  { id:'arctic',         name:'Arctic',         petIds:['penguin','seal','walrus','snowman','yeti','mammoth'] },
+  { id:'felines',        name:'Felines',        petIds:['cat','pallas_cat','cheetah','jaguar','lion','cheshire_cat','sabertooth'] },
+  { id:'canine_pack',    name:'Canine Pack',    petIds:['beagle','shiba','wolf','hyena','fennec_fox','cerberus'] },
+  { id:'venomous',       name:'Venomous',       petIds:['snake','cobra','scorpion','spider','pufferfish','jellyfish'] },
+  { id:'heavyweights',   name:'Heavyweights',   petIds:['hippo','rhino','gorilla','bear','whale','mammoth','golem','walrus'] },
+  { id:'asian',          name:'Asian',          petIds:['panda','red_panda','kitsune','shiba','chinese_dragon','pallas_cat'] },
+  { id:'mythical',       name:'Mythical',       petIds:['griffin','dragon','pegasus','phoenix','chinese_dragon','cerberus','minotaur','sphinx','djinn','kitsune','alien'] },
+  { id:'undead',         name:'Undead',         petIds:['ghost','skeleton','zombie','vampire','grim_reaper'] },
+  { id:'living_objects',  name:'Living Objects', petIds:['slime','robot','snowman','teddy_bear','gingerbread_man','mimic','astronaut'] },
+  { id:'dark_forces',    name:'Dark Forces',    petIds:['cerberus','nightmare','beholder','grim_reaper','ifrit'] },
+  { id:'prehistoric',    name:'Prehistoric',    petIds:['mammoth','sabertooth'] },
+];
+
+const PET_COLLECTIONS = {};
+for (const col of COLLECTIONS) {
+  for (const pid of col.petIds) {
+    if (!PET_COLLECTIONS[pid]) PET_COLLECTIONS[pid] = [];
+    PET_COLLECTIONS[pid].push(col.name);
+  }
+}
 
 const VISUAL_TIERS = [1,15,35,60,90,125,170,225,290,365,450,545,640,735,830,910,975];
 const AUTOROLL_MS = 500;
+const XP_PER_ROLL = 5;
 const BUFF = { lucky:2, super:3, epic:5 };
-const OFFER_DURATION_S = 15;
-const OFFER_COOLDOWN_S = 5;
 
 // ═══════════════════════════════════════════════════════════════
 // HELPER FUNCTIONS
@@ -88,9 +156,7 @@ function getGrade(chance) {
   return GRADES[0];
 }
 
-const XP_FLOOR = 20;
-const XP_SCALE = 1030;
-const XP_KNEE = 20;
+const XP_FLOOR = 20, XP_SCALE = 1030, XP_KNEE = 20;
 function xpForLevel(lv) {
   const l2 = lv * lv;
   return Math.floor(XP_FLOOR + XP_SCALE * l2 / (l2 + XP_KNEE * XP_KNEE));
@@ -133,35 +199,37 @@ function fmtNum(n) {
   return n.toFixed(6);
 }
 
+function fmtTime(sec) {
+  if (sec >= 86400) return (sec / 86400).toFixed(1) + 'd';
+  if (sec >= 3600) return (sec / 3600).toFixed(1) + 'h';
+  if (sec >= 60) return (sec / 60).toFixed(1) + 'min';
+  return sec.toFixed(0) + 's';
+}
+
+function fmtMs(ms) {
+  const h = Math.floor(ms / 3600000);
+  const m = Math.round((ms % 3600000) / 60000);
+  return m > 0 ? `${h}h ${m}m` : `${h}h`;
+}
+
 // ═══════════════════════════════════════════════════════════════
 // CORE: Roll Probability Engine
 // ═══════════════════════════════════════════════════════════════
 
-/**
- * Compute exact P(each pet) for a given pool + luck multiplier.
- * Returns Map<petId, probability>
- */
 function computeProbabilities(pool, mult) {
-  const sorted = [...pool].sort((a, b) => b.chance - a.chance); // rarest first
+  const sorted = [...pool].sort((a, b) => b.chance - a.chance);
   const probs = new Map();
   let passThrough = 1.0;
-
   for (const pet of sorted) {
     const check = Math.min(1.0, mult / pet.chance);
     probs.set(pet.id, passThrough * check);
     passThrough *= (1 - check);
   }
-
-  // Fallback goes to most common (last in sorted)
   const fallbackId = sorted[sorted.length - 1].id;
   probs.set(fallbackId, probs.get(fallbackId) + passThrough);
-
   return probs;
 }
 
-/**
- * Compute P(grade) by summing pet probabilities
- */
 function gradeProbabilities(pool, mult) {
   const petProbs = computeProbabilities(pool, mult);
   const gradeProbs = {};
@@ -173,37 +241,14 @@ function gradeProbabilities(pool, mult) {
   return gradeProbs;
 }
 
-/**
- * Expected coins per roll (for a given collection state)
- * collectedSet = Set of pet ids already collected
- */
-function expectedCoinsPerRoll(pool, mult, collectedSet) {
+/** Expected coins per roll = sum(P(pet) * pet.chance) */
+function expectedCoinsPerRoll(pool, mult) {
   const probs = computeProbabilities(pool, mult);
   let ev = 0;
   for (const pet of pool) {
-    const p = probs.get(pet.id) || 0;
-    const g = getGrade(pet.chance);
-    const isNew = !collectedSet.has(pet.id);
-    const coins = isNew ? g.coinsNew : g.coinsDup;
-    ev += p * coins;
+    ev += (probs.get(pet.id) || 0) * pet.chance;
   }
   return ev;
-}
-
-/**
- * Expected XP% per roll (as fraction of current level's XP bar)
- */
-function expectedXpPercentPerRoll(pool, mult, collectedSet) {
-  const probs = computeProbabilities(pool, mult);
-  let ev = 0;
-  for (const pet of pool) {
-    const p = probs.get(pet.id) || 0;
-    const g = getGrade(pet.chance);
-    const isNew = !collectedSet.has(pet.id);
-    const xpPct = isNew ? g.xpNew : g.xpDup;
-    ev += p * xpPct;
-  }
-  return ev; // in percent
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -229,14 +274,16 @@ function writeCSV(filename, header, rows) {
 // ═══════════════════════════════════════════════════════════════
 
 function gen01_pets() {
-  const header = ['#','ID','Grade','Chance','Odds','Coins(New)','Coins(Dup)','XP%(New)','XP%(Dup)','ShopPrice'];
+  const header = ['#','ID','Grade','Chance','Odds','Coins/Roll','XP/Roll','ShopPrice','League','Collections'];
   const rows = [];
   const sorted = [...PETS].sort((a, b) => a.chance - b.chance);
   sorted.forEach((p, i) => {
     const g = getGrade(p.chance);
+    const league = LEAGUES.find(l => p.chance >= l.min && p.chance < l.max) || LEAGUES[LEAGUES.length - 1];
+    const cols = (PET_COLLECTIONS[p.id] || []).join(' | ');
     rows.push([
       i + 1, p.id, g.name, p.chance, oddsStr(p.chance),
-      g.coinsNew, g.coinsDup, g.xpNew + '%', g.xpDup + '%', p.chance * 2,
+      p.chance, XP_PER_ROLL, p.chance * 2, league.tier, cols,
     ]);
   });
   writeCSV('01_pets.csv', header, rows);
@@ -249,25 +296,20 @@ function gen01_pets() {
 function gen02_grades() {
   const header = [
     'Grade','PetCount','ChanceRange','Odds Range',
-    'Coins(New)','Coins(Dup)','XP%(New)','XP%(Dup)',
-    'ShopPrice Range','Total ShopPrice (all pets)',
+    'Coins/Roll Range','ShopPrice Range','Total ShopPrice (all pets)',
   ];
   const rows = [];
   for (const g of GRADES) {
     const pets = PETS.filter(p => p.chance >= g.min && p.chance < g.max);
     const minC = pets.length ? Math.min(...pets.map(p => p.chance)) : 0;
     const maxC = pets.length ? Math.max(...pets.map(p => p.chance)) : 0;
-    const shopMin = minC * 2;
-    const shopMax = maxC * 2;
-    const totalShop = pets.reduce((s, p) => s + p.chance * 2, 0);
     rows.push([
       g.name, pets.length,
       `${fmtNum(g.min)} - ${fmtNum(g.max)}`,
       `${oddsStr(minC)} - ${oddsStr(maxC)}`,
-      g.coinsNew, g.coinsDup,
-      g.xpNew + '%', g.xpDup + '%',
-      `${fmtNum(shopMin)} - ${fmtNum(shopMax)}`,
-      fmtNum(totalShop),
+      `${fmtNum(minC)} - ${fmtNum(maxC)}`,
+      `${fmtNum(minC * 2)} - ${fmtNum(maxC * 2)}`,
+      fmtNum(pets.reduce((s, p) => s + p.chance * 2, 0)),
     ]);
   }
   writeCSV('02_grades_summary.csv', header, rows);
@@ -283,7 +325,6 @@ function gen03_xp() {
     'Forest Egg','Dragon Egg','Sandy Egg','Pharaoh Egg','Sheriff Egg',
     'Pirate Egg','Ice Egg','Fire Egg','Space Egg','Lunar Egg','Toxic Egg',
   ];
-
   const header = [
     'Level','XP Needed','Rolls to Level Up','Time per Level (min)',
     'Cumulative Time (min)','Cumulative Time (hours)','Cumulative Time (days)',
@@ -291,53 +332,33 @@ function gen03_xp() {
     'Pool Size','Removed Pets',
   ];
   const rows = [];
-  let cumTimeMin = 0;
-  let prevTier = 0;
-  let totalCoins = 0;
-  let totalCoinsAd = 0;
-  let totalRolls = 0;
+  let cumTimeMin = 0, prevTier = 0;
 
   for (let lv = 1; lv <= 1000; lv++) {
     const xp = xpForLevel(lv);
-    const rollsNeeded = Math.ceil(xp / 5);  // XP_PER_ROLL = 5
+    const rollsNeeded = Math.ceil(xp / XP_PER_ROLL);
     const timeMin = rollsNeeded * AUTOROLL_MS / 1000 / 60;
     cumTimeMin += timeMin;
-    totalRolls += rollsNeeded;
 
     const tier = getVisualTier(lv);
     const tierChanged = tier !== prevTier;
     const pool = getEligiblePets(lv);
     const coinsFree = coinRewardForLevel(lv);
-    const coinsAd = coinsFree * 3;
 
-    let rewardType = '';
-    let rewardDetail = '';
-    let coinsF = coinsFree;
-    let coinsA = coinsAd;
+    let rewardType = '', rewardDetail = '', coinsF = coinsFree, coinsA = coinsFree * 3;
 
     if (lv === 3) {
-      rewardType = 'Feature';
-      rewardDetail = 'Auto Roll';
-      coinsF = 0; coinsA = 0;
+      rewardType = 'Feature'; rewardDetail = 'Auto Roll'; coinsF = 0; coinsA = 0;
     } else if (lv === 5) {
-      rewardType = 'Feature';
-      rewardDetail = 'Incubation';
-      coinsF = 0; coinsA = 0;
+      rewardType = 'Feature'; rewardDetail = 'Incubation'; coinsF = 0; coinsA = 0;
     } else if (lv === 1000) {
-      rewardType = 'Feature';
-      rewardDetail = 'Rebirth / Samsara';
-      coinsF = 0; coinsA = 0;
+      rewardType = 'Feature'; rewardDetail = 'Rebirth / Samsara'; coinsF = 0; coinsA = 0;
     } else if (tierChanged) {
-      rewardType = 'Egg';
-      rewardDetail = EGG_NAMES[tier - 1] || ('Tier ' + tier);
+      rewardType = 'Egg'; rewardDetail = EGG_NAMES[tier - 1] || ('Tier ' + tier);
       coinsF = 0; coinsA = 0;
     } else {
-      rewardType = 'Coins';
-      rewardDetail = '+' + coinsFree;
+      rewardType = 'Coins'; rewardDetail = '+' + coinsFree;
     }
-
-    totalCoins += coinsF;
-    totalCoinsAd += coinsA;
 
     rows.push([
       lv, xp, rollsNeeded, timeMin.toFixed(2),
@@ -348,37 +369,31 @@ function gen03_xp() {
     prevTier = tier;
   }
 
-  // Totals row
-  rows.push([
-    'TOTAL', '', totalRolls, (totalRolls * AUTOROLL_MS / 1000 / 60).toFixed(1),
-    cumTimeMin.toFixed(1), (cumTimeMin / 60).toFixed(2), (cumTimeMin / 60 / 24).toFixed(3),
-    '', '', totalCoins, totalCoinsAd,
-    '', '',
-  ]);
-
   writeCSV('03_xp_progression.csv', header, rows);
 }
 
 // ═══════════════════════════════════════════════════════════════
-// 4. EGG TIERS DETAIL
+// 4. EGG TIERS DETAIL (incl. shop prices + incubation)
 // ═══════════════════════════════════════════════════════════════
 
 function gen04_eggs() {
   const header = [
-    'Tier','Unlock Level','Pets Removed','Pool Size',
+    'Tier','Unlock Level','Price','Buff Multiplier','Incubation',
+    'Pets Removed','Pool Size',
     'Cheapest Pet','Min Chance','Min Odds',
     'Rarest Pet','Max Chance','Max Odds',
   ];
   const rows = [];
-  const sortedAsc = [...PETS].sort((a, b) => a.chance - b.chance);
   for (let t = 1; t <= 17; t++) {
     const lv = VISUAL_TIERS[t - 1];
+    const egg = EGG_TIERS[t - 1];
     const pool = getEligiblePets(lv);
     const poolSorted = [...pool].sort((a, b) => a.chance - b.chance);
     const cheapest = poolSorted[0];
     const rarest = poolSorted[poolSorted.length - 1];
     rows.push([
-      t, lv, t - 1, pool.length,
+      t, lv, egg.price, 'x' + fmtNum(egg.buffMult), fmtMs(egg.incMs),
+      t - 1, pool.length,
       cheapest.id, cheapest.chance, oddsStr(cheapest.chance),
       rarest.id, rarest.chance, oddsStr(rarest.chance),
     ]);
@@ -392,10 +407,8 @@ function gen04_eggs() {
 
 function gen05_probabilities() {
   const mults = [1, 2, 3, 5, 6, 10, 15, 30];
-  const header = ['Grade', 'Pets', ...mults.map(m => `P(grade) x${m}`), ...mults.map(m => `Avg rolls to hit x${m}`)];
+  const header = ['Grade', 'Pets', ...mults.map(m => `P(grade) x${m}`), ...mults.map(m => `Avg rolls x${m}`)];
   const rows = [];
-
-  // Full pool (level 1)
   const pool = getEligiblePets(1);
 
   for (const g of GRADES) {
@@ -418,46 +431,24 @@ function gen05_probabilities() {
 }
 
 // ═══════════════════════════════════════════════════════════════
-// 6. ECONOMY: Expected Value Per Roll
+// 6. ECONOMY: Expected Coins Per Roll
 // ═══════════════════════════════════════════════════════════════
 
 function gen06_economy() {
   const mults = [1, 2, 3, 5, 6, 10, 15, 30];
-
-  // Scenario A: New player (0 collected)
-  // Scenario B: 50% collected (50 cheapest)
-  // Scenario C: All common collected (28 common)
-  // Scenario D: Veteran (all 100 collected)
-
-  const pool = getEligiblePets(1); // full pool
-  const sortedAsc = [...pool].sort((a, b) => a.chance - b.chance);
-
-  const scenarioNone = new Set();
-  const scenario28 = new Set(sortedAsc.slice(0, 28).map(p => p.id));
-  const scenario50 = new Set(sortedAsc.slice(0, 50).map(p => p.id));
-  const scenarioAll = new Set(pool.map(p => p.id));
-
-  const scenarios = [
-    { name: 'New player (0 collected)', set: scenarioNone },
-    { name: 'All commons collected (28)', set: scenario28 },
-    { name: 'Half collected (50)', set: scenario50 },
-    { name: 'Veteran (all 100)', set: scenarioAll },
-  ];
-
-  const header = ['Scenario', ...mults.map(m => `E[coins] x${m}`), ...mults.map(m => `E[XP%] x${m}`)];
+  const header = ['Pool (level)', ...mults.map(m => `E[coins/roll] x${m}`)];
   const rows = [];
 
-  for (const sc of scenarios) {
-    const row = [sc.name];
+  const levels = [1, 15, 60, 125, 290, 545, 975];
+  for (const lv of levels) {
+    const pool = getEligiblePets(lv);
+    const tier = getVisualTier(lv);
+    const row = [`Tier ${tier} (lv${lv}, ${pool.length} pets)`];
     for (const m of mults) {
-      row.push(expectedCoinsPerRoll(pool, m, sc.set).toFixed(4));
-    }
-    for (const m of mults) {
-      row.push(expectedXpPercentPerRoll(pool, m, sc.set).toFixed(4) + '%');
+      row.push(expectedCoinsPerRoll(pool, m).toFixed(2));
     }
     rows.push(row);
   }
-
   writeCSV('06_economy_ev_per_roll.csv', header, rows);
 }
 
@@ -467,59 +458,41 @@ function gen06_economy() {
 
 function gen07_buffs() {
   const pool = getEligiblePets(1);
-
-  // For each buff combo, compute E[coins] for veteran (all dup) and new player
   const combos = [
-    { name: 'No buff',                mult: 1,                   desc: 'Baseline' },
-    { name: 'Lucky (x2)',             mult: 2,                   desc: '1 ad (Lucky offer)' },
-    { name: 'Super (x3)',             mult: 3,                   desc: '1 ad (Super offer)' },
-    { name: 'Epic (x5)',              mult: 5,                   desc: '1 ad (Epic offer)' },
-    { name: 'Lucky+Super (x6)',       mult: 6,                   desc: '2 ads' },
-    { name: 'Lucky+Epic (x10)',       mult: 10,                  desc: '2 ads' },
-    { name: 'Super+Epic (x15)',       mult: 15,                  desc: '2 ads' },
-    { name: 'Lucky+Super+Epic (x30)', mult: 30,                  desc: '3 ads (maximum)' },
+    { name: 'No buff',                mult: 1  },
+    { name: 'Lucky (x2)',             mult: 2  },
+    { name: 'Super (x3)',             mult: 3  },
+    { name: 'Epic (x5)',              mult: 5  },
+    { name: 'Lucky+Super (x6)',       mult: 6  },
+    { name: 'Lucky+Epic (x10)',       mult: 10 },
+    { name: 'Super+Epic (x15)',       mult: 15 },
+    { name: 'Lucky+Super+Epic (x30)', mult: 30 },
   ];
 
-  const scenarioVet = new Set(pool.map(p => p.id));
-  const scenarioNew = new Set();
-
   const header = [
-    'Buff Combo', 'Multiplier', 'How to get',
-    'E[coins/roll] (new)', 'E[coins/roll] (veteran)',
-    'E[XP%/roll] (new)', 'E[XP%/roll] (veteran)',
-    'Coin uplift vs base (vet)', 'Coin value of 1 buffed roll (vet)',
+    'Buff Combo', 'Multiplier',
+    'E[coins/roll]', 'Coin uplift vs base',
     'P(Rare+)', 'P(Epic+)', 'P(Legendary)',
   ];
   const rows = [];
-
-  const baseCoinsVet = expectedCoinsPerRoll(pool, 1, scenarioVet);
-  const baseCoinsNew = expectedCoinsPerRoll(pool, 1, scenarioNew);
+  const baseCoins = expectedCoinsPerRoll(pool, 1);
 
   for (const c of combos) {
-    const coinsNew = expectedCoinsPerRoll(pool, c.mult, scenarioNew);
-    const coinsVet = expectedCoinsPerRoll(pool, c.mult, scenarioVet);
-    const xpNew = expectedXpPercentPerRoll(pool, c.mult, scenarioNew);
-    const xpVet = expectedXpPercentPerRoll(pool, c.mult, scenarioVet);
-
+    const coins = expectedCoinsPerRoll(pool, c.mult);
     const gp = gradeProbabilities(pool, c.mult);
-    const pRarePlus = (gp['Rare']||0)+(gp['Superior']||0)+(gp['Elite']||0)+(gp['Epic']||0)+(gp['Heroic']||0)+(gp['Mythic']||0)+(gp['Ancient']||0)+(gp['Legendary']||0);
-    const pEpicPlus = (gp['Epic']||0)+(gp['Heroic']||0)+(gp['Mythic']||0)+(gp['Ancient']||0)+(gp['Legendary']||0);
+    const pRare = ['Rare','Superior','Elite','Epic','Heroic','Mythic','Ancient','Legendary'].reduce((s,g) => s + (gp[g]||0), 0);
+    const pEpic = ['Epic','Heroic','Mythic','Ancient','Legendary'].reduce((s,g) => s + (gp[g]||0), 0);
     const pLeg = gp['Legendary'] || 0;
-
-    const uplift = ((coinsVet / baseCoinsVet - 1) * 100);
-    const valuePerRoll = coinsVet - baseCoinsVet;
+    const uplift = ((coins / baseCoins - 1) * 100);
 
     rows.push([
-      c.name, 'x' + c.mult, c.desc,
-      coinsNew.toFixed(4), coinsVet.toFixed(4),
-      xpNew.toFixed(4) + '%', xpVet.toFixed(4) + '%',
-      '+' + uplift.toFixed(1) + '%', valuePerRoll.toFixed(4),
-      pRarePlus > 0.001 ? (pRarePlus*100).toFixed(4)+'%' : pRarePlus.toExponential(3),
-      pEpicPlus > 1e-6 ? pEpicPlus.toExponential(4) : pEpicPlus.toExponential(3),
+      c.name, 'x' + c.mult,
+      coins.toFixed(2), '+' + uplift.toFixed(1) + '%',
+      (pRare*100).toFixed(4) + '%',
+      pEpic > 1e-6 ? pEpic.toExponential(4) : pEpic.toExponential(3),
       pLeg.toExponential(4),
     ]);
   }
-
   writeCSV('07_buff_analysis.csv', header, rows);
 }
 
@@ -529,128 +502,42 @@ function gen07_buffs() {
 
 function gen08_strategies() {
   const pool = getEligiblePets(1);
-  const vetSet = new Set(pool.map(p => p.id));
+  const rollsPerHourAutoroll = 3600000 / AUTOROLL_MS;
+  const adWatchSec = 30;
+  const offerCycleSec = 15 + 10; // visible + cooldown
 
-  // Constants
-  const rollMs = AUTOROLL_MS; // 500ms
-  const adWatchSec = 30; // assume 30s per ad
-  const offerCycleSec = OFFER_DURATION_S + OFFER_COOLDOWN_S; // 20s
+  const coinsBase = expectedCoinsPerRoll(pool, 1);
+  const coinsX2 = expectedCoinsPerRoll(pool, 2);
+  const coinsX30 = expectedCoinsPerRoll(pool, 30);
 
-  // Strategy 1: Pure autoroll (no buffs) overnight (8 hours)
-  const hoursOvernight = 8;
-  const rollsOvernight = (hoursOvernight * 3600 * 1000) / rollMs;
-  const coinsBase = expectedCoinsPerRoll(pool, 1, vetSet);
-  const xpBase = expectedXpPercentPerRoll(pool, 1, vetSet);
+  const fullBuffCycleSec = 3 * (15 + adWatchSec + 10) - 10;
 
-  // Strategy 2: Active buff hunting — stack all 3, roll once, repeat
-  // Time per cycle: 3 ads × (offerCycle + adWatch) + 1 roll
-  // Offer cycle: lucky offer shows (15s) → watch ad (30s) → cooldown (5s) → super offer (15s) → watch ad (30s) → cooldown (5s) → epic offer (15s) → watch ad (30s)
-  // Total: 15 + 30 + 5 + 15 + 30 + 5 + 15 + 30 = 145 seconds for 1 x30 roll
-  const fullBuffCycleSec = 3 * (OFFER_DURATION_S + adWatchSec + OFFER_COOLDOWN_S) - OFFER_COOLDOWN_S;
-  const coinsX30 = expectedCoinsPerRoll(pool, 30, vetSet);
-  const xpX30 = expectedXpPercentPerRoll(pool, 30, vetSet);
-
-  // Strategy 3: Lucky only — watch 1 ad, roll with x2, repeat
-  const luckyOnlyCycleSec = OFFER_DURATION_S + adWatchSec + OFFER_COOLDOWN_S;
-  const coinsX2 = expectedCoinsPerRoll(pool, 2, vetSet);
-  const xpX2 = expectedXpPercentPerRoll(pool, 2, vetSet);
-
-  // Strategy 4: Active manual rolling (no autoroll, ~1 roll/sec)
-  const manualRollSec = 1;
-  const coinsManual = coinsBase;
-
-  // Strategy 5: Autoroll + occasionally grab free quest buffs
-  // Roll quest gives Lucky buffs: 5/10/20/50/50 per step, targets 3/5/10/20/50.
-  // Weighted average: ~(5+10+20+50+50)/(3+5+10+20+50) = 135/88 ≈ 1.53 lucky per roll cycle.
-  // Conservatively assume ~1 in 8 rolls is buffed with x2.
-  const questBuffedFraction = 1 / 8;
-  const coinsQuestMix = coinsBase * (1 - questBuffedFraction) + coinsX2 * questBuffedFraction;
-
-  // Time frames
   const hours = [1, 4, 8, 12, 24];
-
   const header = [
-    'Strategy', 'Mult', 'Rolls/hour', 'Coins/hour (vet)', 'XP%/hour (vet)',
+    'Strategy', 'Mult', 'Rolls/hour', 'Coins/hour',
     ...hours.map(h => `Coins in ${h}h`),
-    ...hours.map(h => `Rolls in ${h}h`),
-    'P(Rare+)/roll', 'P(Epic+)/roll', 'Rare+ hits in 8h',
+    'P(Rare+)/roll',
   ];
 
   const gp1 = gradeProbabilities(pool, 1);
-  const gp2 = gradeProbabilities(pool, 2);
   const gp30 = gradeProbabilities(pool, 30);
-
   function pRarePlus(gp) {
-    return (gp['Rare']||0)+(gp['Superior']||0)+(gp['Elite']||0)+(gp['Epic']||0)+(gp['Heroic']||0)+(gp['Mythic']||0)+(gp['Ancient']||0)+(gp['Legendary']||0);
-  }
-  function pEpicPlus(gp) {
-    return (gp['Epic']||0)+(gp['Heroic']||0)+(gp['Mythic']||0)+(gp['Ancient']||0)+(gp['Legendary']||0);
+    return ['Rare','Superior','Elite','Epic','Heroic','Mythic','Ancient','Legendary'].reduce((s,g) => s + (gp[g]||0), 0);
   }
 
   const strategies = [
-    {
-      name: 'Autoroll (overnight/AFK)',
-      mult: 1,
-      rollsPerHour: 3600000 / rollMs,
-      coinsPerRoll: coinsBase,
-      xpPerRoll: xpBase,
-      gp: gp1,
-    },
-    {
-      name: 'Manual rolling (1/sec)',
-      mult: 1,
-      rollsPerHour: 3600,
-      coinsPerRoll: coinsBase,
-      xpPerRoll: xpBase,
-      gp: gp1,
-    },
-    {
-      name: 'Autoroll + quest buffs',
-      mult: '1-2',
-      rollsPerHour: 3600000 / rollMs,
-      coinsPerRoll: coinsQuestMix,
-      xpPerRoll: xpBase * 0.9 + xpX2 * 0.1,
-      gp: gp1, // approximate
-    },
-    {
-      name: 'Lucky-only hunting (x2)',
-      mult: 2,
-      rollsPerHour: 3600 / luckyOnlyCycleSec,
-      coinsPerRoll: coinsX2,
-      xpPerRoll: xpX2,
-      gp: gp2,
-    },
-    {
-      name: 'Full buff stack (x30)',
-      mult: 30,
-      rollsPerHour: 3600 / fullBuffCycleSec,
-      coinsPerRoll: coinsX30,
-      xpPerRoll: xpX30,
-      gp: gp30,
-    },
+    { name:'Autoroll (AFK)',        mult:1,  rph:rollsPerHourAutoroll, cpr:coinsBase, gp:gp1 },
+    { name:'Manual (1/sec)',        mult:1,  rph:3600,                 cpr:coinsBase, gp:gp1 },
+    { name:'Full buff stack (x30)', mult:30, rph:3600/fullBuffCycleSec,cpr:coinsX30,  gp:gp30 },
   ];
 
   const rows = [];
   for (const s of strategies) {
-    const row = [
-      s.name,
-      s.mult,
-      s.rollsPerHour.toFixed(1),
-      (s.rollsPerHour * s.coinsPerRoll).toFixed(2),
-      (s.rollsPerHour * s.xpPerRoll).toFixed(4) + '%',
-    ];
-    for (const h of hours) {
-      row.push(fmtNum(Math.round(h * s.rollsPerHour * s.coinsPerRoll)));
-    }
-    for (const h of hours) {
-      row.push(fmtNum(Math.round(h * s.rollsPerHour)));
-    }
+    const row = [s.name, 'x'+s.mult, s.rph.toFixed(1), fmtNum(Math.round(s.rph * s.cpr))];
+    for (const h of hours) row.push(fmtNum(Math.round(h * s.rph * s.cpr)));
     row.push((pRarePlus(s.gp)*100).toFixed(4) + '%');
-    row.push(pEpicPlus(s.gp).toExponential(3));
-    row.push(fmtNum(Math.round(8 * s.rollsPerHour * pRarePlus(s.gp))));
     rows.push(row);
   }
-
   writeCSV('08_strategies_comparison.csv', header, rows);
 }
 
@@ -659,131 +546,50 @@ function gen08_strategies() {
 // ═══════════════════════════════════════════════════════════════
 
 function gen09_goldenPath() {
-  // Simulate a player from level 1 to level 100
-  // Using expected values (not random), track:
-  // - Rolls needed per level
-  // - Cumulative rolls
-  // - Time at autoroll speed
-  // - Collection % estimate
-  // - Total coins earned
-  // - "Wow moments" (milestone events)
-
   const header = [
     'Level','XP Needed','Egg Tier','Pool Size',
-    'E[XP%/roll]','E[rolls to level up]','Cumulative Rolls',
+    'Rolls to level up','Cumulative Rolls',
     'Time (autoroll)','Time (manual 1/s)',
     'E[coins/roll]','Coins this level','Cumulative Coins',
-    'Approx Collection %','New pets this level (est)',
     'Level-up Reward (coins)','Milestone',
   ];
-
   const rows = [];
-  let cumRolls = 0;
-  let cumCoins = 0;
-  let collectedCount = 0;
-  const collected = new Set();
-
-  // For collection estimation, track expected new pets
-  // P(new) for a roll = sum of P(pet) for all uncollected pets
-  // This is complex to simulate exactly, so we approximate:
-  // After N rolls in a pool of K uncollected pets, expected new ≈ K * (1 - (1 - avg_p)^N)
+  let cumRolls = 0, cumCoins = 0;
 
   for (let lv = 1; lv <= 150; lv++) {
     const xpNeeded = xpForLevel(lv);
+    const rollsToLevel = Math.ceil(xpNeeded / XP_PER_ROLL);
     const pool = getEligiblePets(lv);
     const tier = getVisualTier(lv);
     const tierChanged = lv > 1 && getVisualTier(lv) !== getVisualTier(lv - 1);
 
-    // Estimate XP% per roll based on current collection state
-    // For simplicity, use a mix: some new (25%) + mostly dup
-    // More accurate: estimate fraction of rolls that give new pets
-    const uncollectedInPool = pool.filter(p => !collected.has(p.id));
-    const probs = computeProbabilities(pool, 1);
-
-    let pNewRoll = 0; // probability of getting ANY new pet
-    for (const p of uncollectedInPool) {
-      pNewRoll += probs.get(p.id) || 0;
-    }
-    pNewRoll = Math.min(pNewRoll, 1);
-
-    // Expected XP% per roll
-    // New pet: 25% XP bar, Dup: weighted average of dup XP%
-    let avgDupXp = 0;
-    let totalDupP = 0;
-    for (const p of pool) {
-      if (collected.has(p.id)) {
-        const prob = probs.get(p.id) || 0;
-        avgDupXp += prob * getGrade(p.chance).xpDup;
-        totalDupP += prob;
-      }
-    }
-    if (totalDupP > 0) avgDupXp /= totalDupP;
-    else avgDupXp = 0.5;
-
-    const xpPctPerRoll = pNewRoll * 25 + (1 - pNewRoll) * avgDupXp;
-    const rollsToLevel = xpPctPerRoll > 0 ? Math.ceil(100 / xpPctPerRoll) : 999999;
-
-    // Expected coins per roll
-    const coinsPerRoll = expectedCoinsPerRoll(pool, 1, collected);
-
-    // Estimate new pets gained during this level
-    // Simple model: each roll has pNewRoll chance of new, diminishing
-    const newPetsThisLevel = Math.min(
-      uncollectedInPool.length,
-      Math.round(uncollectedInPool.length * (1 - Math.pow(1 - pNewRoll / Math.max(uncollectedInPool.length, 1), rollsToLevel)))
-    );
-
-    // Add estimated new pets to collection (add the most common uncollected)
-    const sortedUncollected = [...uncollectedInPool].sort((a, b) => a.chance - b.chance);
-    for (let i = 0; i < Math.min(newPetsThisLevel, sortedUncollected.length); i++) {
-      collected.add(sortedUncollected[i].id);
-    }
-
-    collectedCount = collected.size;
-
+    const coinsPerRoll = expectedCoinsPerRoll(pool, 1);
     cumRolls += rollsToLevel;
     const coinsThisLevel = Math.round(rollsToLevel * coinsPerRoll);
     cumCoins += coinsThisLevel;
 
-    // Level-up reward
-    const coinReward = tierChanged ? 0 : coinRewardForLevel(lv);
+    const coinReward = tierChanged || lv === 3 || lv === 5 || lv === 1000 ? 0 : coinRewardForLevel(lv);
     cumCoins += coinReward;
 
-    // Time
-    const autorollTimeSec = cumRolls * AUTOROLL_MS / 1000;
-    const manualTimeSec = cumRolls;
-
-    function fmtTime(sec) {
-      if (sec >= 3600) return (sec / 3600).toFixed(1) + 'h';
-      if (sec >= 60) return (sec / 60).toFixed(1) + 'min';
-      return sec.toFixed(0) + 's';
-    }
-
     let milestone = '';
-    if (tierChanged) milestone = `New egg (tier ${tier})`;
     if (lv === 1) milestone = 'Game start';
-    if (collectedCount >= 28 && !rows.some(r => r[13] === 'All Commons')) {
-      milestone += (milestone ? ' + ' : '') + 'All Commons';
-    }
-    if (collectedCount >= 52 && !rows.some(r => r[13] === 'All Uncommons')) {
-      milestone += (milestone ? ' + ' : '') + 'All Uncommons';
-    }
+    if (lv === 3) milestone = 'Auto Roll unlock';
+    if (lv === 5) milestone = 'Incubation unlock';
+    if (tierChanged) milestone = `New egg (tier ${tier})`;
 
     rows.push([
       lv, xpNeeded, tier, pool.length,
-      xpPctPerRoll.toFixed(2) + '%', rollsToLevel, cumRolls,
-      fmtTime(autorollTimeSec), fmtTime(manualTimeSec),
-      coinsPerRoll.toFixed(2), coinsThisLevel, cumCoins,
-      (collectedCount / 100 * 100).toFixed(1) + '%', newPetsThisLevel,
+      rollsToLevel, cumRolls,
+      fmtTime(cumRolls * AUTOROLL_MS / 1000), fmtTime(cumRolls),
+      coinsPerRoll.toFixed(2), coinsThisLevel, fmtNum(cumCoins),
       coinReward, milestone,
     ]);
   }
-
   writeCSV('09_golden_path.csv', header, rows);
 }
 
 // ═══════════════════════════════════════════════════════════════
-// 10. PER-PET PROBABILITY TABLE (detailed, for each mult)
+// 10. PER-PET PROBABILITY TABLE
 // ═══════════════════════════════════════════════════════════════
 
 function gen10_petProbabilities() {
@@ -793,10 +599,8 @@ function gen10_petProbabilities() {
     ...mults.map(m => `P(pet) x${m}`),
     ...mults.map(m => `Avg rolls x${m}`),
   ];
-
   const rows = [];
   const sorted = [...pool].sort((a, b) => a.chance - b.chance);
-
   const probMaps = mults.map(m => computeProbabilities(pool, m));
 
   sorted.forEach((pet, i) => {
@@ -812,7 +616,6 @@ function gen10_petProbabilities() {
     }
     rows.push(row);
   });
-
   writeCSV('10_pet_probabilities.csv', header, rows);
 }
 
@@ -822,12 +625,10 @@ function gen10_petProbabilities() {
 
 function gen11_shop() {
   const pool = getEligiblePets(1);
-  const vetSet = new Set(pool.map(p => p.id));
-  const coinsPerRoll = expectedCoinsPerRoll(pool, 1, vetSet);
+  const coinsPerRoll = expectedCoinsPerRoll(pool, 1);
   const autorollsPerHour = 3600000 / AUTOROLL_MS;
-  const coinsPerHour = autorollsPerHour * coinsPerRoll;
 
-  const header = ['Pet','Grade','Chance','Shop Price','Rolls to afford (vet autoroll)','Hours to afford (autoroll)','Worth buying? (vs rolling for it)'];
+  const header = ['Pet','Grade','Chance','Shop Price','Rolls to afford','Hours to afford','vs RNG rolls'];
   const rows = [];
   const sorted = [...PETS].sort((a, b) => a.chance - b.chance);
 
@@ -837,17 +638,13 @@ function gen11_shop() {
     const rollsToAfford = Math.ceil(price / coinsPerRoll);
     const hoursToAfford = rollsToAfford / autorollsPerHour;
 
-    // Compare: rolls to afford shop price vs expected rolls to get pet from RNG
     const probs = computeProbabilities(pool, 1);
     const pPet = probs.get(pet.id) || 0;
     const rollsToGet = pPet > 0 ? Math.round(1 / pPet) : Infinity;
 
-    let verdict;
-    if (rollsToAfford < rollsToGet) {
-      verdict = `YES — shop ${fmtNum(rollsToAfford)} rolls vs RNG ${fmtNum(rollsToGet)} rolls`;
-    } else {
-      verdict = `NO — shop ${fmtNum(rollsToAfford)} rolls vs RNG ${fmtNum(rollsToGet)} rolls`;
-    }
+    const verdict = rollsToAfford < rollsToGet
+      ? `Shop faster (${fmtNum(rollsToAfford)} vs ${fmtNum(rollsToGet)})`
+      : `RNG faster (${fmtNum(rollsToGet)} vs ${fmtNum(rollsToAfford)})`;
 
     rows.push([
       pet.id, g.name, oddsStr(pet.chance), fmtNum(price),
@@ -856,143 +653,82 @@ function gen11_shop() {
       verdict,
     ]);
   }
-
   writeCSV('11_shop_economy.csv', header, rows);
 }
 
 // ═══════════════════════════════════════════════════════════════
-// 12. OVERNIGHT AUTOROLL DEEP ANALYSIS
+// 12. OVERNIGHT AUTOROLL ANALYSIS
 // ═══════════════════════════════════════════════════════════════
 
 function gen12_overnight() {
   const pool = getEligiblePets(1);
-  const vetSet = new Set(pool.map(p => p.id));
-  const newSet = new Set();
-
-  const durations = [1, 2, 4, 8, 12, 24]; // hours
-  const mults = [1]; // autoroll = no buff
+  const durations = [1, 2, 4, 8, 12, 24];
 
   const header = [
-    'Duration', 'Total Rolls',
-    'Coins (new player)', 'Coins (veteran)',
-    'XP levels gained (vet, lv10)', 'XP levels gained (vet, lv50)', 'XP levels gained (vet, lv100)',
-    'Expected Rare+ hits', 'Expected Superior+ hits', 'Expected Elite+ hits',
-    'Expected Epic+ hits', 'Expected Heroic+ hits',
-    'P(at least 1 Legendary)',
+    'Duration', 'Total Rolls', 'Coins earned',
+    'XP earned', 'Levels gained (from lv10)', 'Levels gained (from lv50)',
+    'Expected Rare+ hits', 'Expected Elite+ hits',
+    'Expected Epic+ hits', 'P(at least 1 Legendary)',
   ];
 
   const gp = gradeProbabilities(pool, 1);
-  const pRarePlus = ['Rare','Superior','Elite','Epic','Heroic','Mythic','Ancient','Legendary'].reduce((s,g) => s + (gp[g]||0), 0);
-  const pValPlus = ['Superior','Elite','Epic','Heroic','Mythic','Ancient','Legendary'].reduce((s,g) => s + (gp[g]||0), 0);
-  const pElitePlus = ['Elite','Epic','Heroic','Mythic','Ancient','Legendary'].reduce((s,g) => s + (gp[g]||0), 0);
-  const pEpicPlus = ['Epic','Heroic','Mythic','Ancient','Legendary'].reduce((s,g) => s + (gp[g]||0), 0);
-  const pHeroicPlus = ['Heroic','Mythic','Ancient','Legendary'].reduce((s,g) => s + (gp[g]||0), 0);
+  const pRare = ['Rare','Superior','Elite','Epic','Heroic','Mythic','Ancient','Legendary'].reduce((s,g) => s + (gp[g]||0), 0);
+  const pElite = ['Elite','Epic','Heroic','Mythic','Ancient','Legendary'].reduce((s,g) => s + (gp[g]||0), 0);
+  const pEpic = ['Epic','Heroic','Mythic','Ancient','Legendary'].reduce((s,g) => s + (gp[g]||0), 0);
   const pLeg = gp['Legendary'] || 0;
+  const coinsPerRoll = expectedCoinsPerRoll(pool, 1);
 
-  const coinsNew = expectedCoinsPerRoll(pool, 1, newSet);
-  const coinsVet = expectedCoinsPerRoll(pool, 1, vetSet);
-  const xpVet = expectedXpPercentPerRoll(pool, 1, vetSet);
+  function levelsGained(startLv, totalXp) {
+    let remaining = totalXp, lv = startLv, levels = 0;
+    while (remaining >= xpForLevel(lv)) { remaining -= xpForLevel(lv); lv++; levels++; }
+    return levels;
+  }
 
   const rows = [];
   for (const h of durations) {
     const rolls = h * 3600000 / AUTOROLL_MS;
-    const xpLv10 = (rolls * xpVet / 100) * xpForLevel(10);
-    const xpLv50 = (rolls * xpVet / 100) * xpForLevel(50);
-    const xpLv100 = (rolls * xpVet / 100) * xpForLevel(100);
-
-    // Levels gained = approximate: divide total XP by XP per level
-    // More accurate: iterate levels
-    function levelsGained(startLv, totalXpPct) {
-      let xp = 0;
-      let levels = 0;
-      const totalXpGained = totalXpPct / 100 * xpForLevel(startLv) * rolls;
-      // Actually XP gained per roll = xpPct/100 * xpForLevel(currentLevel)
-      // This changes as you level up... approximate with starting level
-      let remainingXp = totalXpGained;
-      let lv = startLv;
-      while (remainingXp > 0) {
-        const needed = xpForLevel(lv);
-        if (remainingXp >= needed) {
-          remainingXp -= needed;
-          lv++;
-          levels++;
-        } else {
-          break;
-        }
-      }
-      return levels;
-    }
-
-    // Simpler: each roll gives xpVet% of current level bar
-    // So rolls per level = 100 / xpVet
-    // At level 10, rollsPerLevel = 100 / xpVet ≈ 100 / 0.5 = 200
-    // But xpVet is just the % of bar, it changes with level via xpForLevel()
-    // Actually xpPctPerRoll is independent of level - it's a % of the bar
-    const rollsPerLevel = 100 / xpVet; // same for all levels since it's % based
-
+    const totalXp = rolls * XP_PER_ROLL;
     rows.push([
-      h + 'h',
-      fmtNum(Math.round(rolls)),
-      fmtNum(Math.round(rolls * coinsNew)),
-      fmtNum(Math.round(rolls * coinsVet)),
-      Math.floor(rolls / rollsPerLevel),
-      Math.floor(rolls / rollsPerLevel),
-      Math.floor(rolls / rollsPerLevel),
-      fmtNum(Math.round(rolls * pRarePlus)),
-      fmtNum(Math.round(rolls * pValPlus)),
-      fmtNum(Math.round(rolls * pElitePlus)),
-      (rolls * pEpicPlus).toFixed(2),
-      (rolls * pHeroicPlus).toFixed(4),
+      h + 'h', fmtNum(Math.round(rolls)),
+      fmtNum(Math.round(rolls * coinsPerRoll)),
+      fmtNum(totalXp),
+      levelsGained(10, totalXp),
+      levelsGained(50, totalXp),
+      fmtNum(Math.round(rolls * pRare)),
+      fmtNum(Math.round(rolls * pElite)),
+      (rolls * pEpic).toFixed(2),
       (1 - Math.pow(1 - pLeg, rolls)).toExponential(4),
     ]);
   }
-
   writeCSV('12_overnight_autoroll.csv', header, rows);
 }
 
 // ═══════════════════════════════════════════════════════════════
-// 13. COIN SINKS vs SOURCES BALANCE
+// 13. COIN SINKS vs SOURCES
 // ═══════════════════════════════════════════════════════════════
 
 function gen13_coinBalance() {
-  const header = [
-    'Source/Sink', 'Type', 'Amount per event', 'Frequency',
-    'Coins per hour (autoroll vet)', 'Notes',
-  ];
-
   const pool = getEligiblePets(1);
-  const vetSet = new Set(pool.map(p => p.id));
-  const coinsPerRoll = expectedCoinsPerRoll(pool, 1, vetSet);
+  const coinsPerRoll = expectedCoinsPerRoll(pool, 1);
   const rollsPerHour = 3600000 / AUTOROLL_MS;
 
-  // Level up rewards: roughly every 100/xpDupAvg rolls
-  const xpVet = expectedXpPercentPerRoll(pool, 1, vetSet);
-  const rollsPerLevel = 100 / xpVet;
-
-  // Average level-up reward = rolls needed for that level = ceil(xpForLevel / 5)
-  const avgLevelReward = coinRewardForLevel(50); // sigmoid coin reward at lv50
-
+  const header = ['Source/Sink', 'Type', 'Amount', 'Frequency', 'Coins/hour (autoroll)', 'Notes'];
   const rows = [
-    ['Roll coins (duplicate)', 'SOURCE', coinsPerRoll.toFixed(2) + '/roll', rollsPerHour.toFixed(0) + ' rolls/h',
-     (coinsPerRoll * rollsPerHour).toFixed(0), 'Main income for veterans'],
-    ['Level-up coins (free)', 'SOURCE', avgLevelReward + ' (at lv50)', '1 per ' + Math.round(rollsPerLevel) + ' rolls',
-     (avgLevelReward / rollsPerLevel * rollsPerHour).toFixed(0), 'ceil(xpForLevel/5) coins; 0 if egg changes'],
-    ['Level-up coins (ad x3)', 'SOURCE', avgLevelReward * 3 + ' (at lv50)', '1 per ' + Math.round(rollsPerLevel) + ' rolls',
-     (avgLevelReward * 3 / rollsPerLevel * rollsPerHour).toFixed(0), 'Requires watching ad'],
-    ['Quest reward (Lucky buff)', 'SOURCE (indirect)', '0 coins', 'Every 10 rolls', '0',
-     'Lucky buff increases rare pet chance but not direct coins'],
-    ['Shop purchase (Common)', 'SINK', '4-186 coins', 'Manual', 'Variable',
-     'Price = chance * 2; cheapest: Cat = 4 coins'],
-    ['Shop purchase (Uncommon)', 'SINK', '200-1960 coins', 'Manual', 'Variable', ''],
-    ['Shop purchase (Extra)', 'SINK', '2K-9.6K coins', 'Manual', 'Variable', ''],
-    ['Shop purchase (Rare)', 'SINK', '10K-96K coins', 'Manual', 'Variable', ''],
-    ['Shop purchase (Superior)', 'SINK', '100K-960K coins', 'Manual', 'Variable', ''],
-    ['Shop purchase (Elite)', 'SINK', '1M-9M coins', 'Manual', 'Variable',
-     'Extremely expensive — months of autoroll'],
-    ['Shop purchase (Epic+)', 'SINK', '10M+ coins', 'Manual', 'Variable',
-     'Practically unaffordable through normal play'],
+    ['Roll coins', 'SOURCE', coinsPerRoll.toFixed(2) + '/roll', rollsPerHour.toFixed(0) + '/h',
+     fmtNum(Math.round(coinsPerRoll * rollsPerHour)), 'Coins = pet.chance value'],
+    ['Level-up coins', 'SOURCE', coinRewardForLevel(50) + ' (at lv50)', 'Per level',
+     'Variable', 'Formula: sigmoid 5-500 range'],
+    ['League promotion', 'SOURCE', '500-500K', 'One-time per league',
+     'One-time', 'Silver 500, Gold 5K, Diamond 50K, Master 500K'],
+    ['Quest milestones', 'SOURCE', '100-15K', 'At 3/6/9/12/15 quests',
+     'One-time', 'Total: 22,600 coins'],
+    ['Shop purchase', 'SINK', 'chance*2', 'Manual',
+     'Variable', 'Price = pet.chance * 2'],
+    ['Egg purchase', 'SINK', '10-1000', 'Manual',
+     'Variable', 'Tier 1: 10, Tier 17: 1000'],
+    ['Nest slot unlock', 'SINK', '5K / 50K', 'One-time',
+     'One-time', 'Slot 2: 5K, Slot 3: 50K'],
   ];
-
   writeCSV('13_coin_sources_sinks.csv', header, rows);
 }
 
@@ -1003,90 +739,42 @@ function gen13_coinBalance() {
 function gen14_quests() {
   const header = [
     'Quest', 'Step', 'Target', 'Reward (free)', 'Reward (ad)',
-    'Buff type', 'Buff mult', 'E[coins uplift per buff] (vet)',
-    'Free total uplift', 'Ad total uplift', 'Notes',
+    'Buff type', 'Buff mult', 'Notes',
   ];
-
-  const pool = getEligiblePets(1);
-  const vetSet = new Set(pool.map(p => p.id));
-  const coinsBase = expectedCoinsPerRoll(pool, 1, vetSet);
-  const coinsX2 = expectedCoinsPerRoll(pool, 2, vetSet);
-  const coinsX3 = expectedCoinsPerRoll(pool, 3, vetSet);
-  const coinsX5 = expectedCoinsPerRoll(pool, 5, vetSet);
-
-  const luckyUplift = coinsX2 - coinsBase;
-  const superUplift = coinsX3 - coinsBase;
-  const epicUplift = coinsX5 - coinsBase;
-
   const rollSteps = [
-    { target: 3,  free: 3,  ad: 5 },
-    { target: 5,  free: 5,  ad: 10 },
-    { target: 10, free: 10, ad: 20 },
-    { target: 20, free: 25, ad: 50 },
-    { target: 50, free: 25, ad: 50 },
+    { target:3,  free:3,  ad:5 },  { target:5,  free:5,  ad:10 },
+    { target:10, free:10, ad:20 }, { target:20, free:25, ad:50 },
+    { target:50, free:25, ad:50 },
   ];
   const gradeSteps = [
-    { grade: 'Uncommon', target: 1, free: 3,  ad: 8 },
-    { grade: 'Uncommon', target: 2, free: 5,  ad: 12 },
-    { grade: 'Uncommon', target: 3, free: 5,  ad: 12 },
-    { grade: 'Extra',    target: 1, free: 8,  ad: 20 },
-    { grade: 'Extra',    target: 2, free: 10, ad: 25 },
-    { grade: 'Extra',    target: 3, free: 12, ad: 30 },
+    { grade:'Uncommon', target:1, free:3,  ad:8 },
+    { grade:'Uncommon', target:2, free:5,  ad:12 },
+    { grade:'Uncommon', target:3, free:5,  ad:12 },
+    { grade:'Extra',    target:1, free:8,  ad:20 },
+    { grade:'Extra',    target:2, free:10, ad:25 },
+    { grade:'Extra',    target:3, free:12, ad:30 },
   ];
   const onlineSteps = [
-    { target: 1,  free: 3,  ad: 6 },
-    { target: 3,  free: 5,  ad: 10 },
-    { target: 5,  free: 8,  ad: 15 },
-    { target: 10, free: 15, ad: 30 },
-    { target: 30, free: 30, ad: 60 },
-    { target: 60, free: 50, ad: 100 },
+    { target:1,  free:3,  ad:6 },  { target:3,  free:5,  ad:10 },
+    { target:5,  free:8,  ad:15 }, { target:10, free:15, ad:30 },
+    { target:30, free:30, ad:60 }, { target:60, free:50, ad:100 },
   ];
 
   const rows = [];
-
   rollSteps.forEach((s, i) => {
-    const loop = i === rollSteps.length - 1 ? ' (loops)' : '';
-    rows.push([
-      'Roll', `${i+1}${loop}`, `${s.target} rolls`,
-      `${s.free}x Lucky`, `${s.ad}x Lucky`,
-      'Lucky', 'x2', luckyUplift.toFixed(4),
-      (s.free * luckyUplift).toFixed(2), (s.ad * luckyUplift).toFixed(2),
-      i === 0 ? 'Quick early quest' : '',
-    ]);
+    rows.push(['Roll', i+1, `${s.target} rolls`, `${s.free}x Lucky`, `${s.ad}x Lucky`, 'Lucky', 'x2', i === 4 ? 'loops' : '']);
   });
-
   gradeSteps.forEach((s, i) => {
-    const loop = i === gradeSteps.length - 1 ? ' (loops)' : '';
-    rows.push([
-      'Grade', `${i+1}${loop}`, `${s.target}x ${s.grade}+`,
-      `${s.free}x Super`, `${s.ad}x Super`,
-      'Super', 'x3', superUplift.toFixed(4),
-      (s.free * superUplift).toFixed(2), (s.ad * superUplift).toFixed(2),
-      s.grade === 'Extra' ? 'Harder; requires Extra+ grade' : '',
-    ]);
+    rows.push(['Grade', i+1, `${s.target}x ${s.grade}+`, `${s.free}x Super`, `${s.ad}x Super`, 'Super', 'x3', i === 5 ? 'loops' : '']);
   });
-
   onlineSteps.forEach((s, i) => {
-    const loop = i === onlineSteps.length - 1 ? ' (loops)' : '';
-    rows.push([
-      'Online', `${i+1}${loop}`, `${s.target} min`,
-      `${s.free}x Epic`, `${s.ad}x Epic`,
-      'Epic', 'x5', epicUplift.toFixed(4),
-      (s.free * epicUplift).toFixed(2), (s.ad * epicUplift).toFixed(2),
-      s.target >= 10 ? 'Long session quest' : 'Retention driver (>4min)',
-    ]);
+    rows.push(['Online', i+1, `${s.target} min`, `${s.free}x Epic`, `${s.ad}x Epic`, 'Epic', 'x5', i === 5 ? 'loops' : '']);
   });
-
-  // Milestones summary
   rows.push([]);
-  rows.push(['MILESTONES', 'At quest #', 'Coin reward', '', '', '', '', '', '', '', '']);
-  const msAt = [3, 6, 9, 12, 15];
-  const msRewards = [100, 500, 2000, 5000, 15000];
-  msAt.forEach((at, i) => {
-    rows.push(['Milestone', `${at} quests`, `${msRewards[i]} coins`, '', '', '', '', '', '', '', '']);
+  rows.push(['MILESTONES','At quest #','Coin reward','','','','','']);
+  [3,6,9,12,15].forEach((at, i) => {
+    rows.push(['Milestone', at, [100,500,2000,5000,15000][i] + ' coins','','','','','']);
   });
-  rows.push(['TOTAL milestone coins', '', `${msRewards.reduce((a,b)=>a+b, 0)}`, '', '', '', '', '', '', '', '']);
-
   writeCSV('14_quest_analysis.csv', header, rows);
 }
 
@@ -1098,13 +786,11 @@ function gen15_collection() {
   const header = [
     'Collection %', 'Pets collected', 'Hardest uncollected grade',
     'Est. rolls needed (from 0)', 'Est. autoroll time',
-    'Est. rolls for next pet', 'Notes',
+    'Est. rolls for last pet', 'Notes',
   ];
-
   const pool = getEligiblePets(1);
   const sorted = [...pool].sort((a, b) => a.chance - b.chance);
   const probs = computeProbabilities(pool, 1);
-
   const milestones = [10, 20, 28, 30, 40, 50, 52, 60, 68, 70, 80, 82, 90, 96, 99, 100];
   const rows = [];
 
@@ -1112,24 +798,14 @@ function gen15_collection() {
     const petsNeeded = sorted.slice(0, target);
     const hardestPet = petsNeeded[petsNeeded.length - 1];
     const hardestGrade = getGrade(hardestPet.chance);
-
-    // Expected rolls to collect exactly these N pets (coupon collector variant)
-    // Approximate: for the Nth pet, expected rolls ≈ 1 / P(any uncollected)
-    // Total ≈ sum from k=1 to N of 1/P(uncollected_k)
-    // Where uncollected_k has P ≈ P(pet_k) when it's the hardest remaining
-
-    // Simpler: for the last pet in the set, expected rolls = 1/P(that pet)
     const pHardest = probs.get(hardestPet.id) || 0;
     const rollsForLastPet = pHardest > 0 ? Math.round(1 / pHardest) : Infinity;
-
-    // Total rolls estimate (rough: sum of 1/P for each pet)
     let totalEst = 0;
     for (const p of petsNeeded) {
       const pp = probs.get(p.id) || 0;
       if (pp > 0) totalEst += 1 / pp;
     }
     totalEst = Math.round(totalEst);
-
     const autorollHours = totalEst * AUTOROLL_MS / 1000 / 3600;
 
     let note = '';
@@ -1137,20 +813,18 @@ function gen15_collection() {
     if (target === 52) note = 'All Commons + Uncommons';
     if (target === 68) note = '+ All Extra';
     if (target === 82) note = '+ All Rare';
-    if (target === 100) note = 'Full collection (incl. Legendary)';
-    if (target === 96) note = 'Everything except top 4 (Heroic+)';
+    if (target === 96) note = 'Everything except top 4';
+    if (target === 100) note = 'Full collection';
 
     rows.push([
-      (target) + '%', target, hardestGrade.name,
+      target + '%', target, hardestGrade.name,
       fmtNum(totalEst),
       autorollHours >= 24 ? (autorollHours/24).toFixed(1) + ' days' :
         autorollHours >= 1 ? autorollHours.toFixed(1) + 'h' :
         (autorollHours * 60).toFixed(0) + 'min',
-      fmtNum(rollsForLastPet),
-      note,
+      fmtNum(rollsForLastPet), note,
     ]);
   }
-
   writeCSV('15_collection_completion.csv', header, rows);
 }
 
@@ -1161,7 +835,8 @@ function gen15_collection() {
 console.log('PETS GO Lite — Balance Calculator\n');
 console.log(`Total pets: ${PETS.length}`);
 console.log(`Grades: ${GRADES.length}`);
-console.log(`Egg tiers: ${VISUAL_TIERS.length}\n`);
+console.log(`Egg tiers: ${VISUAL_TIERS.length}`);
+console.log(`Leagues: ${LEAGUES.length}\n`);
 
 console.log('Generating CSV files...\n');
 gen01_pets();

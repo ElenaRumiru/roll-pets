@@ -1,7 +1,7 @@
-﻿Duration,Total Rolls,Coins (new player),Coins (veteran),XP levels gained (vet, lv10),XP levels gained (vet, lv50),XP levels gained (vet, lv100),Expected Rare+ hits,Expected Superior+ hits,Expected Elite+ hits,Expected Epic+ hits,Expected Heroic+ hits,P(at least 1 Legendary)
-1h,7.20K,40.16K,7.89K,39,39,39,7,1,0,0.00,0.0003,9.0000e-6
-2h,14.40K,80.32K,15.79K,78,78,78,15,1,0,0.01,0.0006,1.8000e-5
-4h,28.80K,160.65K,31.57K,157,157,157,29,2,0,0.02,0.0011,3.5999e-5
-8h,57.60K,321.30K,63.14K,315,315,315,58,4,0,0.03,0.0023,7.1997e-5
-12h,86.40K,481.94K,94.71K,472,472,472,87,7,1,0.05,0.0034,1.0799e-4
-24h,172.80K,963.88K,189.43K,945,945,945,174,13,1,0.09,0.0068,2.1598e-4
+﻿Duration,Total Rolls,Coins earned,XP earned,Levels gained (from lv10),Levels gained (from lv50),Expected Rare+ hits,Expected Elite+ hits,Expected Epic+ hits,P(at least 1 Legendary)
+1h,7.20K,726.08K,36.00K,50,37,7,0,0.00,9.0000e-6
+2h,14.40K,1.45M,72.00K,86,72,15,0,0.01,1.8000e-5
+4h,28.80K,2.90M,144.00K,156,142,29,0,0.02,3.5999e-5
+8h,57.60K,5.81M,288.00K,295,280,58,0,0.03,7.1997e-5
+12h,86.40K,8.71M,432.00K,432,418,87,1,0.05,1.0799e-4
+24h,172.80K,17.43M,864.00K,844,830,174,1,0.09,2.1598e-4

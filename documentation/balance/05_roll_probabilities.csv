@@ -1,4 +1,4 @@
-﻿Grade,Pets,P(grade) x1,P(grade) x2,P(grade) x3,P(grade) x5,P(grade) x6,P(grade) x10,P(grade) x15,P(grade) x30,Avg rolls to hit x1,Avg rolls to hit x2,Avg rolls to hit x3,Avg rolls to hit x5,Avg rolls to hit x6,Avg rolls to hit x10,Avg rolls to hit x15,Avg rolls to hit x30
+﻿Grade,Pets,P(grade) x1,P(grade) x2,P(grade) x3,P(grade) x5,P(grade) x6,P(grade) x10,P(grade) x15,P(grade) x30,Avg rolls x1,Avg rolls x2,Avg rolls x3,Avg rolls x5,Avg rolls x6,Avg rolls x10,Avg rolls x15,Avg rolls x30
 Common,28,91.4208%,83.5422%,76.3097%,63.5853%,58.0035%,39.9797%,24.8361%,5.4820%,1,1,1,2,2,3,4,18
 Uncommon,25,7.7865%,14.8783%,21.3299%,32.5099%,37.3280%,52.3539%,63.8742%,73.1419%,13,7,5,3,3,2,2,1
 Extra,16,0.6919%,1.3780%,2.0584%,3.4019%,4.0652%,6.6629%,9.7877%,18.3926%,145,73,49,29,25,15,10,5
