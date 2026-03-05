@@ -482,7 +482,7 @@ Created with the starting 100 pets. Pet lists are fixed forever. All `petIds` us
 | 5 | Bugs | `bugs_pets` | `bee, ladybug, grasshopper, spider, scorpion` | 5 | 500 🪙 + 10x Lucky |
 | 6 | Scaled | `squama_pets` | `turtle, snake, chameleon, crocodile, cobra, axolotl` | 6 | 1,000 🪙 + 10x Lucky |
 | 7 | Rodents | `rodents_pets` | `mouse, hamster, squirrel, beaver, capybara, porcupine` | 6 | 500 🪙 + 10x Lucky |
-| 8 | River & Pond | `lake_river_pets` | `frog, beaver, otter, axolotl, duck, hippo, crocodile, swan` | 8 | 1,000 🪙 + 15x Lucky |
+| 8 | River & Pond | `lake_river_pets` | `frog, beaver, otter, axolotl, duck, hippo, crocodile, swan, piranha, platypus, snail` | 11 | 1,000 🪙 + 15x Lucky |
 | 9 | Exotic | `exotic_pets` | `axolotl, chameleon, capybara, red_panda, pallas_cat, fennec_fox, koala, kangaroo` | 8 | 1,000 🪙 + 15x Lucky |
 | 10 | Latin America | `latin_pets` | `llama, toucan, capybara, jaguar, axolotl, anteater` | 6 | 1,000 🪙 + 10x Lucky |
 | 11 | Desert | `desert_pets` | `camel, fennec_fox, scorpion, cobra, meerkat` | 5 | 1,000 🪙 + 10x Lucky |
@@ -506,7 +506,7 @@ Created with the starting 100 pets. Pet lists are fixed forever. All `petIds` us
 |---|-----------|-----------|--------|-------|--------|
 | 20 | Mythical | `myph_pets` | `griffin, dragon, pegasus, phoenix, chinese_dragon, cerberus, minotaur, sphinx, djinn, kitsune, alien` | 11 | 50,000 🪙 + 10x Epic |
 | 21 | Undead | `undead_pets` | `ghost, skeleton, zombie, vampire, grim_reaper` | 5 | 30,000 🪙 + 8x Epic |
-| 22 | Living Objects | `items_pets` | `slime, robot, snowman, teddy_bear, gingerbread_man, mimic, astronaut` | 7 | 25,000 🪙 + 8x Epic |
+| 22 | Living Objects | `items_pets` | `slime, robot, snowman, teddy_bear, gingerbread_man, mimic` | 6 | 25,000 🪙 + 8x Epic |
 | 23 | Dark Forces | `dark_pets` | `cerberus, nightmare, beholder, grim_reaper, ifrit` | 5 | 50,000 🪙 + 10x Epic |
 | 24 | Prehistoric | `ancient_pets` | `mammoth, sabertooth` | 2 | 15,000 🪙 + 5x Epic |
 

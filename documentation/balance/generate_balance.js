@@ -16,49 +16,83 @@ const ExcelJS = require('exceljs');
 // ═══════════════════════════════════════════════════════════════
 
 const PETS = [
-  { id:'cat',chance:2 },{ id:'beagle',chance:3 },{ id:'mouse',chance:4 },
-  { id:'hamster',chance:5 },{ id:'hare',chance:6 },{ id:'sheep',chance:7 },
-  { id:'goat',chance:8 },{ id:'cow',chance:10 },{ id:'pig',chance:12 },
-  { id:'pigeon',chance:14 },{ id:'duck',chance:16 },{ id:'frog',chance:18 },
-  { id:'bee',chance:20 },{ id:'ladybug',chance:24 },{ id:'grasshopper',chance:28 },
-  { id:'goldfish',chance:32 },{ id:'turkey',chance:36 },{ id:'squirrel',chance:40 },
-  { id:'mole',chance:44 },{ id:'opossum',chance:48 },{ id:'porcupine',chance:52 },
-  { id:'ferret',chance:57 },{ id:'badger',chance:62 },{ id:'beaver',chance:67 },
-  { id:'raccoon',chance:72 },{ id:'shiba',chance:78 },{ id:'turtle',chance:85 },
-  { id:'snake',chance:93 },
-  { id:'penguin',chance:100 },{ id:'panda',chance:120 },{ id:'koala',chance:140 },
-  { id:'owl',chance:160 },{ id:'capybara',chance:180 },{ id:'red_panda',chance:200 },
-  { id:'otter',chance:230 },{ id:'meerkat',chance:260 },{ id:'llama',chance:290 },
-  { id:'camel',chance:320 },{ id:'ram',chance:360 },{ id:'moose',chance:400 },
-  { id:'anteater',chance:440 },{ id:'seal',chance:480 },{ id:'heron',chance:530 },
-  { id:'kiwi',chance:580 },{ id:'swan',chance:630 },{ id:'pelican',chance:680 },
-  { id:'toucan',chance:730 },{ id:'bat',chance:780 },{ id:'spider',chance:830 },
-  { id:'giraffe',chance:870 },{ id:'zebra',chance:910 },{ id:'hyena',chance:950 },
-  { id:'seahorse',chance:980 },
-  { id:'dolphin',chance:1000 },{ id:'chameleon',chance:1200 },{ id:'octopus',chance:1400 },
-  { id:'axolotl',chance:1700 },{ id:'crocodile',chance:2000 },{ id:'cobra',chance:2300 },
-  { id:'kangaroo',chance:2500 },{ id:'falcon',chance:2800 },{ id:'raven',chance:3000 },
-  { id:'hummingbird',chance:3200 },{ id:'scorpion',chance:3500 },{ id:'pufferfish',chance:3700 },
-  { id:'fennec_fox',chance:4000 },{ id:'pallas_cat',chance:4200 },{ id:'gorilla',chance:4500 },
-  { id:'rhino',chance:4800 },
-  { id:'lion',chance:5000 },{ id:'cheetah',chance:7000 },{ id:'jaguar',chance:9000 },
-  { id:'shark',chance:11000 },{ id:'bear',chance:14000 },{ id:'wolf',chance:17000 },
-  { id:'whale',chance:20000 },{ id:'walrus',chance:24000 },{ id:'hippo',chance:28000 },
-  { id:'jellyfish',chance:32000 },{ id:'squid',chance:36000 },{ id:'anglerfish',chance:40000 },
-  { id:'mammoth',chance:44000 },{ id:'sabertooth',chance:48000 },
-  { id:'slime',chance:50000 },{ id:'ghost',chance:75000 },{ id:'skeleton',chance:100000 },
-  { id:'zombie',chance:140000 },{ id:'robot',chance:180000 },{ id:'snowman',chance:220000 },
-  { id:'teddy_bear',chance:270000 },{ id:'gingerbread_man',chance:320000 },
-  { id:'yeti',chance:400000 },{ id:'mimic',chance:480000 },
-  { id:'griffin',chance:500000 },{ id:'kitsune',chance:800000 },{ id:'golem',chance:1200000 },
-  { id:'vampire',chance:1800000 },{ id:'cerberus',chance:2500000 },{ id:'minotaur',chance:3500000 },
-  { id:'nightmare',chance:4500000 },
-  { id:'dragon',chance:5000000 },{ id:'pegasus',chance:8000000 },{ id:'alien',chance:15000000 },
-  { id:'astronaut',chance:22000000 },{ id:'sphinx',chance:35000000 },{ id:'ifrit',chance:45000000 },
-  { id:'phoenix',chance:50000000 },{ id:'djinn',chance:120000000 },{ id:'cheshire_cat',chance:200000000 },
-  { id:'chinese_dragon',chance:350000000 },
-  { id:'beholder',chance:600000000 },
-  { id:'grim_reaper',chance:800000000 },
+  // Common [2, 100) — 30 pets
+  { id:'cat',chance:2 },{ id:'beagle',chance:4 },{ id:'mouse',chance:6 },
+  { id:'hamster',chance:8 },{ id:'hare',chance:10 },{ id:'sheep',chance:13 },
+  { id:'goat',chance:16 },{ id:'chicken',chance:19 },{ id:'cow',chance:22 },
+  { id:'donkey',chance:25 },{ id:'pig',chance:28 },{ id:'guinea_pig',chance:31 },
+  { id:'pigeon',chance:34 },{ id:'hedgehog',chance:37 },{ id:'duck',chance:40 },
+  { id:'ant',chance:43 },{ id:'frog',chance:46 },{ id:'snail',chance:49 },
+  { id:'bee',chance:52 },{ id:'ladybug',chance:56 },{ id:'grasshopper',chance:60 },
+  { id:'goldfish',chance:64 },{ id:'turkey',chance:68 },{ id:'squirrel',chance:72 },
+  { id:'mole',chance:76 },{ id:'opossum',chance:80 },{ id:'porcupine',chance:84 },
+  { id:'ferret',chance:88 },{ id:'badger',chance:92 },{ id:'beaver',chance:96 },
+  // Uncommon [100, 1000) — 50 pets
+  { id:'penguin',chance:100 },{ id:'chipmunk',chance:105 },{ id:'crab',chance:110 },
+  { id:'lobster',chance:120 },{ id:'raccoon',chance:130 },{ id:'shiba',chance:140 },
+  { id:'turtle',chance:150 },{ id:'snake',chance:160 },{ id:'bulldog',chance:170 },
+  { id:'starfish',chance:180 },{ id:'panda',chance:190 },{ id:'corgi',chance:200 },
+  { id:'koala',chance:210 },{ id:'chihuahua',chance:220 },{ id:'golden_retriever',chance:240 },
+  { id:'owl',chance:260 },{ id:'dalmatian',chance:280 },{ id:'capybara',chance:300 },
+  { id:'fox',chance:320 },{ id:'gecko',chance:340 },{ id:'red_panda',chance:360 },
+  { id:'chinchilla',chance:380 },{ id:'otter',chance:400 },{ id:'poodle',chance:420 },
+  { id:'pug',chance:440 },{ id:'meerkat',chance:460 },{ id:'deer',chance:480 },
+  { id:'dachshund',chance:500 },{ id:'llama',chance:520 },{ id:'monkey',chance:540 },
+  { id:'camel',chance:560 },{ id:'sloth',chance:580 },{ id:'ram',chance:600 },
+  { id:'iguana',chance:620 },{ id:'moose',chance:640 },{ id:'husky',chance:660 },
+  { id:'anteater',chance:680 },{ id:'salamander',chance:700 },{ id:'seal',chance:720 },
+  { id:'armadillo',chance:740 },{ id:'parrot',chance:760 },{ id:'heron',chance:780 },
+  { id:'lemur',chance:800 },{ id:'kiwi',chance:830 },{ id:'samoyed',chance:860 },
+  { id:'swan',chance:890 },{ id:'bison',chance:920 },{ id:'pelican',chance:940 },
+  { id:'toucan',chance:960 },{ id:'warthog',chance:980 },
+  // Extra [1000, 5000) — 38 pets
+  { id:'dolphin',chance:1000 },{ id:'dragonfly',chance:1050 },{ id:'manatee',chance:1100 },
+  { id:'giraffe',chance:1150 },{ id:'chameleon',chance:1200 },{ id:'zebra',chance:1300 },
+  { id:'flamingo',chance:1400 },{ id:'octopus',chance:1500 },{ id:'seahorse',chance:1600 },
+  { id:'horse',chance:1700 },{ id:'axolotl',chance:1800 },{ id:'hyena',chance:1900 },
+  { id:'ostrich',chance:2000 },{ id:'crocodile',chance:2100 },{ id:'bat',chance:2200 },
+  { id:'mantis',chance:2300 },{ id:'cobra',chance:2400 },{ id:'spider',chance:2500 },
+  { id:'magpie',chance:2600 },{ id:'kangaroo',chance:2700 },{ id:'tapir',chance:2800 },
+  { id:'stork',chance:2900 },{ id:'falcon',chance:3000 },{ id:'peacock',chance:3100 },
+  { id:'raven',chance:3200 },{ id:'platypus',chance:3300 },{ id:'hummingbird',chance:3400 },
+  { id:'piranha',chance:3500 },{ id:'scorpion',chance:3600 },{ id:'pangolin',chance:3700 },
+  { id:'pufferfish',chance:3800 },{ id:'elephant',chance:3900 },{ id:'fennec_fox',chance:4000 },
+  { id:'eagle',chance:4100 },{ id:'pallas_cat',chance:4200 },{ id:'vulture',chance:4400 },
+  { id:'gorilla',chance:4600 },{ id:'rhino',chance:4800 },
+  // Rare [5000, 50000) — 21 pets
+  { id:'lion',chance:5000 },{ id:'tiger',chance:6000 },{ id:'cheetah',chance:7500 },
+  { id:'lynx',chance:9000 },{ id:'jaguar',chance:11000 },{ id:'panther',chance:13000 },
+  { id:'shark',chance:15000 },{ id:'polar_bear',chance:17000 },{ id:'bear',chance:19000 },
+  { id:'wolverine',chance:22000 },{ id:'wolf',chance:25000 },{ id:'whale',chance:28000 },
+  { id:'stingray',chance:31000 },{ id:'walrus',chance:34000 },{ id:'hippo',chance:37000 },
+  { id:'jellyfish',chance:40000 },{ id:'narwhal',chance:42000 },{ id:'squid',chance:44000 },
+  { id:'anglerfish',chance:46000 },{ id:'mammoth',chance:48000 },{ id:'sabertooth',chance:49000 },
+  // Superior [50000, 500000) — 14 pets
+  { id:'slime',chance:50000 },{ id:'imp',chance:65000 },{ id:'ghost',chance:80000 },
+  { id:'skeleton',chance:100000 },{ id:'werewolf',chance:135000 },{ id:'zombie',chance:170000 },
+  { id:'robot',chance:210000 },{ id:'gargoyle',chance:260000 },{ id:'snowman',chance:310000 },
+  { id:'teddy_bear',chance:350000 },{ id:'gingerbread_man',chance:390000 },
+  { id:'banshee',chance:420000 },{ id:'yeti',chance:450000 },{ id:'mimic',chance:480000 },
+  // Elite [500000, 5000000) — 12 pets
+  { id:'griffin',chance:500000 },{ id:'wraith',chance:700000 },{ id:'kitsune',chance:900000 },
+  { id:'fairy',chance:1100000 },{ id:'golem',chance:1400000 },{ id:'dragon_green',chance:1700000 },
+  { id:'vampire',chance:2000000 },{ id:'cerberus',chance:2500000 },{ id:'treant',chance:3000000 },
+  { id:'minotaur',chance:3500000 },{ id:'dragon_red',chance:4000000 },{ id:'nightmare',chance:4500000 },
+  // Epic [5M, 50M) — 7 pets
+  { id:'dragon',chance:5000000 },{ id:'unicorn',chance:7000000 },{ id:'pegasus',chance:10000000 },
+  { id:'alien',chance:18000000 },{ id:'astronaut',chance:25000000 },
+  { id:'sphinx',chance:35000000 },{ id:'ifrit',chance:45000000 },
+  // Heroic [50M, 250M) — 6 pets
+  { id:'phoenix',chance:50000000 },{ id:'dragon_ice',chance:70000000 },{ id:'hydra',chance:90000000 },
+  { id:'fenrir',chance:120000000 },{ id:'thunderbird',chance:160000000 },{ id:'djinn',chance:210000000 },
+  // Mythic [250M, 500M) — 3 pets
+  { id:'cheshire_cat',chance:270000000 },{ id:'chinese_dragon',chance:360000000 },
+  { id:'dragon_silver',chance:450000000 },
+  // Ancient [500M, 750M) — 3 pets
+  { id:'lich',chance:530000000 },{ id:'kraken',chance:620000000 },{ id:'beholder',chance:700000000 },
+  // Legendary [750M, 1B) — 3 pets
+  { id:'wendigo',chance:770000000 },{ id:'dragon_gold',chance:850000000 },
+  { id:'grim_reaper',chance:940000000 },
 ];
 
 const GRADES = [
@@ -104,32 +138,34 @@ const LEAGUES = [
 ];
 const LEAGUE_REWARDS = { Silver:500, Gold:5000, Diamond:50000, Master:500000 };
 
-// Collections (mirrored from COLLECTIONS_GDD.md)
+// Collections (mirrored from src/data/collections.ts)
 const COLLECTIONS = [
-  { id:'house_pets',     name:'House Pets',     petIds:['cat','beagle','mouse','hamster','hare','shiba','goldfish','turtle','ferret'] },
-  { id:'farm',           name:'Farm',           petIds:['sheep','goat','cow','pig','duck','turkey','hare','beagle','ram'] },
-  { id:'forest',         name:'Forest',         petIds:['squirrel','badger','mole','raccoon','owl','bear','wolf','moose','beaver','porcupine','opossum','bat'] },
-  { id:'birds',          name:'Birds',          petIds:['pigeon','duck','turkey','owl','heron','kiwi','swan','pelican','toucan','falcon','raven','hummingbird','penguin'] },
-  { id:'bugs',           name:'Bugs',           petIds:['bee','ladybug','grasshopper','spider','scorpion'] },
-  { id:'scaled',         name:'Scaled',         petIds:['turtle','snake','chameleon','crocodile','cobra','axolotl'] },
-  { id:'rodents',        name:'Rodents',        petIds:['mouse','hamster','squirrel','beaver','capybara','porcupine'] },
-  { id:'river_pond',     name:'River & Pond',   petIds:['frog','beaver','otter','axolotl','duck','hippo','crocodile','swan'] },
-  { id:'exotic',         name:'Exotic',         petIds:['axolotl','chameleon','capybara','red_panda','pallas_cat','fennec_fox','koala','kangaroo'] },
+  { id:'house_pets',     name:'House Pets',     petIds:['cat','beagle','mouse','hamster','hare','shiba','goldfish','turtle','ferret','guinea_pig','hedgehog','chinchilla'] },
+  { id:'farm',           name:'Farm',           petIds:['sheep','goat','cow','pig','duck','turkey','hare','beagle','ram','chicken','donkey','horse'] },
+  { id:'forest',         name:'Forest',         petIds:['squirrel','badger','mole','raccoon','owl','bear','wolf','moose','beaver','porcupine','opossum','bat','fox','deer','wolverine'] },
+  { id:'birds',          name:'Birds',          petIds:['pigeon','duck','turkey','owl','heron','kiwi','swan','pelican','toucan','falcon','raven','hummingbird','penguin','flamingo','eagle','ostrich','stork','magpie','vulture','peacock','parrot'] },
+  { id:'bugs',           name:'Bugs',           petIds:['bee','ladybug','grasshopper','spider','scorpion','ant','dragonfly','mantis'] },
+  { id:'scaled',         name:'Scaled',         petIds:['turtle','snake','chameleon','crocodile','cobra','axolotl','gecko','iguana','salamander'] },
+  { id:'rodents',        name:'Rodents',        petIds:['mouse','hamster','squirrel','beaver','capybara','porcupine','chipmunk','guinea_pig','chinchilla'] },
+  { id:'river_pond',     name:'River & Pond',   petIds:['frog','beaver','otter','axolotl','duck','hippo','crocodile','swan','piranha','platypus','snail'] },
+  { id:'exotic',         name:'Exotic',         petIds:['axolotl','chameleon','capybara','red_panda','pallas_cat','fennec_fox','koala','kangaroo','pangolin','platypus','sloth','armadillo','tapir','lemur','monkey'] },
   { id:'latin_america',  name:'Latin America',  petIds:['llama','toucan','capybara','jaguar','axolotl','anteater'] },
   { id:'desert',         name:'Desert',         petIds:['camel','fennec_fox','scorpion','cobra','meerkat'] },
-  { id:'ocean',          name:'Ocean',          petIds:['seahorse','dolphin','octopus','pufferfish','shark','whale','jellyfish','squid','anglerfish','seal'] },
-  { id:'savanna',        name:'Savanna',        petIds:['giraffe','zebra','lion','cheetah','hyena','hippo','rhino','gorilla','meerkat'] },
-  { id:'arctic',         name:'Arctic',         petIds:['penguin','seal','walrus','snowman','yeti','mammoth'] },
-  { id:'felines',        name:'Felines',        petIds:['cat','pallas_cat','cheetah','jaguar','lion','cheshire_cat','sabertooth'] },
-  { id:'canine_pack',    name:'Canine Pack',    petIds:['beagle','shiba','wolf','hyena','fennec_fox','cerberus'] },
+  { id:'ocean',          name:'Ocean',          petIds:['seahorse','dolphin','octopus','pufferfish','shark','whale','jellyfish','squid','anglerfish','seal','crab','lobster','starfish','stingray','narwhal','kraken'] },
+  { id:'savanna',        name:'Savanna',        petIds:['giraffe','zebra','lion','cheetah','hyena','hippo','rhino','gorilla','meerkat','elephant','warthog'] },
+  { id:'arctic',         name:'Arctic',         petIds:['penguin','seal','walrus','snowman','yeti','mammoth','polar_bear'] },
+  { id:'felines',        name:'Felines',        petIds:['cat','pallas_cat','cheetah','jaguar','lion','cheshire_cat','sabertooth','lynx','panther','tiger'] },
+  { id:'canine_pack',    name:'Canine Pack',    petIds:['beagle','shiba','wolf','hyena','fennec_fox','cerberus','fox','husky'] },
   { id:'venomous',       name:'Venomous',       petIds:['snake','cobra','scorpion','spider','pufferfish','jellyfish'] },
-  { id:'heavyweights',   name:'Heavyweights',   petIds:['hippo','rhino','gorilla','bear','whale','mammoth','golem','walrus'] },
-  { id:'asian',          name:'Asian',          petIds:['panda','red_panda','kitsune','shiba','chinese_dragon','pallas_cat'] },
-  { id:'mythical',       name:'Mythical',       petIds:['griffin','dragon','pegasus','phoenix','chinese_dragon','cerberus','minotaur','sphinx','djinn','kitsune','alien'] },
-  { id:'undead',         name:'Undead',         petIds:['ghost','skeleton','zombie','vampire','grim_reaper'] },
-  { id:'living_objects',  name:'Living Objects', petIds:['slime','robot','snowman','teddy_bear','gingerbread_man','mimic','astronaut'] },
-  { id:'dark_forces',    name:'Dark Forces',    petIds:['cerberus','nightmare','beholder','grim_reaper','ifrit'] },
+  { id:'heavyweights',   name:'Heavyweights',   petIds:['hippo','rhino','gorilla','bear','whale','mammoth','golem','walrus','elephant','bison','polar_bear'] },
+  { id:'asian',          name:'Asian',          petIds:['panda','red_panda','kitsune','shiba','chinese_dragon','pallas_cat','tiger'] },
+  { id:'equines',        name:'Equines',        petIds:['donkey','horse','pegasus','nightmare','unicorn'] },
+  { id:'mythical',       name:'Mythical',       petIds:['griffin','dragon','pegasus','phoenix','chinese_dragon','cerberus','minotaur','sphinx','djinn','kitsune','alien','unicorn','hydra','fenrir','thunderbird','fairy','kraken'] },
+  { id:'undead',         name:'Undead',         petIds:['ghost','skeleton','zombie','vampire','grim_reaper','lich','banshee','wraith','wendigo'] },
+  { id:'living_objects',  name:'Living Objects', petIds:['slime','robot','snowman','teddy_bear','gingerbread_man','mimic'] },
+  { id:'dark_forces',    name:'Dark Forces',    petIds:['cerberus','nightmare','beholder','grim_reaper','ifrit','werewolf','gargoyle','imp','fenrir','lich'] },
   { id:'prehistoric',    name:'Prehistoric',    petIds:['mammoth','sabertooth'] },
+  { id:'dragons',        name:'Dragons',        petIds:['dragon','chinese_dragon','dragon_green','dragon_red','dragon_ice','dragon_gold','dragon_silver'] },
 ];
 
 const PET_COLLECTIONS = {};
@@ -822,10 +858,12 @@ function gen15_collection() {
   const pool = getEligiblePets(1);
   const sorted = [...pool].sort((a, b) => a.chance - b.chance);
   const probs = computeProbabilities(pool, 1);
-  const milestones = [10, 20, 28, 30, 40, 50, 52, 60, 68, 70, 80, 82, 90, 96, 99, 100];
+  const total = sorted.length; // 187
+  const milestones = [15, 30, 50, 80, 100, 118, 130, 139, 150, 160, 170, 175, 178, 181, 184, total];
   const rows = [];
 
   for (const target of milestones) {
+    if (target > sorted.length) continue;
     const petsNeeded = sorted.slice(0, target);
     const hardestPet = petsNeeded[petsNeeded.length - 1];
     const hardestGrade = getGrade(hardestPet.chance);
@@ -840,12 +878,12 @@ function gen15_collection() {
     const autorollHours = totalEst * AUTOROLL_MS / 1000 / 3600;
 
     let note = '';
-    if (target === 28) note = 'All Commons';
-    if (target === 52) note = 'All Commons + Uncommons';
-    if (target === 68) note = '+ All Extra';
-    if (target === 82) note = '+ All Rare';
-    if (target === 96) note = 'Everything except top 4';
-    if (target === 100) note = 'Full collection';
+    if (target === 30) note = 'All Commons';
+    if (target === 80) note = 'All Commons + Uncommons';
+    if (target === 118) note = '+ All Extra';
+    if (target === 139) note = '+ All Rare';
+    if (target === 184) note = 'Everything except top 3';
+    if (target === total) note = 'Full collection';
 
     rows.push([
       target + '%', target, hardestGrade.name,
