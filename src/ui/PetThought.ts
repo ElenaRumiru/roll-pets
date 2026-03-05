@@ -3,6 +3,7 @@ import { UI, THOUGHT_BUBBLE_CONFIG } from '../core/config';
 import { t } from '../data/locales';
 import { fitText } from './components/fitText';
 import { addButtonFeedback } from './components/buttonFeedback';
+import { addShineEffect } from './components/shineEffect';
 
 type BubbleSide = 'right' | 'left';
 type BubblePhase = 'counting' | 'ready' | 'cooldown';
@@ -215,6 +216,7 @@ export class PetThought extends GameObjects.Container {
         wrap.add(label);
 
         wrap.setSize(BTN_W, BTN_H);
+        addShineEffect(scene, wrap, BTN_W, BTN_H, BTN_R);
         wrap.setInteractive({ useHandCursor: true });
         wrap.on('pointerdown', () => this.claimCb());
         addButtonFeedback(scene, wrap);

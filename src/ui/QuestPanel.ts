@@ -1,9 +1,10 @@
 import { GameObjects, Scene } from 'phaser';
-import { UI, QUEST_PANEL } from '../core/config';
+import { UI, QUEST_PANEL, THEME } from '../core/config';
 import { QuestSystem, QuestType } from '../systems/QuestSystem';
 import { t } from '../data/locales';
 import { addButtonFeedback } from './components/buttonFeedback';
 import { fitText } from './components/fitText';
+import { addShineEffect } from './components/shineEffect';
 
 const PW = QUEST_PANEL.w;
 const PAD = 10;
@@ -19,8 +20,8 @@ const ROW_GAP = 7;
 const RADIUS = 12;
 const BTN_SHADOW = 1.5;
 const DIAMOND = '\u25C6';
-const BG_ALPHA = 0.75;
-const BAR_BG = 0x222244;
+const BG_ALPHA = THEME.PANEL_ALPHA;
+const BAR_BG = THEME.BAR_BG;
 const CLAIM_COLOR = 0x78C828;
 const CLAIM_DARK = 0x4E8A18;
 const BAR_CX = PW / 2;
@@ -55,9 +56,11 @@ export class QuestPanel extends GameObjects.Container {
 
         // Background (clickable → QuestScene)
         const bg = scene.add.graphics();
-        bg.fillStyle(0x111122, BG_ALPHA);
+        bg.fillStyle(THEME.PANEL_BG, BG_ALPHA);
         bg.fillRoundedRect(0, ICON_AREA, PW, totalH - ICON_AREA, RADIUS);
-        bg.lineStyle(2, 0xffffff, 0.2);
+        bg.lineStyle(4, 0x000000, 1);
+        bg.strokeRoundedRect(0, ICON_AREA, PW, totalH - ICON_AREA, RADIUS);
+        bg.lineStyle(1.5, 0xFEBF07, 1);
         bg.strokeRoundedRect(0, ICON_AREA, PW, totalH - ICON_AREA, RADIUS);
         this.add(bg);
 
@@ -76,10 +79,10 @@ export class QuestPanel extends GameObjects.Container {
         const badgeX = 3;
         const badgeY = ICON_AREA + 5;
         this.badgeGfx = scene.add.graphics();
-        this.badgeGfx.lineStyle(2, 0x000000, 1);
+        this.badgeGfx.fillStyle(0x000000, 1);
+        this.badgeGfx.fillCircle(badgeX, badgeY, BADGE_R + 1.5);
         this.badgeGfx.fillStyle(BADGE_COLOR, 1);
         this.badgeGfx.fillCircle(badgeX, badgeY, BADGE_R);
-        this.badgeGfx.strokeCircle(badgeX, badgeY, BADGE_R);
         this.badgeGfx.setVisible(false);
         this.add(this.badgeGfx);
 
@@ -119,7 +122,7 @@ export class QuestPanel extends GameObjects.Container {
         const barBg = scene.add.graphics();
         barBg.fillStyle(BAR_BG, 0.5);
         barBg.fillRoundedRect(barX - BAR_W / 2, barY - BAR_H / 2, BAR_W, BAR_H, BAR_R);
-        barBg.lineStyle(2, 0x000000, 0.3);
+        barBg.lineStyle(1, 0x000000, 0.25);
         barBg.strokeRoundedRect(barX - BAR_W / 2, barY - BAR_H / 2, BAR_W, BAR_H, BAR_R);
         this.add(barBg);
 
@@ -147,6 +150,7 @@ export class QuestPanel extends GameObjects.Container {
         claimWrap.add(claimText);
 
         claimWrap.setSize(BAR_W, BAR_H + BTN_SHADOW);
+        addShineEffect(scene, claimWrap, BAR_W, BAR_H, BAR_R);
         claimWrap.setInteractive({ useHandCursor: true });
         claimWrap.on('pointerdown', (_p: Phaser.Input.Pointer, _lx: number, _ly: number, ev: Phaser.Types.Input.EventData) => {
             ev.stopPropagation();

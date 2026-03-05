@@ -6,6 +6,7 @@ import { getEggNameKey, getEggMinOdds } from '../data/eggs';
 import { t } from '../data/locales';
 import { addButtonFeedback } from './components/buttonFeedback';
 import { fitText } from './components/fitText';
+import { addShineEffect } from './components/shineEffect';
 
 const CX = GAME_WIDTH / 2;
 const CY = GAME_HEIGHT / 2;
@@ -164,8 +165,10 @@ export class LevelUpOverlay {
             },
         });
 
-        // Tap-to-close on the blocker
-        blocker.on('pointerdown', () => this.close(() => onComplete(0)));
+        // Tap-to-close on the blocker (delayed 1.5s to prevent accidental dismiss)
+        this.scene.time.delayedCall(1500, () => {
+            blocker.on('pointerdown', () => this.close(() => onComplete(0)));
+        });
     }
 
     private fmtTapClose(s: number): string {
@@ -239,7 +242,9 @@ export class LevelUpOverlay {
             },
         });
 
-        blocker.on('pointerdown', () => this.close(() => onComplete(0)));
+        this.scene.time.delayedCall(1500, () => {
+            blocker.on('pointerdown', () => this.close(() => onComplete(0)));
+        });
     }
 
     // ─── COINS VARIANT ──────────────────────────────────────
@@ -373,6 +378,7 @@ export class LevelUpOverlay {
         if (!showBest) this.freeBtnText = btnText;
 
         btnWrap.setSize(BTN_W, BTN_H + BTN_SHADOW);
+        addShineEffect(this.scene, btnWrap, BTN_W, BTN_H, BTN_R);
         btnWrap.setInteractive({ useHandCursor: true });
         btnWrap.on('pointerdown', onClick);
         addButtonFeedback(this.scene, btnWrap);

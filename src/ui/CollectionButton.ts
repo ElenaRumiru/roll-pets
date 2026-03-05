@@ -1,5 +1,5 @@
 import { GameObjects, Geom, Scene } from 'phaser';
-import { UI, GAME_HEIGHT, LEFT_PANEL } from '../core/config';
+import { UI, GAME_HEIGHT, LEFT_PANEL, THEME } from '../core/config';
 import { t } from '../data/locales';
 import { addButtonFeedback } from './components/buttonFeedback';
 import { fitText } from './components/fitText';
@@ -18,9 +18,11 @@ export class CollectionButton extends GameObjects.Container {
 
         // Dark panel (lower portion)
         const bg = scene.add.graphics();
-        bg.fillStyle(0x111122, 0.55);
+        bg.fillStyle(THEME.PANEL_BG, THEME.PANEL_ALPHA);
         bg.fillRoundedRect(0, TOTAL_H - BG_H, PANEL_W, BG_H, RADIUS);
-        bg.lineStyle(2, 0xffffff, 0.2);
+        bg.lineStyle(4, 0x000000, 1);
+        bg.strokeRoundedRect(0, TOTAL_H - BG_H, PANEL_W, BG_H, RADIUS);
+        bg.lineStyle(1.5, 0xFEBF07, 1);
         bg.strokeRoundedRect(0, TOTAL_H - BG_H, PANEL_W, BG_H, RADIUS);
         this.add(bg);
 
@@ -45,10 +47,10 @@ export class CollectionButton extends GameObjects.Container {
         const badgeY = TOTAL_H - BG_H + 7;
         const badgeR = 12;
         this.badgeGfx = scene.add.graphics();
-        this.badgeGfx.lineStyle(2, 0x000000, 1);
+        this.badgeGfx.fillStyle(0x000000, 1);
+        this.badgeGfx.fillCircle(badgeX, badgeY, badgeR + 1.5);
         this.badgeGfx.fillStyle(0xcc0000, 1);
         this.badgeGfx.fillCircle(badgeX, badgeY, badgeR);
-        this.badgeGfx.strokeCircle(badgeX, badgeY, badgeR);
         this.add(this.badgeGfx);
 
         this.badgeText = scene.add.text(badgeX, badgeY, '', {
@@ -81,20 +83,20 @@ export class CollectionButton extends GameObjects.Container {
 
         if (claimableCount > 0) {
             this.badgeGfx.clear();
-            this.badgeGfx.lineStyle(2, 0x000000, 1);
+            this.badgeGfx.fillStyle(0x000000, 1);
+            this.badgeGfx.fillCircle(badgeX, badgeY, badgeR + 1.5);
             this.badgeGfx.fillStyle(0x98CD5B, 1);
             this.badgeGfx.fillCircle(badgeX, badgeY, badgeR);
-            this.badgeGfx.strokeCircle(badgeX, badgeY, badgeR);
             this.badgeText.setText(String(claimableCount));
             this.badgeText.setFontSize(claimableCount >= 10 ? '11px' : '13px');
             this.badgeGfx.setVisible(true);
             this.badgeText.setVisible(true);
         } else if (hasUnseen) {
             this.badgeGfx.clear();
-            this.badgeGfx.lineStyle(2, 0x000000, 1);
+            this.badgeGfx.fillStyle(0x000000, 1);
+            this.badgeGfx.fillCircle(badgeX, badgeY, badgeR + 1.5);
             this.badgeGfx.fillStyle(0xcc0000, 1);
             this.badgeGfx.fillCircle(badgeX, badgeY, badgeR);
-            this.badgeGfx.strokeCircle(badgeX, badgeY, badgeR);
             this.badgeText.setText('!');
             this.badgeText.setFontSize('13px');
             this.badgeGfx.setVisible(true);

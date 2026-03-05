@@ -42,7 +42,7 @@ export class ProgressBar extends GameObjects.Container {
         // Background
         g.fillStyle(this.bgColor, 0.5);
         g.fillRoundedRect(0, -h / 2, w, h, r);
-        g.lineStyle(2, 0x000000, 0.3);
+        g.lineStyle(2, 0x000000, 0.7);
         g.strokeRoundedRect(0, -h / 2, w, h, r);
 
         // Fill

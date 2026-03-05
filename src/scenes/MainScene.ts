@@ -557,7 +557,7 @@ export class MainScene extends Scene {
             const coll = COLLECTIONS.find(c => c.id === collId);
             if (coll) showToast(this, t('col_complete', { name: t(coll.nameKey) }), 'info');
         }
-        this.refreshUI();
+        if (!this.manager.isRolling) this.refreshUI();
     }
 
     private handleQuestClaim(type: 'roll' | 'grade' | 'online'): void {

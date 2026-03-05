@@ -7,6 +7,7 @@ import { PetCard } from './PetCard';
 import { Button } from './components/Button';
 import { t } from '../data/locales';
 import { addButtonFeedback } from './components/buttonFeedback';
+import { addShineEffect } from './components/shineEffect';
 
 const POPUP_W = 820;
 const POPUP_H = 470;
@@ -64,7 +65,9 @@ export function buildDetailView(
     const panelBg = scene.add.graphics();
     panelBg.fillStyle(0x1a1a2e, 1);
     panelBg.fillRoundedRect(px - POPUP_W / 2, top, POPUP_W, POPUP_H, POPUP_R);
-    panelBg.lineStyle(2, 0xffffff, 0.15);
+    panelBg.lineStyle(4, 0x000000, 1);
+    panelBg.strokeRoundedRect(px - POPUP_W / 2, top, POPUP_W, POPUP_H, POPUP_R);
+    panelBg.lineStyle(1.5, 0xFEBF07, 1);
     panelBg.strokeRoundedRect(px - POPUP_W / 2, top, POPUP_W, POPUP_H, POPUP_R);
     container.add(panelBg);
 
@@ -132,23 +135,27 @@ export function buildDetailView(
         stroke: '#000000', strokeThickness: 2,
     }).setOrigin(0.5));
 
-    // Coin reward circle at bar end — triple outline matching bar style
-    if (!isClaimed) {
-        const circleR = 16;
-        const circleX = px + BAR_W / 2;
-        const circleY = barY;
-        const coinGfx = scene.add.graphics();
+    // Circle at bar end — triple outline matching bar style
+    const circleR = 16;
+    const circleX = px + BAR_W / 2;
+    const circleY = barY;
+    const coinGfx = scene.add.graphics();
 
-        coinGfx.lineStyle(1.5, 0x000000, 0.9);
-        coinGfx.strokeCircle(circleX, circleY, circleR + 3.5);
-        coinGfx.lineStyle(2.5, 0xFEBF07, 1);
-        coinGfx.strokeCircle(circleX, circleY, circleR + 1.5);
-        coinGfx.lineStyle(1.5, 0x000000, 0.9);
-        coinGfx.strokeCircle(circleX, circleY, circleR);
-        coinGfx.fillStyle(0x12121e, 1);
-        coinGfx.fillCircle(circleX, circleY, circleR);
-        container.add(coinGfx);
+    coinGfx.lineStyle(1.5, 0x000000, 0.9);
+    coinGfx.strokeCircle(circleX, circleY, circleR + 3.5);
+    coinGfx.lineStyle(1.5, 0xFEBF07, 1);
+    coinGfx.strokeCircle(circleX, circleY, circleR + 1.5);
+    coinGfx.lineStyle(1.5, 0x000000, 0.9);
+    coinGfx.strokeCircle(circleX, circleY, circleR);
+    coinGfx.fillStyle(0x12121e, 1);
+    coinGfx.fillCircle(circleX, circleY, circleR);
+    container.add(coinGfx);
 
+    if (isClaimed) {
+        if (scene.textures.exists('ui_ok_md')) {
+            container.add(scene.add.image(circleX, circleY + 2, 'ui_ok_md').setDisplaySize(28, 28));
+        }
+    } else {
         if (scene.textures.exists('ui_coin_md')) {
             container.add(scene.add.image(circleX, circleY - 4, 'ui_coin_md').setDisplaySize(23, 23));
         }
@@ -174,6 +181,7 @@ export function buildDetailView(
     } else if (isClaimable) {
         const claimBtn = new Button(scene, px, claimY, 112, 32,
             t('col_claim'), 0x78C828, () => onClaim(coll.id));
+        addShineEffect(scene, claimBtn, 112, 30, 15);
         container.add(claimBtn);
     } else {
         const progressBtn = new Button(scene, px, claimY, 112, 32,

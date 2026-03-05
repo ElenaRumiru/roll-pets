@@ -1,5 +1,5 @@
 import { GameObjects, Geom, Scene } from 'phaser';
-import { UI, GAME_HEIGHT, LEFT_PANEL, NEST_CONFIG } from '../core/config';
+import { UI, GAME_HEIGHT, LEFT_PANEL, NEST_CONFIG, THEME } from '../core/config';
 import { t } from '../data/locales';
 import { addButtonFeedback } from './components/buttonFeedback';
 import { showToast } from './components/Toast';
@@ -28,9 +28,11 @@ export class NestsButton extends GameObjects.Container {
         this.isLocked = locked;
 
         const bg = scene.add.graphics();
-        bg.fillStyle(0x111122, 0.55);
+        bg.fillStyle(THEME.PANEL_BG, THEME.PANEL_ALPHA);
         bg.fillRoundedRect(0, TOTAL_H - BG_H, PANEL_W, BG_H, RADIUS);
-        bg.lineStyle(2, 0xffffff, 0.2);
+        bg.lineStyle(4, 0x000000, 1);
+        bg.strokeRoundedRect(0, TOTAL_H - BG_H, PANEL_W, BG_H, RADIUS);
+        bg.lineStyle(1.5, 0xFEBF07, 1);
         bg.strokeRoundedRect(0, TOTAL_H - BG_H, PANEL_W, BG_H, RADIUS);
         this.add(bg);
 
@@ -116,19 +118,19 @@ export class NestsButton extends GameObjects.Container {
         }
         if (readyCount > 0) {
             this.badgeGfx.clear();
+            this.badgeGfx.fillStyle(0x000000, 1);
+            this.badgeGfx.fillCircle(BADGE_X, BADGE_Y, BADGE_R + 1.5);
             this.badgeGfx.fillStyle(0x98CD5B, 1);
             this.badgeGfx.fillCircle(BADGE_X, BADGE_Y, BADGE_R);
-            this.badgeGfx.lineStyle(2, 0x000000, 1);
-            this.badgeGfx.strokeCircle(BADGE_X, BADGE_Y, BADGE_R);
             this.badgeGfx.setVisible(true);
             this.badgeText.setText(String(readyCount));
             this.badgeText.setVisible(true);
         } else if (hasEmpty) {
             this.badgeGfx.clear();
+            this.badgeGfx.fillStyle(0x000000, 1);
+            this.badgeGfx.fillCircle(BADGE_X, BADGE_Y, BADGE_R + 1.5);
             this.badgeGfx.fillStyle(0xcc0000, 1);
             this.badgeGfx.fillCircle(BADGE_X, BADGE_Y, BADGE_R);
-            this.badgeGfx.lineStyle(2, 0x000000, 1);
-            this.badgeGfx.strokeCircle(BADGE_X, BADGE_Y, BADGE_R);
             this.badgeGfx.setVisible(true);
             this.badgeText.setText('!');
             this.badgeText.setVisible(true);

@@ -6,6 +6,7 @@ import { LEAGUES } from '../data/leaderboard';
 import { t } from '../data/locales';
 import { addButtonFeedback } from './components/buttonFeedback';
 import { fitText } from './components/fitText';
+import { addShineEffect } from './components/shineEffect';
 
 const CX = GAME_WIDTH / 2;
 const CY = GAME_HEIGHT / 2;
@@ -102,11 +103,19 @@ export class LeaguePromotionOverlay {
 
         let seconds = LEVELUP_CONFIG.coinAcceptSeconds;
         const freeLabel = `${t('quest_free')} (${seconds})`;
-        this.buildChoiceCard(container, leftX, cardsY, `+${this.formatCoins(baseAmount)}`,
+        const freeBtn = this.buildChoiceCard(container, leftX, cardsY, `+${this.formatCoins(baseAmount)}`,
             FREE_COLOR, FREE_DARK, freeLabel, false, () => choose(baseAmount));
 
-        this.buildChoiceCard(container, rightX, cardsY, `+${this.formatCoins(adAmount)}`,
+        const adBtn = this.buildChoiceCard(container, rightX, cardsY, `+${this.formatCoins(adAmount)}`,
             AD_COLOR, AD_DARK, t('quest_watch'), true, () => choose(adAmount));
+
+        // Delay button interactivity to prevent accidental dismiss
+        freeBtn.disableInteractive();
+        adBtn.disableInteractive();
+        this.scene.time.delayedCall(1500, () => {
+            freeBtn.setInteractive({ useHandCursor: true });
+            adBtn.setInteractive({ useHandCursor: true });
+        });
 
         this.timer = this.scene.time.addEvent({
             delay: 1000, repeat: seconds - 1,
@@ -130,7 +139,7 @@ export class LeaguePromotionOverlay {
         btnColor: number, btnDark: number,
         btnLabel: string, showBest: boolean,
         onClick: () => void,
-    ): void {
+    ): GameObjects.Container {
         const cardBg = this.scene.add.graphics();
         cardBg.fillStyle(0x1a1a2e, 0.9);
         cardBg.fillRoundedRect(cx - CARD_W / 2, topY, CARD_W, CARD_H, CARD_R);
@@ -193,9 +202,11 @@ export class LeaguePromotionOverlay {
         if (!showBest) this.freeBtnText = btnText;
 
         btnWrap.setSize(BTN_W, BTN_H + BTN_SHADOW);
+        addShineEffect(this.scene, btnWrap, BTN_W, BTN_H, BTN_R);
         btnWrap.setInteractive({ useHandCursor: true });
         btnWrap.on('pointerdown', onClick);
         addButtonFeedback(this.scene, btnWrap);
+        return btnWrap;
     }
 
     private formatCoins(n: number): string {

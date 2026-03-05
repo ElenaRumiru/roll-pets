@@ -6,6 +6,7 @@ import { Button } from '../ui/components/Button';
 import { t } from '../data/locales';
 import { fitText } from '../ui/components/fitText';
 import { addButtonFeedback } from '../ui/components/buttonFeedback';
+import { addShineEffect } from '../ui/components/shineEffect';
 
 const HEADER_H = 74;
 const MILESTONE_Y = 120;
@@ -355,6 +356,7 @@ export class QuestScene extends Scene {
         fitText(txt, MBTN_W - 10, 12);
         wrap.add(txt);
         wrap.setSize(MBTN_W, MBTN_H + 2);
+        addShineEffect(this, wrap, MBTN_W, MBTN_H, MBTN_R);
         wrap.setInteractive({ useHandCursor: true });
         wrap.on('pointerdown', onClick);
         addButtonFeedback(this, wrap);

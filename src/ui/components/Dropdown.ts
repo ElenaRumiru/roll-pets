@@ -86,7 +86,7 @@ export class Dropdown extends GameObjects.Container {
         this.listBg.clear();
         this.listBg.fillStyle(0x111122, 0.97);
         this.listBg.fillRoundedRect(0, 0, w, listH, 8);
-        this.listBg.lineStyle(2, 0xffffff, 0.25);
+        this.listBg.lineStyle(2, 0xffffff, 0.2);
         this.listBg.strokeRoundedRect(0, 0, w, listH, 8);
 
         // Remove old items (keep bg at index 0)

@@ -4,6 +4,7 @@ import { GameManager } from '../core/GameManager';
 import { Button } from '../ui/components/Button';
 import { t } from '../data/locales';
 import { addButtonFeedback } from '../ui/components/buttonFeedback';
+import { addShineEffect } from '../ui/components/shineEffect';
 import { showToast } from '../ui/components/Toast';
 import { createCardGrid, createMilestoneTrack, CARD_H, CARD_GAP } from '../ui/DailyBonusCards';
 
@@ -83,6 +84,7 @@ export class DailyBonusScene extends Scene {
 
         if (canClaim) {
             wrap.setSize(bw, bh + 2);
+            addShineEffect(this, wrap, bw, bh, br);
             wrap.setInteractive({ useHandCursor: true });
             wrap.on('pointerdown', () => {
                 const reward = this.manager.claimDailyBonus();

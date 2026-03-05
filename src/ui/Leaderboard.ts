@@ -1,5 +1,5 @@
 import { GameObjects, Geom, Scene } from 'phaser';
-import { UI, LEFT_PANEL, GRADE, getGradeForChance, getOddsString } from '../core/config';
+import { UI, LEFT_PANEL, GRADE, getGradeForChance, getOddsString, THEME } from '../core/config';
 import { t } from '../data/locales';
 import { LeaderboardEntry, LeagueConfig } from '../types';
 import { addButtonFeedback } from './components/buttonFeedback';
@@ -163,9 +163,11 @@ export class Leaderboard extends GameObjects.Container {
 
     private drawBg(h: number): void {
         this.bg.clear();
-        this.bg.fillStyle(0x111122, 0.75);
+        this.bg.fillStyle(THEME.PANEL_BG, THEME.PANEL_ALPHA);
         this.bg.fillRoundedRect(0, ICON_AREA, PANEL_W, h - ICON_AREA, RADIUS);
-        this.bg.lineStyle(2, 0xffffff, 0.2);
+        this.bg.lineStyle(4, 0x000000, 1);
+        this.bg.strokeRoundedRect(0, ICON_AREA, PANEL_W, h - ICON_AREA, RADIUS);
+        this.bg.lineStyle(1.5, 0xFEBF07, 1);
         this.bg.strokeRoundedRect(0, ICON_AREA, PANEL_W, h - ICON_AREA, RADIUS);
     }
 }

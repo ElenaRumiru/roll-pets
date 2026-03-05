@@ -3,7 +3,7 @@ import { UI } from '../../core/config';
 import { AudioSystem } from '../../systems/AudioSystem';
 import { fitText } from './fitText';
 
-const SHADOW_OFFSET = 5;
+const SHADOW_OFFSET = 2;
 
 export class Button extends GameObjects.Container {
     private bg: GameObjects.Graphics;
@@ -103,20 +103,20 @@ export class Button extends GameObjects.Container {
         g.fillStyle(this.btnColor, 1);
         g.fillRoundedRect(-w / 2, -h / 2 + yOff, w, faceH, r);
 
-        // Highlight line on top (lighter stripe for volume)
-        const hlH = faceH * 0.35;
-        const hlR = Math.min(Math.max(r - 2, 0), hlH / 2);
+        // Highlight strip (glossy top)
+        const hlH = faceH * 0.4;
+        const hlR = Math.min(Math.max(r - 1, 0), hlH / 2);
         g.fillStyle(0xffffff, 0.15);
         g.fillRoundedRect(
-            -w / 2 + 4, -h / 2 + yOff + 2,
-            w - 8, hlH,
+            -w / 2 + 3, -h / 2 + yOff + 1,
+            w - 6, hlH,
             { tl: hlR, tr: hlR, bl: 0, br: 0 },
         );
 
         // Border outline
         const strokeH = faceH + shadow;
         const strokeR = Math.min(r, strokeH / 2);
-        g.lineStyle(2, 0x000000, 0.3);
+        g.lineStyle(1.5, 0x000000, 0.25);
         g.strokeRoundedRect(-w / 2, -h / 2 + yOff, w, strokeH, strokeR);
     }
 

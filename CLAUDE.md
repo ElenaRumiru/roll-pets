@@ -104,7 +104,8 @@ src/
 │       ├── ProgressBar.ts          # Reusable progress bar
 │       ├── FloatingText.ts         # "+25 XP" floating text
 │       ├── fitText.ts              # Auto-shrink text to fit max width
-│       └── buttonFeedback.ts       # Press/release scale tween for buttons
+│       ├── buttonFeedback.ts       # Press/release scale tween for buttons
+│       └── shineEffect.ts         # Diagonal shine sweep for CLAIM/WATCH buttons
 │
 └── platform/
     ├── PlatformSDK.ts              # Interface (showRewardedBreak, commercialBreak)
@@ -127,7 +128,7 @@ src/
 
 **Safe zone:** 15px from all screen edges for HUD elements. Left/right margins use `LEFT_PANEL.x = 15` and `GAME_WIDTH - w - 15`. Top margin = 15px (TopBar, CoinDisplay, SettingsButton). Bottom margin = 15px (CollectionButton, ShopButton, Roll button bottom edge, Autoroll toggle).
 
-**UI color theme:** All main-screen panel backgrounds use `0x111122` (bluish dark) with white outline `lineStyle(2, 0xffffff, 0.2)`. Accent green color is `0x78C828` (lime, matching Roll button image) — used for CLAIM/FREE buttons, Lucky buff, quest progress bars. XP bar uses blue `0x3cb8e8` (matching shield icon color). Progress bars follow ProgressBar component style: `0x222244` bg at 0.5 alpha, black outline, fill with white highlight strip.
+**UI color theme:** Panel backgrounds use `THEME.PANEL_BG` (`0x111122`) with `THEME.PANEL_ALPHA` (`0.8`). Main-screen panels (CollectionButton, ShopButton, NestsButton, DailyBonusButton, QuestPanel, Leaderboard) have double outline: outer black `lineStyle(4, 0x000000, 1)` + inner gold `lineStyle(1.5, 0xFEBF07, 1)`. Small HUD elements (CoinDisplay, SettingsButton, ProgressBar/XP bar) use single black outline `lineStyle(2, 0x000000, 0.7)`. Dropdowns use single white `lineStyle(2, 0xffffff, 0.2)`. Buff offer cards (BonusPanel) use double outline with buff-specific color instead of gold. THEME constants in `config.ts`: `PANEL_BG`, `PANEL_ALPHA`, `SCENE_BG` (`0x12121e`), `POPUP_BG` (`0x1a1a2e`), `CARD_BG` (`0x2a2a3e`), `BAR_BG` (`0x222244`). Accent green `0x78C828` for CLAIM/FREE buttons. XP bar blue `0x3cb8e8`. Notification badges use double `fillCircle` technique (black outer r+1.5, colored inner r) instead of `strokeCircle` for crisp edges. CLAIM/WATCH buttons have diagonal shine sweep effect (`addShineEffect` utility).
 
 **TopBar (XP panel):** Pill-shaped progress bar (192×32, `XP_HUD` config) with no dark background. Blue shield icon (`ui/lvl_icon.png`, trimmed+resized in BootScene) overlaps left edge at 42×42 display, level number centered inside. XP text overlay on bar. Mirrors CoinDisplay's visual pattern.
 

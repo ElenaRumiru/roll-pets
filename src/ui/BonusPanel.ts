@@ -4,6 +4,7 @@ import { BuffSystem } from '../systems/BuffSystem';
 import { t } from '../data/locales';
 import { addButtonFeedback } from './components/buttonFeedback';
 import { fitText } from './components/fitText';
+import { addShineEffect } from './components/shineEffect';
 
 const ROW_W = BONUS_PANEL.w;
 const ICON_SZ = 54;
@@ -113,6 +114,7 @@ export class BonusPanel extends GameObjects.Container {
         fitText(btnText, BTN_W - 8, 13);
         this.btnWrap.add(btnText);
         this.btnWrap.setSize(BTN_W, BTN_H + BTN_SHADOW);
+        addShineEffect(scene, this.btnWrap, BTN_W, BTN_H, BTN_H / 2);
         this.btnWrap.setInteractive({ useHandCursor: true });
         this.btnWrap.disableInteractive();
         this.btnWrap.on('pointerdown', (_p: Phaser.Input.Pointer, _lx: number, _ly: number, ev: Phaser.Types.Input.EventData) => {
@@ -122,7 +124,7 @@ export class BonusPanel extends GameObjects.Container {
         });
         addButtonFeedback(scene, this.btnWrap);
 
-        this.timerTab = scene.add.container(ROW_W / 2, OFFER_CARD_H).setVisible(false);
+        this.timerTab = scene.add.container(ROW_W / 2, OFFER_CARD_H + 2).setVisible(false);
         this.timerTabBg = scene.add.graphics();
         this.timerTab.add(this.timerTabBg);
         this.timerText = scene.add.text(0, TAB_H / 2, '', {
@@ -151,7 +153,9 @@ export class BonusPanel extends GameObjects.Container {
         this.bg.fillRoundedRect(0, 0, ROW_W, OFFER_CARD_H, RADIUS);
         this.bg.fillStyle(color, 0.7);
         this.bg.fillRoundedRect(0, 0, ROW_W, ACCENT_H, { tl: RADIUS, tr: RADIUS, bl: 0, br: 0 });
-        this.bg.lineStyle(2, color, 0.6);
+        this.bg.lineStyle(4, 0x000000, 1);
+        this.bg.strokeRoundedRect(0, 0, ROW_W, OFFER_CARD_H, RADIUS);
+        this.bg.lineStyle(1.5, color, 1);
         this.bg.strokeRoundedRect(0, 0, ROW_W, OFFER_CARD_H, RADIUS);
 
         this.drawTimerTab(color);
@@ -161,7 +165,7 @@ export class BonusPanel extends GameObjects.Container {
         this.timerTabBg.clear();
         this.timerTabBg.fillStyle(color, 0.9);
         this.timerTabBg.fillRoundedRect(-TAB_W / 2, 0, TAB_W, TAB_H, { tl: 0, tr: 0, bl: TAB_R, br: TAB_R });
-        this.timerTabBg.lineStyle(1, 0x000000, 0.25);
+        this.timerTabBg.lineStyle(1.5, 0x000000, 1);
         this.timerTabBg.strokeRoundedRect(-TAB_W / 2, 0, TAB_W, TAB_H, { tl: 0, tr: 0, bl: TAB_R, br: TAB_R });
         this.timerTabBg.fillStyle(0xffffff, 0.12);
         this.timerTabBg.fillRect(-TAB_W / 2 + 2, 1, TAB_W - 4, 4);

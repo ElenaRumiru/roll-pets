@@ -136,26 +136,29 @@ export class CollectionCard extends GameObjects.Container {
         fitText(countText, bW - 12, 13, 9);
         this.add(countText);
 
-        // Coin reward circle at bar end — triple outline matching bar style
-        if (!isClaimed) {
-            const circleR = 14;
-            const circleX = bLeft + bW;
-            const circleY = barY;
-            const circleGfx = scene.add.graphics();
+        // Circle at bar end
+        const circleR = 14;
+        const circleX = bLeft + bW;
+        const circleY = barY;
+        const circleGfx = scene.add.graphics();
 
-            // Triple outline: black → yellow → black (same as bar)
-            circleGfx.lineStyle(1.5, 0x000000, 0.9);
-            circleGfx.strokeCircle(circleX, circleY, circleR + 3.5);
-            circleGfx.lineStyle(2.5, 0xFEBF07, dimmed ? 0.4 : 1);
-            circleGfx.strokeCircle(circleX, circleY, circleR + 1.5);
-            circleGfx.lineStyle(1.5, 0x000000, 0.9);
-            circleGfx.strokeCircle(circleX, circleY, circleR);
+        // Triple outline: black → yellow → black (same as bar)
+        circleGfx.lineStyle(1.5, 0x000000, 0.9);
+        circleGfx.strokeCircle(circleX, circleY, circleR + 3.5);
+        circleGfx.lineStyle(1.5, 0xFEBF07, dimmed ? 0.4 : 1);
+        circleGfx.strokeCircle(circleX, circleY, circleR + 1.5);
+        circleGfx.lineStyle(1.5, 0x000000, 0.9);
+        circleGfx.strokeCircle(circleX, circleY, circleR);
+        circleGfx.fillStyle(0x12121e, 1);
+        circleGfx.fillCircle(circleX, circleY, circleR);
+        this.add(circleGfx);
 
-            // Dark fill
-            circleGfx.fillStyle(0x12121e, 1);
-            circleGfx.fillCircle(circleX, circleY, circleR);
-            this.add(circleGfx);
-
+        if (isClaimed) {
+            // Checkmark icon for claimed rewards
+            if (scene.textures.exists('ui_ok_sm')) {
+                this.add(scene.add.image(circleX, circleY + 1, 'ui_ok_sm').setDisplaySize(24, 24));
+            }
+        } else {
             // Coin icon — upper portion of circle
             if (scene.textures.exists('ui_coin_md')) {
                 const coinSz = 21;
@@ -232,10 +235,10 @@ export class CollectionCard extends GameObjects.Container {
         const by = Math.round(iconY - r * Math.cos(angle)) - 3;
         const dotR = 15;
         const g = scene.add.graphics();
+        g.fillStyle(0x000000, 1);
+        g.fillCircle(bx, by, dotR + 1.5);
         g.fillStyle(color, 1);
         g.fillCircle(bx, by, dotR);
-        g.lineStyle(2, 0x000000, 0.7);
-        g.strokeCircle(bx, by, dotR);
         this.add(g);
         const txt = scene.add.text(bx, by, label, {
             fontFamily: UI.FONT_STROKE, fontSize: '18px', color: '#ffffff',

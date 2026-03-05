@@ -1,5 +1,5 @@
 import { GameObjects, Scene } from 'phaser';
-import { GAME_WIDTH } from '../core/config';
+import { GAME_WIDTH, THEME } from '../core/config';
 import { addButtonFeedback } from './components/buttonFeedback';
 
 export class SettingsButton extends GameObjects.Container {
@@ -7,9 +7,9 @@ export class SettingsButton extends GameObjects.Container {
         super(scene, GAME_WIDTH - 49, 33);
 
         const bg = scene.add.graphics();
-        bg.fillStyle(0x111122, 0.75);
+        bg.fillStyle(THEME.PANEL_BG, THEME.PANEL_ALPHA);
         bg.fillCircle(0, 0, 20);
-        bg.lineStyle(2, 0xffffff, 0.2);
+        bg.lineStyle(2, 0x000000, 0.7);
         bg.strokeCircle(0, 0, 20);
         this.add(bg);
 

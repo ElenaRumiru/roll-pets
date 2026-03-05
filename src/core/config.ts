@@ -126,6 +126,28 @@ export const UI = {
     CORNER_RADIUS: 15,
 };
 
+/**
+ * THEME — centralised color palette for quick tweaking.
+ * Change values here and hot-reload to see the effect everywhere.
+ */
+export const THEME = {
+    /** Main-screen HUD panel bg (CoinDisplay, CollectionBtn, ShopBtn, etc.) */
+    PANEL_BG:    0x111122,
+    PANEL_ALPHA: 0.8,
+
+    /** Full-screen scene background (Collection, Shop, Leaderboard, etc.) */
+    SCENE_BG:    0x12121e,
+
+    /** Popup / overlay card background */
+    POPUP_BG:    0x1a1a2e,
+
+    /** Lighter card / slot background (NestSlotCard, PetCard, EggSelectCard) */
+    CARD_BG:     0x2a2a3e,
+
+    /** Progress-bar track background */
+    BAR_BG:      0x222244,
+};
+
 // Pedestal positions (match bg_1.jpg layout)
 export const PEDESTAL = {
     first:  { x: 519, y: 288, scale: 0.68 },

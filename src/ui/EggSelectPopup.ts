@@ -61,7 +61,9 @@ export class EggSelectPopup {
         const bg = scene.add.graphics();
         bg.fillStyle(0x1a1a2e, 0.97);
         bg.fillRoundedRect(popLeft, popTop, POPUP_W, POPUP_H, 14);
-        bg.lineStyle(2, 0xffffff, 0.25);
+        bg.lineStyle(4, 0x000000, 1);
+        bg.strokeRoundedRect(popLeft, popTop, POPUP_W, POPUP_H, 14);
+        bg.lineStyle(1.5, 0xFEBF07, 1);
         bg.strokeRoundedRect(popLeft, popTop, POPUP_W, POPUP_H, 14);
         this.container.add(bg);
 

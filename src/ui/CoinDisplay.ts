@@ -1,5 +1,5 @@
 import { GameObjects, Scene } from 'phaser';
-import { GAME_WIDTH, COIN_HUD, UI } from '../core/config';
+import { GAME_WIDTH, COIN_HUD, UI, THEME } from '../core/config';
 
 const HUD_X = GAME_WIDTH - 49 - 21 - COIN_HUD.gap - COIN_HUD.w;
 const HUD_Y = 15;
@@ -13,9 +13,9 @@ export class CoinDisplay extends GameObjects.Container {
         super(scene, HUD_X, HUD_Y);
 
         const bg = scene.add.graphics();
-        bg.fillStyle(0x111122, 0.75);
+        bg.fillStyle(THEME.PANEL_BG, THEME.PANEL_ALPHA);
         bg.fillRoundedRect(0, 0, COIN_HUD.w, COIN_HUD.h, COIN_HUD.h / 2);
-        bg.lineStyle(2, 0xffffff, 0.2);
+        bg.lineStyle(2, 0x000000, 0.7);
         bg.strokeRoundedRect(0, 0, COIN_HUD.w, COIN_HUD.h, COIN_HUD.h / 2);
         this.add(bg);
 

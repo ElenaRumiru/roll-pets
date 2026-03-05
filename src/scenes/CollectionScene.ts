@@ -43,7 +43,7 @@ export class CollectionScene extends Scene {
         const hdr = this.add.graphics();
         hdr.fillStyle(0x000000, 0.5);
         hdr.fillRect(0, 0, GAME_WIDTH, 74);
-        hdr.lineStyle(1, 0xffffff, 0.1);
+        hdr.lineStyle(1, 0x000000, 0.3);
         hdr.lineBetween(0, 74, GAME_WIDTH, 74);
 
         new Button(this, 68, 31, 111, 39, `\u2190 ${t('collection_back')}`, 0x444455, () => {
@@ -67,13 +67,13 @@ export class CollectionScene extends Scene {
         const cx = GAME_WIDTH / 2;
         const y = 74 + 21;
 
-        this.colTabBtn = new Button(this, cx - tabW / 2 - gap / 2, y, tabW, 28,
+        this.colTabBtn = new Button(this, cx - tabW / 2 - gap / 2, y, tabW, 36,
             t('col_tab_collections'), 0x444455, () => {
                 if (this.detailContainer) this.hideDetail();
                 if (this.activeTab !== 'collections') this.switchTab('collections');
             });
 
-        this.allTabBtn = new Button(this, cx + tabW / 2 + gap / 2, y, tabW, 28,
+        this.allTabBtn = new Button(this, cx + tabW / 2 + gap / 2, y, tabW, 36,
             t('col_tab_all'), 0x444455, () => {
                 if (this.detailContainer) this.hideDetail();
                 if (this.activeTab !== 'all') this.switchTab('all');
@@ -85,10 +85,10 @@ export class CollectionScene extends Scene {
         const badgeR = 9;
         this.allBadge = this.add.container(0, 0);
         const bg = this.add.graphics();
+        bg.fillStyle(0x000000, 1);
+        bg.fillCircle(bx, by, badgeR + 1.5);
         bg.fillStyle(0xcc0000, 1);
         bg.fillCircle(bx, by, badgeR);
-        bg.lineStyle(2, 0x000000, 0.7);
-        bg.strokeCircle(bx, by, badgeR);
         this.allBadge.add(bg);
         this.allBadge.add(this.add.text(bx, by, '!', {
             fontFamily: UI.FONT_STROKE, fontSize: '13px', color: '#ffffff',

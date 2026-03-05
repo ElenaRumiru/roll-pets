@@ -34,7 +34,9 @@ export function renderEmptySlot(
     const bg = scene.add.graphics();
     bg.fillStyle(0x2a2a3e, 1);
     bg.fillRoundedRect(-SLOT_W / 2, -SLOT_H / 2, SLOT_W, SLOT_H, CARD_R);
-    bg.lineStyle(2, 0xffffff, 0.2);
+    bg.lineStyle(4, 0x000000, 1);
+    bg.strokeRoundedRect(-SLOT_W / 2, -SLOT_H / 2, SLOT_W, SLOT_H, CARD_R);
+    bg.lineStyle(1.5, 0xFEBF07, 1);
     bg.strokeRoundedRect(-SLOT_W / 2, -SLOT_H / 2, SLOT_W, SLOT_H, CARD_R);
     c.add(bg);
     c.add(scene.add.image(0, NEST_Y, 'ui_nest_mid').setDisplaySize(NEST_W, nestHeight(scene)));

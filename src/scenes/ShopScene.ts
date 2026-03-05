@@ -52,7 +52,7 @@ export class ShopScene extends Scene {
         this.emptyText = this.add.text(GAME_WIDTH / 2, CARDS_Y, t('shop_empty'), {
             fontFamily: UI.FONT_MAIN, fontSize: '20px', color: '#666688', align: 'center',
         }).setOrigin(0.5).setVisible(false);
-        this.refreshBtn = new Button(this, GAME_WIDTH / 2, GAME_HEIGHT - 37, 222, 52,
+        this.refreshBtn = new Button(this, GAME_WIDTH / 2, GAME_HEIGHT - 50, 222, 52,
             `\u25B6 ${t('shop_refresh')}`, 0x7b42c9, () => this.onRefresh());
         this.hintText = this.add.text(GAME_WIDTH / 2, TIMER_Y, '', {
             fontFamily: UI.FONT_BODY, fontSize: '14px', color: '#666688',
@@ -93,7 +93,7 @@ export class ShopScene extends Scene {
     }
 
     private createTimer(): void {
-        this.timerText = this.add.text(GAME_WIDTH / 2, GAME_HEIGHT - 80, '', {
+        this.timerText = this.add.text(GAME_WIDTH / 2, GAME_HEIGHT - 93, '', {
             fontFamily: UI.FONT_BODY, fontSize: '14px', color: '#aaaaaa',
         }).setOrigin(0.5);
         this.updateTimerText();
