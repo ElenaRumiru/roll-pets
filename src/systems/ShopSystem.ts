@@ -1,5 +1,6 @@
 import { ShopOffer, ShopState } from '../types';
 import { PETS } from '../data/pets';
+import { getTodayUTC, getSecondsUntilReset } from '../core/DateUtils';
 
 const MAX_OFFERS = 5;
 
@@ -14,7 +15,7 @@ export class ShopSystem {
             petId: p.id,
             price: p.chance * 2,
         }));
-        this.lastRefreshDate = ShopSystem.getTodayUTC();
+        this.lastRefreshDate = getTodayUTC();
     }
 
     purchase(petId: string, currentCoins: number): number | null {
@@ -31,7 +32,7 @@ export class ShopSystem {
     }
 
     checkDailyReset(collection: Set<string>): boolean {
-        const today = ShopSystem.getTodayUTC();
+        const today = getTodayUTC();
         if (this.lastRefreshDate === today) return false;
         this.generateOffers(collection);
         return true;
@@ -54,15 +55,6 @@ export class ShopSystem {
     }
 
     getSecondsUntilReset(): number {
-        const now = new Date();
-        const tomorrow = new Date(Date.UTC(
-            now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + 1,
-        ));
-        return Math.max(0, Math.floor((tomorrow.getTime() - now.getTime()) / 1000));
-    }
-
-    private static getTodayUTC(): string {
-        const d = new Date();
-        return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}-${String(d.getUTCDate()).padStart(2, '0')}`;
+        return getSecondsUntilReset();
     }
 }

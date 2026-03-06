@@ -9,6 +9,7 @@ import { t } from '../data/locales';
 import { showCoinSpend } from '../ui/components/FloatingText';
 import { showToast } from '../ui/components/Toast';
 import { showInterstitial } from '../platform/interstitial';
+import { formatCoins } from '../core/formatCoins';
 
 const HEADER_H = 74;
 const SLOT_W = 200;
@@ -55,7 +56,7 @@ export class NestsScene extends Scene {
         }).setOrigin(0.5);
         this.add.image(GAME_WIDTH - 123, 37, 'ui_coin_md').setDisplaySize(35, 35);
         this.coinText = this.add.text(GAME_WIDTH - 101, 37,
-            this.formatCoins(this.manager.progression.coins), {
+            formatCoins(this.manager.progression.coins), {
                 fontFamily: UI.FONT_STROKE, fontSize: '17px', color: '#ffffff',
                 stroke: '#000000', strokeThickness: UI.STROKE_THIN,
             }).setOrigin(0, 0.5);
@@ -85,7 +86,7 @@ export class NestsScene extends Scene {
             const x = startX + vi * (SLOT_W + SLOT_GAP);
             if (!slot.unlocked) {
                 renderLockedSlot(this, this.slotsContainer, x, LAYOUT, index,
-                    this.manager.progression.coins, () => this.onBuySlot(index), this.formatCoins);
+                    this.manager.progression.coins, () => this.onBuySlot(index));
             } else if (slot.startTime === null) {
                 renderEmptySlot(this, this.slotsContainer, x, LAYOUT, () => this.onSelect(index));
             } else if (this.manager.nests.isReady(index)) {
@@ -95,7 +96,7 @@ export class NestsScene extends Scene {
                     this.manager.nests, index, this.formatTime, () => this.onSpeedUp(index));
             }
         }
-        this.coinText.setText(this.formatCoins(this.manager.progression.coins));
+        this.coinText.setText(formatCoins(this.manager.progression.coins));
     }
 
     private onSelect(slotIndex: number): void {
@@ -151,7 +152,7 @@ export class NestsScene extends Scene {
     private onBuySlot(index: number): void {
         const price = NEST_CONFIG.slotPrices[index] ?? 0;
         if (this.manager.unlockNestSlot(index)) {
-            showCoinSpend(this, GAME_WIDTH - 100, 55, this.formatCoins(price));
+            showCoinSpend(this, GAME_WIDTH - 100, 55, formatCoins(price));
             this.refreshSlots();
         } else {
             showToast(this, t('nests_no_coins'), 'error');
@@ -189,10 +190,4 @@ export class NestsScene extends Scene {
         return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
     }
 
-    private formatCoins(n: number): string {
-        if (n >= 1_000_000_000) return `${(n / 1_000_000_000).toFixed(1)}B`;
-        if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
-        if (n >= 10_000) return `${(n / 1_000).toFixed(1)}K`;
-        return n.toLocaleString('en-US');
-    }
 }

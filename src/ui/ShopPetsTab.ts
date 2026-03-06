@@ -5,6 +5,7 @@ import { Button } from './components/Button';
 import { fitText } from './components/fitText';
 import { t } from '../data/locales';
 import { ShopOffer, PetDef } from '../types';
+import { formatCoins } from '../core/formatCoins';
 
 const CARD_W = 141;
 const CARD_H = 160;
@@ -18,7 +19,6 @@ export function buildPetCards(
     cardsY: number,
     buyBtnY: number,
     onBuy: (petId: string, canAfford: boolean) => void,
-    formatCoins: (n: number) => string,
 ): void {
     container.removeAll(true);
     if (offers.length === 0) return;
@@ -28,7 +28,7 @@ export function buildPetCards(
         const pet = PETS.find(p => p.id === offer.petId);
         if (!pet) return;
         const x = startX + i * (CARD_W + CARD_GAP);
-        createOfferCard(scene, container, x, cardsY, buyBtnY, offer, pet, coins, onBuy, formatCoins);
+        createOfferCard(scene, container, x, cardsY, buyBtnY, offer, pet, coins, onBuy);
     });
 }
 
@@ -37,7 +37,6 @@ function createOfferCard(
     x: number, cardsY: number, buyBtnY: number,
     offer: ShopOffer, pet: PetDef, coins: number,
     onBuy: (petId: string, canAfford: boolean) => void,
-    formatCoins: (n: number) => string,
 ): void {
     const cfg = GRADE[getGradeForChance(pet.chance)];
     const r = 15;

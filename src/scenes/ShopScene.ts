@@ -10,6 +10,7 @@ import { showCoinSpend } from '../ui/components/FloatingText';
 import { showToast } from '../ui/components/Toast';
 import { getEggNameKey } from '../data/eggs';
 import { showInterstitial } from '../platform/interstitial';
+import { formatCoins } from '../core/formatCoins';
 
 const HEADER_H = 74;
 const TAB_Y = HEADER_H + 25;
@@ -76,7 +77,7 @@ export class ShopScene extends Scene {
             stroke: '#000000', strokeThickness: UI.STROKE_MEDIUM,
         }).setOrigin(0.5);
         this.add.image(GAME_WIDTH - 123, 37, 'ui_coin_md').setDisplaySize(35, 35);
-        this.coinText = this.add.text(GAME_WIDTH - 101, 37, this.formatCoins(this.manager.progression.coins), {
+        this.coinText = this.add.text(GAME_WIDTH - 101, 37, formatCoins(this.manager.progression.coins), {
             fontFamily: UI.FONT_STROKE, fontSize: '17px', color: '#ffffff',
             stroke: '#000000', strokeThickness: UI.STROKE_THIN,
         }).setOrigin(0, 0.5);
@@ -138,7 +139,7 @@ export class ShopScene extends Scene {
         this.emptyText.setVisible(offers.length === 0);
         buildPetCards(this, this.cardsContainer, offers,
             this.manager.progression.coins, CARDS_Y, BUY_BTN_Y,
-            (petId, canAfford) => this.onBuy(petId, canAfford), this.formatCoins);
+            (petId, canAfford) => this.onBuy(petId, canAfford));
     }
 
     private buildEggsContent(): void {
@@ -147,7 +148,7 @@ export class ShopScene extends Scene {
             this.manager.getEggInventory(),
             this.manager.progression.coins,
             CARDS_Y, BUY_BTN_Y,
-            (tier) => this.onBuyEgg(tier), this.formatCoins);
+            (tier) => this.onBuyEgg(tier));
     }
 
     private cleanupEggTab(): void {
@@ -162,8 +163,8 @@ export class ShopScene extends Scene {
         const offer = this.manager.shop.getOffers().find(o => o.petId === petId);
         const success = this.manager.purchasePet(petId);
         if (!success) { showToast(this, t('shop_no_coins'), 'error'); return; }
-        if (offer) showCoinSpend(this, GAME_WIDTH - 100, 55, this.formatCoins(offer.price));
-        this.coinText.setText(this.formatCoins(this.manager.progression.coins));
+        if (offer) showCoinSpend(this, GAME_WIDTH - 100, 55, formatCoins(offer.price));
+        this.coinText.setText(formatCoins(this.manager.progression.coins));
         await showInterstitial(this);
         this.switchTab('pets');
     }
@@ -172,8 +173,8 @@ export class ShopScene extends Scene {
         const cfg = getEggTierConfig(tier);
         const success = this.manager.purchaseEgg(tier, cfg.price);
         if (!success) { showToast(this, t('shop_no_coins'), 'error'); return; }
-        showCoinSpend(this, GAME_WIDTH - 100, 55, this.formatCoins(cfg.price));
-        this.coinText.setText(this.formatCoins(this.manager.progression.coins));
+        showCoinSpend(this, GAME_WIDTH - 100, 55, formatCoins(cfg.price));
+        this.coinText.setText(formatCoins(this.manager.progression.coins));
         const nameKey = getEggNameKey(`egg_${tier}`);
         showToast(this, t('toast_received', { count: 1, item: t(nameKey) }), 'info');
         await showInterstitial(this);
@@ -209,10 +210,4 @@ export class ShopScene extends Scene {
         this.timerText.setText(t('shop_timer', { time }));
     }
 
-    private formatCoins(n: number): string {
-        if (n >= 1_000_000_000) return `${(n / 1_000_000_000).toFixed(1)}B`;
-        if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
-        if (n >= 10_000) return `${(n / 1_000).toFixed(1)}K`;
-        return n.toLocaleString('en-US');
-    }
 }

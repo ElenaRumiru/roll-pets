@@ -7,6 +7,7 @@ import { t } from '../data/locales';
 import { addButtonFeedback } from './components/buttonFeedback';
 import { fitText } from './components/fitText';
 import { addShineEffect } from './components/shineEffect';
+import { formatCoins } from '../core/formatCoins';
 
 const CX = GAME_WIDTH / 2;
 const CY = GAME_HEIGHT / 2;
@@ -103,10 +104,10 @@ export class LeaguePromotionOverlay {
 
         let seconds = LEVELUP_CONFIG.coinAcceptSeconds;
         const freeLabel = `${t('quest_free')} (${seconds})`;
-        const freeBtn = this.buildChoiceCard(container, leftX, cardsY, `+${this.formatCoins(baseAmount)}`,
+        const freeBtn = this.buildChoiceCard(container, leftX, cardsY, `+${formatCoins(baseAmount)}`,
             FREE_COLOR, FREE_DARK, freeLabel, false, () => choose(baseAmount));
 
-        const adBtn = this.buildChoiceCard(container, rightX, cardsY, `+${this.formatCoins(adAmount)}`,
+        const adBtn = this.buildChoiceCard(container, rightX, cardsY, `+${formatCoins(adAmount)}`,
             AD_COLOR, AD_DARK, t('quest_watch'), true, () => choose(adAmount));
 
         // Delay button interactivity to prevent accidental dismiss
@@ -207,13 +208,6 @@ export class LeaguePromotionOverlay {
         btnWrap.on('pointerdown', onClick);
         addButtonFeedback(this.scene, btnWrap);
         return btnWrap;
-    }
-
-    private formatCoins(n: number): string {
-        if (n >= 1_000_000_000) return `${(n / 1_000_000_000).toFixed(1)}B`;
-        if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
-        if (n >= 10_000) return `${(n / 1_000).toFixed(1)}K`;
-        return n.toLocaleString('en-US');
     }
 
     private close(onDone: () => void): void {

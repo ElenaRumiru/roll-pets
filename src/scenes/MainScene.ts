@@ -218,17 +218,7 @@ export class MainScene extends Scene {
         if (this.manager.buffs.isAutorollActive()) {
             this.wasAutorollActive = true;
             this.centerStage.setAutorollOverlay(true);
-            this.rightPanel.setDepth(105);
-            this.topBar.setDepth(105);
-            this.bonusPanel.setDepth(105);
-            this.questPanel.setDepth(105);
-            this.leaderboard.setDepth(105);
-            this.collectionBtn.setDepth(105);
-            this.nestsBtn.setDepth(105);
-            this.shopBtn.setDepth(105);
-            this.dailyBonusBtn.setDepth(105);
-            this.coinDisplay.setDepth(105);
-            this.petThought.setDepth(105);
+            this.setUIDepth(105);
         }
 
         // Initial UI update
@@ -267,30 +257,10 @@ export class MainScene extends Scene {
         const autoActive = this.manager.buffs.isAutorollActive();
         if (autoActive && !this.wasAutorollActive) {
             this.centerStage.setAutorollOverlay(true);
-            this.rightPanel.setDepth(105);
-            this.topBar.setDepth(105);
-            this.bonusPanel.setDepth(105);
-            this.questPanel.setDepth(105);
-            this.leaderboard.setDepth(105);
-            this.collectionBtn.setDepth(105);
-            this.nestsBtn.setDepth(105);
-            this.shopBtn.setDepth(105);
-            this.dailyBonusBtn.setDepth(105);
-            this.coinDisplay.setDepth(105);
-            this.petThought.setDepth(105);
+            this.setUIDepth(105);
         } else if (!autoActive && this.wasAutorollActive) {
             this.centerStage.setAutorollOverlay(false);
-            this.rightPanel.setDepth(0);
-            this.topBar.setDepth(0);
-            this.bonusPanel.setDepth(0);
-            this.questPanel.setDepth(0);
-            this.leaderboard.setDepth(0);
-            this.collectionBtn.setDepth(0);
-            this.nestsBtn.setDepth(0);
-            this.shopBtn.setDepth(0);
-            this.dailyBonusBtn.setDepth(0);
-            this.coinDisplay.setDepth(0);
-            this.petThought.setDepth(0);
+            this.setUIDepth(0);
         }
         this.wasAutorollActive = autoActive;
 
@@ -581,20 +551,17 @@ export class MainScene extends Scene {
         );
     }
 
+    private setUIDepth(depth: number): void {
+        for (const el of [this.rightPanel, this.topBar, this.bonusPanel,
+            this.questPanel, this.leaderboard, this.collectionBtn, this.nestsBtn,
+            this.shopBtn, this.dailyBonusBtn, this.coinDisplay, this.petThought])
+            el.setDepth(depth);
+    }
+
     private onAutorollStop(): void {
         this.centerStage.setAutorollOverlay(false);
         this.wasAutorollActive = false;
-        this.rightPanel.setDepth(0);
-        this.topBar.setDepth(0);
-        this.bonusPanel.setDepth(0);
-        this.questPanel.setDepth(0);
-        this.leaderboard.setDepth(0);
-        this.collectionBtn.setDepth(0);
-        this.nestsBtn.setDepth(0);
-        this.shopBtn.setDepth(0);
-        this.dailyBonusBtn.setDepth(0);
-        this.coinDisplay.setDepth(0);
-        this.petThought.setDepth(0);
+        this.setUIDepth(0);
         this.rightPanel.updateBuffDisplay(this.manager.buffs);
         this.rightPanel.setRolling(this.manager.isRolling);
     }

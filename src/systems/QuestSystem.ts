@@ -1,5 +1,6 @@
 import { QuestState, QuestProgress, OnlineQuestProgress, Grade, RollResult } from '../types';
 import { QUEST_CONFIG, getDefaultQuestState, GRADE_ORDER, QuestStepReward } from '../core/config';
+import { getTodayUTC, getSecondsUntilReset } from '../core/DateUtils';
 
 export type QuestType = 'roll' | 'grade' | 'online';
 
@@ -23,7 +24,7 @@ export class QuestSystem {
     }
 
     checkDailyReset(): boolean {
-        const today = QuestSystem.getTodayUTC();
+        const today = getTodayUTC();
         if (this.state.lastResetDate === today) return false;
         this.state.lastResetDate = today;
         this.state.rollQuest = { current: 0, target: QUEST_CONFIG.rollSteps[0].target, sequenceIndex: 0 };
@@ -188,9 +189,7 @@ export class QuestSystem {
     }
 
     getSecondsUntilReset(): number {
-        const now = new Date();
-        const tomorrow = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + 1));
-        return Math.max(0, Math.floor((tomorrow.getTime() - now.getTime()) / 1000));
+        return getSecondsUntilReset();
     }
 
     toSave(): QuestState {
@@ -200,11 +199,6 @@ export class QuestSystem {
             onlineQuest: { ...this.state.onlineQuest },
             milestones: { ...this.state.milestones, claimedMilestones: [...this.state.milestones.claimedMilestones] },
         };
-    }
-
-    static getTodayUTC(): string {
-        const d = new Date();
-        return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}-${String(d.getUTCDate()).padStart(2, '0')}`;
     }
 
     private isComplete(q: QuestProgress): boolean {

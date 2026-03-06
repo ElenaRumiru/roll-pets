@@ -1,7 +1,6 @@
 export type Grade =
     | 'common' | 'uncommon' | 'improved' | 'rare' | 'valuable'
-    | 'elite' | 'epic' | 'heroic' | 'mythic' | 'ancient' | 'legendary'
-    | 'astral' | 'cosmic' | 'divine' | 'absolute';
+    | 'elite' | 'epic' | 'heroic' | 'mythic' | 'ancient' | 'legendary';
 
 export interface PetDef {
     id: string;

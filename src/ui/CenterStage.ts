@@ -329,8 +329,8 @@ export class CenterStage extends GameObjects.Container {
                 });
             }
 
-            const fadeTargets = [this.revealName, this.revealRarity, this.newBadge, this.rewardsContainer];
-            if (this.revealImage) fadeTargets.push(this.revealImage as any);
+            const fadeTargets: GameObjects.GameObject[] = [this.revealName, this.revealRarity, this.newBadge, this.rewardsContainer];
+            if (this.revealImage) fadeTargets.push(this.revealImage);
 
             scene.tweens.add({
                 targets: fadeTargets,

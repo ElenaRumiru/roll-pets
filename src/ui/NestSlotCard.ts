@@ -4,6 +4,7 @@ import { NestSlot } from '../types';
 import { NestSystem } from '../systems/NestSystem';
 import { Button } from './components/Button';
 import { t } from '../data/locales';
+import { formatCoins } from '../core/formatCoins';
 
 const SLOT_W = 200;
 const SLOT_H = 250;
@@ -146,7 +147,7 @@ export function renderReadySlot(
 
 export function renderLockedSlot(
     scene: Scene, container: GameObjects.Container, x: number, layout: SlotLayout,
-    index: number, coins: number, onBuy: () => void, formatCoins: (n: number) => string,
+    index: number, coins: number, onBuy: () => void,
 ): void {
     const c = scene.add.container(x, layout.slotY);
     const bg = scene.add.graphics();

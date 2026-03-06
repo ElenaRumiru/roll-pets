@@ -37,10 +37,6 @@ export class RNGSystem {
         return this.rng();
     }
 
-    nextInt(min: number, max: number): number {
-        return min + Math.floor(this.next() * (max - min + 1));
-    }
-
     /**
      * Single-roll sequential check from rarest to most common.
      * One random value per roll; first pet whose threshold exceeds it wins.

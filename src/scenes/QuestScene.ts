@@ -7,6 +7,7 @@ import { t } from '../data/locales';
 import { fitText } from '../ui/components/fitText';
 import { addButtonFeedback } from '../ui/components/buttonFeedback';
 import { addShineEffect } from '../ui/components/shineEffect';
+import { formatCoins } from '../core/formatCoins';
 
 const HEADER_H = 74;
 const MILESTONE_Y = 120;
@@ -71,7 +72,7 @@ export class QuestScene extends Scene {
             stroke: '#000000', strokeThickness: UI.STROKE_MEDIUM,
         }).setOrigin(0.5);
         this.add.image(GAME_WIDTH - 123, 37, 'ui_coin_md').setDisplaySize(35, 35);
-        this.add.text(GAME_WIDTH - 101, 37, this.formatCoins(this.manager.progression.coins), {
+        this.add.text(GAME_WIDTH - 101, 37, formatCoins(this.manager.progression.coins), {
             fontFamily: UI.FONT_STROKE, fontSize: '17px', color: '#ffffff',
             stroke: '#000000', strokeThickness: UI.STROKE_THIN,
         }).setOrigin(0, 0.5);
@@ -159,7 +160,7 @@ export class QuestScene extends Scene {
         }
 
         // Coin icon + gold amount centered under gift
-        const coinLabel = this.add.text(0, 24, this.formatCoins(reward), {
+        const coinLabel = this.add.text(0, 24, formatCoins(reward), {
             fontFamily: UI.FONT_STROKE, fontSize: '11px',
             color: reached ? '#ffc107' : '#666688',
             stroke: '#000000', strokeThickness: 1,
@@ -415,7 +416,7 @@ export class QuestScene extends Scene {
     private showCoinGain(worldX: number, worldY: number, amount: number): void {
         const icon = this.add.image(worldX - 10, worldY, 'ui_coin_sm')
             .setDisplaySize(18, 18).setDepth(10);
-        const txt = this.add.text(worldX + 6, worldY, `+${this.formatCoins(amount)}`, {
+        const txt = this.add.text(worldX + 6, worldY, `+${formatCoins(amount)}`, {
             fontFamily: UI.FONT_STROKE, fontSize: '16px', color: '#ffc107',
             stroke: '#000000', strokeThickness: 2,
         }).setOrigin(0, 0.5).setDepth(10);
@@ -426,10 +427,4 @@ export class QuestScene extends Scene {
         });
     }
 
-    private formatCoins(n: number): string {
-        if (n >= 1_000_000_000) return `${(n / 1_000_000_000).toFixed(1)}B`;
-        if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
-        if (n >= 10_000) return `${(n / 1_000).toFixed(1)}K`;
-        return n.toLocaleString('en-US');
-    }
 }

@@ -1,5 +1,6 @@
 import { DailyBonusState, DailyBonusReward } from '../types';
 import { DAILY_BONUS_CONFIG, getDefaultDailyBonusState } from '../core/config';
+import { getTodayUTC, getSecondsUntilReset } from '../core/DateUtils';
 
 export class DailyBonusSystem {
     private state: DailyBonusState;
@@ -18,7 +19,7 @@ export class DailyBonusSystem {
 
     /** Returns true if a new day was detected and counters advanced */
     checkNewDay(): boolean {
-        const today = DailyBonusSystem.getTodayUTC();
+        const today = getTodayUTC();
         if (this.state.lastLoginDate === today) return false;
 
         const isFirstEver = this.state.lastLoginDate === '';
@@ -81,11 +82,7 @@ export class DailyBonusSystem {
     get monthMilestonesClaimed(): readonly boolean[] { return this.state.monthMilestonesClaimed; }
 
     getSecondsUntilReset(): number {
-        const now = new Date();
-        const tomorrow = new Date(Date.UTC(
-            now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + 1,
-        ));
-        return Math.max(0, Math.floor((tomorrow.getTime() - now.getTime()) / 1000));
+        return getSecondsUntilReset();
     }
 
     toSave(): DailyBonusState {
@@ -95,8 +92,4 @@ export class DailyBonusSystem {
         };
     }
 
-    static getTodayUTC(): string {
-        const d = new Date();
-        return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}-${String(d.getUTCDate()).padStart(2, '0')}`;
-    }
 }

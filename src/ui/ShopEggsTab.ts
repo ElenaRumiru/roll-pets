@@ -5,6 +5,7 @@ import { getEggNameKey } from '../data/eggs';
 import { Button } from './components/Button';
 import { t } from '../data/locales';
 import { showToast } from './components/Toast';
+import { formatCoins } from '../core/formatCoins';
 
 const CARD_W = 141;
 const CARD_H = 160;
@@ -31,7 +32,6 @@ export function buildEggCards(
     contentY: number,
     _buyBtnY: number,
     onBuy: (tier: number) => void,
-    formatCoins: (n: number) => string,
 ): EggTabResult {
     container.removeAll(true);
 
@@ -54,7 +54,7 @@ export function buildEggCards(
         const unlocked = playerLevel >= reqLevel;
         renderEggCard(scene, scrollContainer, x, y, btnY,
             cfg.tier, cfg.price, cfg.buffMultiplier, cfg.incubationMs,
-            unlocked, coins, reqLevel, onBuy, formatCoins);
+            unlocked, coins, reqLevel, onBuy);
     }
 
     // Mask for vertical scrolling
@@ -118,7 +118,7 @@ function renderEggCard(
     x: number, y: number, btnY: number,
     tier: number, price: number, buffMult: number, incubMs: number,
     unlocked: boolean, coins: number, reqLevel: number,
-    onBuy: (tier: number) => void, formatCoins: (n: number) => string,
+    onBuy: (tier: number) => void,
 ): void {
     const c = scene.add.container(x, y);
     const bg = scene.add.graphics();

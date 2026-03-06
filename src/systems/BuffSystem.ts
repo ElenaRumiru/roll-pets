@@ -75,16 +75,6 @@ export class BuffSystem {
         return mult;
     }
 
-    /** Preview multiplier without consuming */
-    peekMultiplier(): number {
-        let mult = this.rebirthMultiplier;
-        if (this.counts.lucky > 0) mult *= BUFF_CONFIG.lucky.multiplier;
-        if (this.counts.super > 0) mult *= BUFF_CONFIG.super.multiplier;
-        if (this.counts.epic > 0)  mult *= BUFF_CONFIG.epic.multiplier;
-        if (this.counts.dream > 0) mult *= BUFF_CONFIG.dream.multiplier;
-        return mult;
-    }
-
     getCount(buff: CountBuff): number { return this.counts[buff]; }
     isAutorollActive(): boolean { return this.autorollEnabled && this.autorollRunning; }
     isAutorollEnabled(): boolean { return this.autorollEnabled; }
