@@ -60,7 +60,7 @@ src/
 ├── systems/                        # Pure TS, zero Phaser dependency
 │   ├── RNGSystem.ts                # sfc32 PRNG + weightedRandom
 │   ├── ProgressionSystem.ts        # XP, coins, levels, luck formula
-│   ├── SaveSystem.ts               # localStorage with try/catch (v19)
+│   ├── SaveSystem.ts               # localStorage with checksum + validation (v21)
 │   ├── AudioSystem.ts              # Play/stop/mute wrapper
 │   ├── BuffSystem.ts               # Buff state (lucky/super/epic multipliers, autoroll toggle, rebirth multiplier)
 │   ├── QuestSystem.ts              # Daily quest logic, progress tracking, UTC midnight reset
@@ -139,6 +139,22 @@ src/
 **Leaderboard widget:** Has `ICON_AREA = 48` for rating icon (`ui/Rating_icon_3.png`, trimmed via `trimToWidth` at exact display width=99px for 1:1 pixel mapping — no WebGL scaling, avoids aliasing on thin lines) protruding above the dark panel, similar to QuestPanel's icon pattern.
 
 **Testing:** Always use Playwright MCP to test the game. At the start of every session, navigate to `http://localhost:8080/` via Playwright to verify the dev server is running. Before launching Chrome, check if it's already open (Playwright will fail with a resource access error if Chrome is running). If it fails, ask the user to close Chrome or start the dev server. After every code change, reload the page in Playwright and take a screenshot to verify visuals. Use `browser_console_messages` to check for errors. Click UI elements (ROLL button, Collection, etc.) to test interactions.
+
+## Security
+
+**Ad reward pattern:** All `showRewardedBreak()` call sites follow the same pattern: `if (sdk) { sdk.showRewardedBreak().then(...) } else { /* no-op or FREE reward only */ }`. When SDK is missing, NEVER grant ad-tier rewards — either do nothing (buffs, boost, shop refresh) or grant only the FREE amount (coins, quest rewards). 7 call sites: `MainScene.ts` (buffs, level-up coins, league promo coins, quest popup), `QuestScene.ts` (quest WATCH button), `NestsScene.ts` (incubation boost), `ShopScene.ts` (shop refresh).
+
+**Save integrity:** `SaveSystem.ts` wraps save data in `{data, hash}` envelope. Hash is FNV-1a with embedded salt. On load: if hash doesn't match → reset to defaults. Legacy saves (without hash) are accepted once and re-saved with hash. Salt in `HASH_SALT` constant — obfuscated in minified build.
+
+**Save validation:** `validateData()` runs after every load. Clamps: level [1,1000], coins ≥ 0, rebirthCount [0, maxCount], buff charges [0,9999], collection filtered to valid pet IDs only, eggInventory keys [1-17] only.
+
+**Delta capping:** `GameManager.update()` caps `deltaMs` to 200ms max, preventing speed hack of quest timers, buff cooldowns, and daily reset checks.
+
+**Level guards:** `setAutorollToggle()` checks `level >= AUTOROLL_TOGGLE.unlockLevel` before enabling. UI-level checks in `RightPanel.setLocked()` are backed by GameManager-level validation.
+
+**Reward validation:** `claimLevelUpCoins()` and `claimLeaguePromoCoins()` track pending expected amounts (`pendingLevelUpReward`, `pendingLeaguePromoReward`) and cap input to `baseReward × adCoinMultiplier`. Prevents arbitrary coin injection via console.
+
+**Known limitations (client-only game, no server):** Determined cheaters with devtools can still access GameManager via Phaser registry, emit EventBus events, or replace the SDK mock. This is a fundamental limitation of all client-only web games on Poki — acceptable because there's no competitive PvP and the leaderboard uses fake bots.
 
 ## Key Constraints
 

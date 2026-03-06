@@ -187,9 +187,6 @@ export class ShopScene extends Scene {
             sdk.showRewardedBreak().then((success: boolean) => {
                 if (success) { this.manager.refreshShop(); this.switchTab('pets'); }
             });
-        } else {
-            this.manager.refreshShop();
-            this.switchTab('pets');
         }
     }
 

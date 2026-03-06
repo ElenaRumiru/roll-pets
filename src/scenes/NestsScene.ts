@@ -143,9 +143,6 @@ export class NestsScene extends Scene {
             sdk.showRewardedBreak().then((success: boolean) => {
                 if (success) { this.manager.boostNestSlot(index); this.refreshSlots(); }
             });
-        } else {
-            this.manager.boostNestSlot(index);
-            this.refreshSlots();
         }
     }
 

@@ -1,9 +1,44 @@
 import { SaveData, Grade } from '../types';
 import { PETS } from '../data/pets';
-import { getGradeForChance, getDefaultQuestState, getDefaultDailyBonusState, getDefaultNestState } from '../core/config';
+import { getGradeForChance, getDefaultQuestState, getDefaultDailyBonusState, getDefaultNestState, REBIRTH_CONFIG } from '../core/config';
 
 const SAVE_KEY = 'pets_go_lite_save';
 const CURRENT_VERSION = 21;
+const HASH_SALT = 'pG!7kQ#xR2';
+
+const VALID_PET_IDS = new Set(PETS.map(p => p.id));
+
+function computeHash(json: string): string {
+    let h = 0x811c9dc5;
+    const s = HASH_SALT + json;
+    for (let i = 0; i < s.length; i++) {
+        h ^= s.charCodeAt(i);
+        h = Math.imul(h, 0x01000193);
+    }
+    return (h >>> 0).toString(36);
+}
+
+function validateData(data: SaveData): void {
+    data.level = Math.max(1, Math.min(1000, Math.floor(data.level) || 1));
+    data.coins = Math.max(0, Math.floor(data.coins) || 0);
+    data.xp = Math.max(0, data.xp || 0);
+    data.totalRolls = Math.max(0, Math.floor(data.totalRolls) || 0);
+    data.rebirthCount = Math.max(0, Math.min(REBIRTH_CONFIG.maxCount, Math.floor(data.rebirthCount) || 0));
+    data.collection = data.collection.filter(id => VALID_PET_IDS.has(id));
+    const b = data.buffs;
+    b.lucky = Math.max(0, Math.min(9999, Math.floor(b.lucky) || 0));
+    b.super = Math.max(0, Math.min(9999, Math.floor(b.super) || 0));
+    b.epic = Math.max(0, Math.min(9999, Math.floor(b.epic) || 0));
+    b.dream = Math.max(0, Math.min(9999, Math.floor(b.dream) || 0));
+    const validInv: Record<string, number> = {};
+    for (const [k, v] of Object.entries(data.eggInventory)) {
+        const tier = parseInt(k, 10);
+        if (tier >= 1 && tier <= 17 && typeof v === 'number' && v > 0) {
+            validInv[k] = Math.floor(v);
+        }
+    }
+    data.eggInventory = validInv;
+}
 
 function getDefaults(): SaveData {
     return {
@@ -169,11 +204,22 @@ export class SaveSystem {
         try {
             const raw = localStorage.getItem(SAVE_KEY);
             if (raw) {
-                const parsed = JSON.parse(raw) as SaveData;
+                const envelope = JSON.parse(raw) as { data?: SaveData; hash?: string };
+                let parsed: SaveData;
+                if (envelope.data && envelope.hash) {
+                    const json = JSON.stringify(envelope.data);
+                    if (computeHash(json) !== envelope.hash) return getDefaults();
+                    parsed = envelope.data;
+                } else {
+                    // Legacy save without hash — accept once, will be re-saved with hash
+                    parsed = envelope as unknown as SaveData;
+                }
                 if (parsed.version < CURRENT_VERSION) migrate(parsed);
-                return this.patchDefaults(parsed);
+                const result = this.patchDefaults(parsed);
+                validateData(result);
+                return result;
             }
-        } catch { /* localStorage unavailable */ }
+        } catch { /* localStorage unavailable or corrupted */ }
         return getDefaults();
     }
 
@@ -197,7 +243,9 @@ export class SaveSystem {
 
     save(): void {
         try {
-            localStorage.setItem(SAVE_KEY, JSON.stringify(this.data));
+            const json = JSON.stringify(this.data);
+            const envelope = JSON.stringify({ data: this.data, hash: computeHash(json) });
+            localStorage.setItem(SAVE_KEY, envelope);
         } catch { /* silently fail */ }
     }
 

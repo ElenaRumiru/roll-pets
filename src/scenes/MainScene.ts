@@ -290,8 +290,6 @@ export class MainScene extends Scene {
             sdk.showRewardedBreak().then((success: boolean) => {
                 if (success) EventBus.emit('buff-requested', type);
             });
-        } else {
-            EventBus.emit('buff-requested', type);
         }
     }
 
@@ -338,8 +336,8 @@ export class MainScene extends Scene {
                     this.finishLevelUp(data);
                 });
             } else {
-                this.manager.claimLevelUpCoins(adAmount);
-                this.coinDisplay.showFloatingGain(adAmount, this);
+                this.manager.claimLevelUpCoins(baseAmount);
+                this.coinDisplay.showFloatingGain(baseAmount, this);
                 this.finishLevelUp(data);
             }
         } else {
@@ -407,8 +405,8 @@ export class MainScene extends Scene {
                     this.finishLeaguePromo();
                 });
             } else {
-                this.manager.claimLeaguePromoCoins(adAmount);
-                this.coinDisplay.showFloatingGain(adAmount, this);
+                this.manager.claimLeaguePromoCoins(baseAmount);
+                this.coinDisplay.showFloatingGain(baseAmount, this);
                 this.finishLeaguePromo();
             }
         } else {
@@ -542,8 +540,8 @@ export class MainScene extends Scene {
                         this.questPopup = null;
                     });
                 } else {
-                    this.manager.claimQuestReward(type, true);
-                    showToast(this, t('toast_received', { count: reward.adCount, item: buffName }), 'info');
+                    this.manager.claimQuestReward(type, false);
+                    showToast(this, t('toast_received', { count: reward.freeCount, item: buffName }), 'info');
                     this.questPopup = null;
                 }
             },

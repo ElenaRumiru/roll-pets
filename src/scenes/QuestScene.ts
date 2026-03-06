@@ -328,7 +328,7 @@ export class QuestScene extends Scene {
                     this.scene.restart();
                 });
             } else {
-                this.manager.claimQuestReward(type, true);
+                this.manager.claimQuestReward(type, false);
                 this.scene.restart();
             }
         });

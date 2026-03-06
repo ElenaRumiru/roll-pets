@@ -1,5 +1,5 @@
 import { EventBus } from './EventBus';
-import { BUFF_CONFIG, levelUpCoinReward, LEAGUE_PROMOTION_REWARDS, NEST_CONFIG, getDefaultNestState, AUTOROLL_TOGGLE, REBIRTH_CONFIG, INTERSTITIAL_CONFIG } from './config';
+import { BUFF_CONFIG, levelUpCoinReward, LEAGUE_PROMOTION_REWARDS, NEST_CONFIG, getDefaultNestState, AUTOROLL_TOGGLE, REBIRTH_CONFIG, INTERSTITIAL_CONFIG, LEVELUP_CONFIG } from './config';
 import { RNGSystem } from '../systems/RNGSystem';
 import { ProgressionSystem } from '../systems/ProgressionSystem';
 import { SaveSystem } from '../systems/SaveSystem';
@@ -36,6 +36,8 @@ export class GameManager {
     pendingInterstitial = false;
     private questResetTimer = 0;
     private onlineTimeAccum = 0;
+    private pendingLevelUpReward = 0;
+    private pendingLeaguePromoReward = 0;
 
     constructor() {
         this.save = new SaveSystem();
@@ -100,6 +102,7 @@ export class GameManager {
     }
 
     setAutorollToggle(enabled: boolean): void {
+        if (this.progression.level < AUTOROLL_TOGGLE.unlockLevel) return;
         this.buffs.setAutorollEnabled(enabled);
         EventBus.emit('buffs-changed');
         this.persistSave();
@@ -150,6 +153,7 @@ export class GameManager {
                     featureUnlock = 'incubation';
                 }
                 const coinReward = (eggChanged || featureUnlock) ? 0 : levelUpCoinReward(newLevel);
+                this.pendingLevelUpReward = coinReward;
                 const levelUpData: LevelUpData = {
                     level: newLevel,
                     eggKey: newEggKey,
@@ -167,6 +171,7 @@ export class GameManager {
         if (leagueBefore.tier !== leagueAfter.tier) {
             const reward = LEAGUE_PROMOTION_REWARDS[leagueAfter.tier];
             if (reward) {
+                this.pendingLeaguePromoReward = reward;
                 const promoData: LeaguePromotionData = {
                     tier: leagueAfter.tier,
                     coinReward: reward,
@@ -184,12 +189,18 @@ export class GameManager {
     }
 
     claimLevelUpCoins(amount: number): void {
-        if (amount > 0) this.progression.addCoins(amount);
+        const maxAllowed = this.pendingLevelUpReward * LEVELUP_CONFIG.adCoinMultiplier;
+        const safe = Math.min(Math.max(0, amount), maxAllowed);
+        if (safe > 0) this.progression.addCoins(safe);
+        this.pendingLevelUpReward = 0;
         this.persistSave();
     }
 
     claimLeaguePromoCoins(amount: number): void {
-        if (amount > 0) this.progression.addCoins(amount);
+        const maxAllowed = this.pendingLeaguePromoReward * LEVELUP_CONFIG.adCoinMultiplier;
+        const safe = Math.min(Math.max(0, amount), maxAllowed);
+        if (safe > 0) this.progression.addCoins(safe);
+        this.pendingLeaguePromoReward = 0;
         this.persistSave();
     }
 
@@ -437,10 +448,11 @@ export class GameManager {
     }
 
     update(deltaMs: number): void {
-        this.buffs.update(deltaMs);
+        const dt = Math.min(deltaMs, 200);
+        this.buffs.update(dt);
 
         // Online time tracking (accumulate ms, tick every second)
-        this.onlineTimeAccum += deltaMs;
+        this.onlineTimeAccum += dt;
         if (this.onlineTimeAccum >= 1000) {
             const secs = Math.floor(this.onlineTimeAccum / 1000);
             this.onlineTimeAccum -= secs * 1000;
@@ -449,7 +461,7 @@ export class GameManager {
             }
         }
 
-        this.questResetTimer += deltaMs;
+        this.questResetTimer += dt;
         if (this.questResetTimer >= 60_000) {
             this.questResetTimer = 0;
             const questReset = this.quests.checkDailyReset();
