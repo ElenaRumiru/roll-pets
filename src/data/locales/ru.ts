@@ -19,7 +19,8 @@ export const ru: Record<string, string> = {
     'egg_luck': 'Удача',
     'egg_req_level': 'Уровень {level}',
     'egg_incubation_info': 'Инкубация: {buff} удача, {time}',
-    'egg_chance': 'шанс',
+    'egg_chance': 'Шанс',
+    'egg_duration': 'Время {time}',
 
     // Grades
     'grade_common': 'Обычный',

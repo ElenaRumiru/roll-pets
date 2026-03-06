@@ -19,7 +19,8 @@ export const en: Record<string, string> = {
     'egg_luck': 'Luck',
     'egg_req_level': 'Level {level}',
     'egg_incubation_info': 'Incubation: {buff} luck, {time}',
-    'egg_chance': 'chance',
+    'egg_chance': 'Chance',
+    'egg_duration': 'Time {time}',
 
     // Grades
     'grade_common': 'Common',

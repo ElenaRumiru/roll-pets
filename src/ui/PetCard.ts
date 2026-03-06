@@ -61,6 +61,8 @@ export class PetCard extends GameObjects.Container {
             fontFamily: UI.FONT_MAIN,
             fontSize: '14px',
             color: found ? '#ffffff' : '#333344',
+            stroke: '#000000',
+            strokeThickness: found ? 1 : 0,
         }).setOrigin(0.5);
         fitText(nameText, CARD_W - 8, 14);
         this.add(nameText);

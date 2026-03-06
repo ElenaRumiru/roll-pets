@@ -46,7 +46,11 @@ function createOfferCard(
     const bg = scene.add.graphics();
     bg.fillStyle(0x2a2a3e, 1);
     bg.fillRoundedRect(-CARD_W / 2, -CARD_H / 2, CARD_W, CARD_H, r);
-    bg.lineStyle(2, cfg.color, 0.8);
+    bg.lineStyle(1.5, 0x000000, 0.9);
+    bg.strokeRoundedRect(-CARD_W / 2 - 4, -CARD_H / 2 - 4, CARD_W + 8, CARD_H + 8, r + 3);
+    bg.lineStyle(3, cfg.color, 1);
+    bg.strokeRoundedRect(-CARD_W / 2 - 2, -CARD_H / 2 - 2, CARD_W + 4, CARD_H + 4, r + 2);
+    bg.lineStyle(1.5, 0x000000, 0.9);
     bg.strokeRoundedRect(-CARD_W / 2, -CARD_H / 2, CARD_W, CARD_H, r);
     bg.fillStyle(cfg.color, 0.1);
     bg.fillRoundedRect(-CARD_W / 2 + 1, -CARD_H / 2 + 1, CARD_W - 2, CARD_H * 0.35,

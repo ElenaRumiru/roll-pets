@@ -7,7 +7,8 @@ import { addButtonFeedback } from './components/buttonFeedback';
 import { fitText } from './components/fitText';
 import { DailyBonusReward } from '../types';
 
-const CARD_W = 108, CARD_H = 100, CARD_GAP = 10, CARD_R = 12, trackH = 8;
+const CARD_W = 108, CARD_H = 100, CARD_GAP = 10, CARD_R = 12;
+const TRACK_H = 20, TRACK_R = 5;
 const DAY7_H = CARD_H * 2 + CARD_GAP;
 const BUFF_ICON: Record<string, string> = {
     lucky: 'luck_x2_lg', super: 'luck_x3_lg', epic: 'luck_x5_lg',
@@ -56,11 +57,17 @@ function drawCard(scene: Scene, cx: number, cy: number, w: number, h: number,
     g.fillStyle(bgClr, bgAlpha);
     g.fillRoundedRect(cx - w / 2, cy - h / 2, w, h, CARD_R);
     if (isToday && !db.claimedToday) {
-        g.lineStyle(2.5, 0x78C828, 0.9);
+        // Triple black-yellow-black outline
+        g.lineStyle(1.5, 0x000000, 0.9);
+        g.strokeRoundedRect(cx - w / 2 - 4, cy - h / 2 - 4, w + 8, h + 8, CARD_R + 3);
+        g.lineStyle(3, 0xFEBF07, 1);
+        g.strokeRoundedRect(cx - w / 2 - 2, cy - h / 2 - 2, w + 4, h + 4, CARD_R + 2);
+        g.lineStyle(1.5, 0x000000, 0.9);
+        g.strokeRoundedRect(cx - w / 2, cy - h / 2, w, h, CARD_R);
     } else {
         g.lineStyle(1.5, 0x333355, 0.5);
+        g.strokeRoundedRect(cx - w / 2, cy - h / 2, w, h, CARD_R);
     }
-    g.strokeRoundedRect(cx - w / 2, cy - h / 2, w, h, CARD_R);
 
     // Day label
     let dayLabel: string;
@@ -68,7 +75,7 @@ function drawCard(scene: Scene, cx: number, cy: number, w: number, h: number,
     else if (isTomorrow) dayLabel = t('daily_bonus_tomorrow');
     else dayLabel = t('daily_bonus_day', { day: String(dayIdx + 1) });
 
-    const labelClr = isToday && !db.claimedToday ? '#78C828' : (isDone ? '#888899' : '#ffffff');
+    const labelClr = isToday && !db.claimedToday ? '#FEBf07' : (isDone ? '#888899' : '#ffffff');
     scene.add.text(cx, cy - h / 2 + 16, dayLabel, {
         fontFamily: UI.FONT_STROKE, fontSize: '13px', color: labelClr,
         stroke: '#000000', strokeThickness: 1.5,
@@ -80,7 +87,12 @@ function drawCard(scene: Scene, cx: number, cy: number, w: number, h: number,
 
     if (isDone) {
         drawRewardIcon(scene, cx, iconY, iconSize, reward, 0.5);
-        scene.add.image(cx + iconSize / 3, cy - iconSize / 3, 'ui_ok_sm').setDisplaySize(20, 20);
+        const check = scene.add.image(cx + iconSize / 3, cy - iconSize / 3, 'ui_ok_sm')
+            .setDisplaySize(20, 20).setScale(0);
+        scene.tweens.add({ targets: check, scale: check.displayWidth / check.width,
+            duration: 350, ease: 'Back.easeOut' });
+    } else if (isToday && !db.claimedToday) {
+        drawRewardIcon(scene, cx, iconY, iconSize, reward, 1);
     } else {
         const giftSize = dayIdx === 6 ? 76 : 50;
         const gift = scene.add.image(cx, iconY, 'ui_gift_md').setDisplaySize(giftSize, giftSize);
@@ -114,7 +126,7 @@ function drawRewardIcon(scene: Scene, cx: number, cy: number,
 
 function getRewardColor(reward: DailyBonusReward): string {
     if (reward.type === 'buff' && reward.buffType) return BUFF_CLR[reward.buffType] || '#ffffff';
-    if (reward.type === 'egg') return '#e0a050';
+    if (reward.type === 'egg') return '#ffffff';
     return '#ffc107';
 }
 
@@ -131,22 +143,39 @@ export function createMilestoneTrack(scene: Scene, trackY: number, manager: Game
     const maxVal = cfg.monthCycleDays;
     const trackW = CARD_W * 4 + CARD_GAP * 3;
     const trackX = GAME_WIDTH / 2 - trackW / 2;
-    const barY = trackY + 14;
+    const barY = trackY + 2;
 
+    // Triple outline (black → yellow → black)
     const bg = scene.add.graphics();
+    bg.lineStyle(1.5, 0x000000, 0.9);
+    bg.strokeRoundedRect(trackX - 4, barY - 4, trackW + 8, TRACK_H + 8, TRACK_R + 3);
+    bg.lineStyle(3, 0xFEBF07, 1);
+    bg.strokeRoundedRect(trackX - 2, barY - 2, trackW + 4, TRACK_H + 4, TRACK_R + 2);
+    bg.lineStyle(1.5, 0x000000, 0.9);
+    bg.strokeRoundedRect(trackX, barY, trackW, TRACK_H, TRACK_R);
+
     bg.fillStyle(0x222244, 0.6);
-    bg.fillRoundedRect(trackX, barY, trackW, trackH, trackH / 2);
+    bg.fillRoundedRect(trackX, barY, trackW, TRACK_H, TRACK_R);
 
     const fillW = Math.max(0, trackW * Math.min(1, db.totalLogins / maxVal));
     if (fillW > 0) {
+        const fw = Math.min(fillW, trackW - 1);
+        const fr = fw >= TRACK_H ? TRACK_R : Math.min(fw / 2, TRACK_R);
         const fill = scene.add.graphics();
         fill.fillStyle(0x78C828, 1);
-        fill.fillRoundedRect(trackX, barY, fillW, trackH, trackH / 2);
+        fill.fillRoundedRect(trackX + 1, barY + 1, fw, TRACK_H - 2, fr);
+        if (fw > 6) {
+            const hlR = fw >= TRACK_H ? { tl: TRACK_R - 1, tr: TRACK_R - 1, bl: 0, br: 0 } : 0;
+            fill.fillStyle(0xffffff, 0.18);
+            fill.fillRoundedRect(trackX + 2, barY + 2, fw - 2, (TRACK_H - 4) * 0.4, hlR);
+        }
     }
 
-    for (let i = 0; i < cfg.milestoneThresholds.length; i++) {
-        const pct = cfg.milestoneThresholds[i] / maxVal;
-        drawMilestoneGift(scene, trackX + trackW * pct, barY - 5, i, manager);
+    const barCenterY = barY + TRACK_H / 2 - 1;
+    const count = cfg.milestoneThresholds.length;
+    for (let i = 0; i < count; i++) {
+        const pct = (i + 1) / count;
+        drawMilestoneGift(scene, trackX + trackW * pct, barCenterY, i, manager);
     }
 }
 
@@ -160,10 +189,12 @@ function drawMilestoneGift(scene: Scene, x: number, y: number,
     const claimable = reached && !isClaimed;
 
     if (isClaimed) {
-        scene.add.image(x, y - 14, 'ui_ok_md').setDisplaySize(30, 30);
+        const check = scene.add.image(x, y, 'ui_ok_md').setDisplaySize(30, 30).setScale(0);
+        scene.tweens.add({ targets: check, scale: check.displayWidth / check.width,
+            duration: 350, ease: 'Back.easeOut' });
     } else {
-        const gift = scene.add.image(x, y - 14, 'ui_gift_md').setDisplaySize(38, 38);
-        if (!reached) gift.setTint(0x555555);
+        const gift = scene.add.image(x, y, 'ui_gift_md').setDisplaySize(38, 38);
+        if (!reached) gift.setTint(0xaaaaaa);
         if (claimable) {
             const base = gift.scale, pulse = base * 1.08;
             const doPulse = () => {
@@ -183,14 +214,14 @@ function drawMilestoneGift(scene: Scene, x: number, y: number,
             gift.on('pointerdown', () => {
                 const coins = manager.claimDailyMilestone(index);
                 if (coins > 0) {
-                    showCoinGain(scene, x, y - 14, coins);
-                    scene.time.delayedCall(800, () => scene.scene.restart());
+                    showCoinGain(scene, x, y, coins);
+                    scene.time.delayedCall(0, () => scene.scene.restart());
                 }
             });
         }
     }
 
-    scene.add.text(x, y + 24, t('daily_bonus_day', { day: String(threshold) }), {
+    scene.add.text(x, y + 28, t('daily_bonus_day', { day: String(threshold) }), {
         fontFamily: UI.FONT_STROKE, fontSize: '11px',
         color: reached ? '#ffffff' : '#666688',
         stroke: '#000000', strokeThickness: 1,

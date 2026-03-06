@@ -4,7 +4,7 @@ import { CollectionTracker } from '../systems/CollectionTracker';
 import { CollectionCard, COL_CARD_W, COL_CARD_H } from './CollectionCard';
 import { t } from '../data/locales';
 
-const GRID_TOP = 109;
+const GRID_TOP = 118;
 const GRID_H = GAME_HEIGHT - GRID_TOP;
 const COLS = 5;
 const GAP_X = 12;

@@ -9,7 +9,7 @@ import { showToast } from '../ui/components/Toast';
 import { createCardGrid, createMilestoneTrack, CARD_H, CARD_GAP } from '../ui/DailyBonusCards';
 
 const HEADER_H = 74;
-const TRACK_Y = 110;
+const TRACK_Y = 98;
 const GRID_TOP = 200;
 const DAY7_H = CARD_H * 2 + CARD_GAP;
 const HINT_Y = 174;
@@ -100,7 +100,7 @@ export class DailyBonusScene extends Scene {
                     }
                 }
                 wrap.disableInteractive();
-                this.time.delayedCall(1500, () => this.scene.restart());
+                this.scene.restart();
             });
             addButtonFeedback(this, wrap);
         }
