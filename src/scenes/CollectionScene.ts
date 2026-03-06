@@ -1,6 +1,5 @@
 import { Scene } from 'phaser';
 import { GAME_WIDTH, GAME_HEIGHT, UI } from '../core/config';
-import { TOTAL_PETS } from '../data/pets';
 import { COLLECTIONS } from '../data/collections';
 import { GameManager } from '../core/GameManager';
 import { Button } from '../ui/components/Button';
@@ -9,6 +8,7 @@ import { buildCollectionCards } from '../ui/CollectionCardsGrid';
 import { buildDetailView } from '../ui/CollectionDetail';
 import { t } from '../data/locales';
 import { showToast } from '../ui/components/Toast';
+import { showInterstitial } from '../platform/interstitial';
 
 type CollTab = 'collections' | 'all';
 
@@ -46,19 +46,15 @@ export class CollectionScene extends Scene {
         hdr.lineStyle(1, 0x000000, 0.3);
         hdr.lineBetween(0, 74, GAME_WIDTH, 74);
 
-        new Button(this, 68, 31, 111, 39, `\u2190 ${t('collection_back')}`, 0x444455, () => {
+        new Button(this, 68, 37, 111, 39, `\u2190 ${t('collection_back')}`, 0x444455, () => {
             this.cleanupAll();
             this.scene.start('MainScene');
         });
 
-        this.add.text(GAME_WIDTH / 2, 20, t('collection_title'), {
+        this.add.text(GAME_WIDTH / 2, 37, t('collection_title'), {
             fontFamily: UI.FONT_STROKE, fontSize: '25px', color: '#ffffff',
             stroke: '#000000', strokeThickness: UI.STROKE_MEDIUM,
         }).setOrigin(0.5);
-
-        this.add.text(GAME_WIDTH / 2, 52, t('collection_count', {
-            current: String(this.collection.size), total: String(TOTAL_PETS),
-        }), { fontFamily: UI.FONT_MAIN, fontSize: '16px', color: '#aaaaaa' }).setOrigin(0.5);
     }
 
     private createTabs(): void {
@@ -164,10 +160,11 @@ export class CollectionScene extends Scene {
         this.switchTab('collections');
     }
 
-    private handleClaim(collId: string): void {
+    private async handleClaim(collId: string): Promise<void> {
         if (this.manager.claimCollection(collId)) {
             const coll = COLLECTIONS.find(c => c.id === collId);
             if (coll) showToast(this, t('col_complete', { name: t(coll.nameKey) }), 'info');
+            await showInterstitial(this);
             this.showDetail(collId);
         }
     }

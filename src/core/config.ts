@@ -325,6 +325,10 @@ export function getDefaultNestState(): NestState {
     };
 }
 
+export const INTERSTITIAL_CONFIG = {
+    everyNRolls: 50,
+} as const;
+
 export const COIN_HUD = { w: 102, h: 36, iconSize: 38, gap: 10 };
 export const XP_HUD = { w: 192, h: 32, iconSize: 42 };
 

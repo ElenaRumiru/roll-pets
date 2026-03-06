@@ -26,6 +26,7 @@ import { PETS } from '../data/pets';
 import { COLLECTIONS } from '../data/collections';
 import { PetDef, RollResult, LevelUpData, LeaguePromotionData, RebirthData } from '../types';
 import { PlatformSDK } from '../platform/PlatformSDK';
+import { showInterstitial } from '../platform/interstitial';
 import { AudioSystem } from '../systems/AudioSystem';
 import { t } from '../data/locales';
 import { showToast } from '../ui/components/Toast';
@@ -309,12 +310,7 @@ export class MainScene extends Scene {
 
     private async handleAutorollToggle(enabled: boolean): Promise<void> {
         if (this.manager.progression.level < AUTOROLL_TOGGLE.unlockLevel) return;
-        const sdk = this.registry.get('platformSDK') as PlatformSDK | undefined;
-        if (sdk) {
-            sdk.gameplayStop();
-            try { await sdk.commercialBreak(); } catch { /* ad failed, still toggle */ }
-            sdk.gameplayStart();
-        }
+        await showInterstitial(this);
         EventBus.emit('autoroll-toggle', enabled);
     }
 
@@ -353,9 +349,7 @@ export class MainScene extends Scene {
             } else if (this.pendingRebirth) {
                 this.showRebirth();
             } else {
-                this.manager.finishRoll();
-                this.rightPanel.setRolling(false);
-                this.refreshUI();
+                this.completeRoll();
             }
         });
     }
@@ -408,9 +402,7 @@ export class MainScene extends Scene {
                 duration: 250,
             });
         }
-        this.manager.finishRoll();
-        this.rightPanel.setRolling(false);
-        this.refreshUI();
+        this.completeRoll();
     }
 
     private onLevelUp(data: LevelUpData): void {
@@ -471,9 +463,7 @@ export class MainScene extends Scene {
                 duration: 250,
             });
         }
-        this.manager.finishRoll();
-        this.rightPanel.setRolling(false);
-        this.refreshUI();
+        this.completeRoll();
     }
 
     private onRebirthTriggered(data: RebirthData): void {
@@ -502,6 +492,13 @@ export class MainScene extends Scene {
                 duration: 250,
             });
         }
+        this.completeRoll();
+    }
+
+    private async completeRoll(): Promise<void> {
+        if (this.manager.consumeInterstitialFlag()) {
+            await showInterstitial(this);
+        }
         this.manager.finishRoll();
         this.rightPanel.setRolling(false);
         this.refreshUI();
@@ -528,12 +525,7 @@ export class MainScene extends Scene {
         this.manager.claimThoughtBuff();
         showToast(this, t('toast_received', { count: 1, item: t('badge_dream') }), 'info');
         this.petThought.onClaimed();
-        const sdk = this.registry.get('platformSDK') as PlatformSDK | undefined;
-        if (sdk) {
-            sdk.gameplayStop();
-            try { await sdk.commercialBreak(); } catch { /* ad failed, buff already claimed */ }
-            sdk.gameplayStart();
-        }
+        await showInterstitial(this);
     }
 
     private onNicknameChanged(_name: string): void {

@@ -9,14 +9,15 @@ import { getEggTierConfig } from '../data/eggTiers';
 import { showCoinSpend } from '../ui/components/FloatingText';
 import { showToast } from '../ui/components/Toast';
 import { getEggNameKey } from '../data/eggs';
+import { showInterstitial } from '../platform/interstitial';
 
 const HEADER_H = 74;
 const TAB_Y = HEADER_H + 25;
 const TAB_W = 100;
 const TAB_GAP = 10;
-const TIMER_Y = HEADER_H + 72;
+const TIMER_Y = HEADER_H + 64;
 const CARDS_Y = 265;
-const BUY_BTN_Y = CARDS_Y + 130;
+const BUY_BTN_Y = CARDS_Y + 80 + 8 + 24; // card half-height(80) + gap(8) + btn half-height(24)
 
 type ShopTab = 'pets' | 'eggs';
 
@@ -156,17 +157,18 @@ export class ShopScene extends Scene {
         }
     }
 
-    private onBuy(petId: string, canAfford: boolean): void {
+    private async onBuy(petId: string, canAfford: boolean): Promise<void> {
         if (!canAfford) { showToast(this, t('shop_no_coins'), 'error'); return; }
         const offer = this.manager.shop.getOffers().find(o => o.petId === petId);
         const success = this.manager.purchasePet(petId);
         if (!success) { showToast(this, t('shop_no_coins'), 'error'); return; }
         if (offer) showCoinSpend(this, GAME_WIDTH - 100, 55, this.formatCoins(offer.price));
         this.coinText.setText(this.formatCoins(this.manager.progression.coins));
+        await showInterstitial(this);
         this.switchTab('pets');
     }
 
-    private onBuyEgg(tier: number): void {
+    private async onBuyEgg(tier: number): Promise<void> {
         const cfg = getEggTierConfig(tier);
         const success = this.manager.purchaseEgg(tier, cfg.price);
         if (!success) { showToast(this, t('shop_no_coins'), 'error'); return; }
@@ -174,6 +176,7 @@ export class ShopScene extends Scene {
         this.coinText.setText(this.formatCoins(this.manager.progression.coins));
         const nameKey = getEggNameKey(`egg_${tier}`);
         showToast(this, t('toast_received', { count: 1, item: t(nameKey) }), 'info');
+        await showInterstitial(this);
         this.switchTab('eggs');
     }
 

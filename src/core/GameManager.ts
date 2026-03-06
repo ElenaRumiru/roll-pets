@@ -1,5 +1,5 @@
 import { EventBus } from './EventBus';
-import { BUFF_CONFIG, levelUpCoinReward, LEAGUE_PROMOTION_REWARDS, NEST_CONFIG, getDefaultNestState, AUTOROLL_TOGGLE, REBIRTH_CONFIG } from './config';
+import { BUFF_CONFIG, levelUpCoinReward, LEAGUE_PROMOTION_REWARDS, NEST_CONFIG, getDefaultNestState, AUTOROLL_TOGGLE, REBIRTH_CONFIG, INTERSTITIAL_CONFIG } from './config';
 import { RNGSystem } from '../systems/RNGSystem';
 import { ProgressionSystem } from '../systems/ProgressionSystem';
 import { SaveSystem } from '../systems/SaveSystem';
@@ -33,6 +33,7 @@ export class GameManager {
     isRolling = false;
     lastRollCoinGain = 0;
     pendingRebirthData: RebirthData | null = null;
+    pendingInterstitial = false;
     private questResetTimer = 0;
     private onlineTimeAccum = 0;
 
@@ -420,6 +421,9 @@ export class GameManager {
 
         if (result) {
             data.totalRolls++;
+            if (data.totalRolls > 0 && data.totalRolls % INTERSTITIAL_CONFIG.everyNRolls === 0) {
+                this.pendingInterstitial = true;
+            }
             data.rollLog.unshift({
                 id: result.pet.id,
                 grade: result.grade,
@@ -466,6 +470,11 @@ export class GameManager {
         const collected = PETS.filter(p => this.progression.collection.has(p.id));
         if (collected.length === 0) return 2;
         return collected.reduce((a, b) => a.chance > b.chance ? a : b).chance;
+    }
+
+    consumeInterstitialFlag(): boolean {
+        if (this.pendingInterstitial) { this.pendingInterstitial = false; return true; }
+        return false;
     }
 
     getEggImageKey() { return getEggImageKey(this.progression.level); }

@@ -8,6 +8,7 @@ import { renderEmptySlot, renderIncubatingSlot, renderReadySlot, renderLockedSlo
 import { t } from '../data/locales';
 import { showCoinSpend } from '../ui/components/FloatingText';
 import { showToast } from '../ui/components/Toast';
+import { showInterstitial } from '../platform/interstitial';
 
 const HEADER_H = 74;
 const SLOT_W = 200;
@@ -129,7 +130,10 @@ export class NestsScene extends Scene {
         const eggKey = slot.eggTier ? `egg_${slot.eggTier}` : 'egg_1';
         const result = this.manager.hatchNest(slotIndex);
         if (!result) return;
-        new NestHatchOverlay(this).play(result, eggKey, () => this.refreshSlots());
+        new NestHatchOverlay(this).play(result, eggKey, async () => {
+            this.refreshSlots();
+            await showInterstitial(this);
+        });
     }
 
     private onSpeedUp(index: number): void {
