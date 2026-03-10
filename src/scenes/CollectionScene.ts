@@ -7,7 +7,6 @@ import { buildAllTab } from '../ui/CollectionAllTab';
 import { buildCollectionCards } from '../ui/CollectionCardsGrid';
 import { buildDetailView } from '../ui/CollectionDetail';
 import { t } from '../data/locales';
-import { showToast } from '../ui/components/Toast';
 import { showInterstitial } from '../platform/interstitial';
 import { createSceneHeader } from '../ui/SceneHeader';
 
@@ -149,8 +148,6 @@ export class CollectionScene extends Scene {
 
     private async handleClaim(collId: string): Promise<void> {
         if (this.manager.claimCollection(collId)) {
-            const coll = COLLECTIONS.find(c => c.id === collId);
-            if (coll) showToast(this, t('col_complete', { name: t(coll.nameKey) }), 'info');
             await showInterstitial(this);
             this.showDetail(collId);
         }

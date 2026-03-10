@@ -23,7 +23,6 @@ import { NicknamePrompt } from '../ui/NicknamePrompt';
 import { ArrowHint } from '../ui/ArrowHint';
 import { PetThought } from '../ui/PetThought';
 import { PETS } from '../data/pets';
-import { COLLECTIONS } from '../data/collections';
 import { PetDef, RollResult, LevelUpData, LeaguePromotionData, RebirthData } from '../types';
 import { PlatformSDK } from '../platform/PlatformSDK';
 import { showInterstitial } from '../platform/interstitial';
@@ -456,15 +455,7 @@ export class MainScene extends Scene {
         this.dailyBonusBtn.updateBadge(this.manager.dailyBonus.hasUnclaimedReward());
     }
 
-    private onCollectionsChanged(ev: { discovered: string[]; completed: string[] }): void {
-        for (const collId of ev.discovered) {
-            const coll = COLLECTIONS.find(c => c.id === collId);
-            if (coll) showToast(this, t('col_discovered', { name: t(coll.nameKey) }), 'info');
-        }
-        for (const collId of ev.completed) {
-            const coll = COLLECTIONS.find(c => c.id === collId);
-            if (coll) showToast(this, t('col_complete', { name: t(coll.nameKey) }), 'info');
-        }
+    private onCollectionsChanged(): void {
         if (!this.manager.isRolling) this.refreshUI();
     }
 
