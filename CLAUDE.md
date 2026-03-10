@@ -25,7 +25,7 @@ No test framework configured yet. TypeScript checking is done by Vite at build t
 
 **Communication: EventBus pattern.** Scenes and systems never call each other directly. All communication goes through a central EventEmitter (`core/EventBus.ts`). Example: Scene emits `roll-requested` → GameManager handles logic → emits `roll-complete` → Scene plays animation.
 
-**GameManager** is the central coordinator. It creates all systems and exposes high-level methods (e.g. `roll()`). Scenes access it via Phaser's registry — no global variables.
+**GameManager** is the central coordinator (thin delegator). It creates all systems, exposes high-level methods, and delegates logic to two coordinators: `RollCoordinator` (roll chain, level-up, league promo, rebirth, nest hatch) and `EconomyCoordinator` (purchases, claims, buff activation, nest operations). Scenes access GameManager via Phaser's registry — no global variables.
 
 **Composition over inheritance.** UI panels are built from small reusable components (Button, ProgressBar, FloatingText). No class inheritance chains.
 
@@ -40,7 +40,9 @@ src/
 │
 ├── core/
 │   ├── EventBus.ts                 # Central event emitter (~10 lines)
-│   ├── GameManager.ts              # Creates systems, coordinates roll() logic
+│   ├── GameManager.ts              # Thin delegator: creates systems, delegates to coordinators
+│   ├── RollCoordinator.ts          # Roll chain, level-up, league promo, rebirth, nest hatch
+│   ├── EconomyCoordinator.ts       # Purchases, claims, buff activation, nest operations
 │   └── config.ts                   # All balance constants + UI HUD configs (COIN_HUD, XP_HUD)
 │
 ├── types/index.ts                  # All interfaces (Pet, Grade, SaveData, LevelUpData, LeaguePromotionData, RebirthData, etc.)
@@ -118,7 +120,7 @@ src/
 - No `any` — strict TypeScript everywhere
 - No inheritance between game objects — composition only
 - No hardcoded UI strings — all text goes through `t('key')` from `data/locales/`
-- ~31 files, ~2500 lines total, average file ~60-80 lines
+- ~33 files, ~2500 lines total, average file ~60-80 lines
 
 **Localization:** All user-facing text is stored in `data/locales/en.ts` as key-value pairs. Scenes use `t('roll_button')` instead of `'ROLL!'`. To add a language: copy `en.ts`, translate values (AI-ready), register in `index.ts`.
 
