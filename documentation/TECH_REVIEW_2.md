@@ -67,21 +67,11 @@ Codebase: 83 files, ~13K LOC. Architecture is solid (logic/render separation, Ev
 - **Fixed:** Extracted shared utility `src/ui/components/ChoiceCard.ts` (103 lines) with `buildChoiceButton()`, `drawCardBg()`, `drawBadgeRibbon()`, and shared color/size constants (`FREE_COLOR`, `AD_COLOR`, `BTN_W`, `BTN_H`, etc.). All three overlay files now import from ChoiceCard instead of duplicating code.
 - **Files:** new `src/ui/components/ChoiceCard.ts`, `src/ui/LevelUpOverlay.ts`, `src/ui/LeaguePromotionOverlay.ts`, `src/ui/QuestClaimPopup.ts`
 
-### 2.6 Depth management: no system, collision risks
-Scattered depth values with no documented hierarchy:
-| Layer | Depth | Collision risk |
-|-------|-------|----------------|
-| CenterStage overlay | 100-103 | |
-| Autoroll UI shift | 105 | |
-| FloatingText | 200 | |
-| Toast | 300 | |
-| NestHatchOverlay | 500-503 | **Collides with overlays** |
-| LevelUp/League/Rebirth | 500-501 | **Collides with NestHatch** |
-| QuestClaim/EggSelect/Settings | 1000 | |
-| Pause | 1001 | |
-
-- **Fix:** Create `DEPTH` constant map in config.ts, assign unique non-overlapping ranges
-- **Files:** `src/core/config.ts`, 8+ UI files that use `setDepth()`
+### 2.6 ~~Depth management: no system, collision risks~~ WON'T FIX
+- ~~Scattered depth values with no documented hierarchy~~
+- ~~NestHatchOverlay (500-503) collides with LevelUp/League/Rebirth (500-501)~~
+- **Analysis:** No actual collisions. NestHatchOverlay is in **NestsScene**, LevelUp/LeaguePromo/Rebirth are in **MainScene** — Phaser scenes isolate depth, these never coexist. CollectionDetail (500) is in CollectionScene — also isolated. Within each scene, depth ranges are clean: MainScene 0→100→200→300→400→500→1000, NestsScene 0→500, CollectionScene 0→50→500.
+- **Decision:** Local `const DEPTH` per file is sufficient. Centralizing into config.ts would touch ~15 files for zero functional change.
 
 ---
 
