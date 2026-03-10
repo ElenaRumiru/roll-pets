@@ -10,7 +10,7 @@ CTO-level audit. Project is structurally sound — issues below are about scalab
 - `dist/assets/ui/` = 39 MB — UI PNGs are 2048x2048, displayed at 30-100px
 - `dist/assets/eggs/` = 26 MB — 17 egg PNGs at 1024x1024, displayed at max 296px
 - `dist/assets/pets/` = 8.4 MB — 187 pet sprites
-- Fix: pre-build resize script (2x max display size), PNG optimize / WebP convert
+- Fix: pre-build resize script (2x max display size), PNG optimize / WebP convert (Already Done)
 - Also: lazy loading for non-MainScene assets (backgrounds, grade SFX, collection icons)
 
 ### 2. PokiAdapter missing
@@ -23,7 +23,7 @@ CTO-level audit. Project is structurally sound — issues below are about scalab
 const coinsGained = pet.chance;  // Legendary = 750,000,000 coins per roll
 ```
 CLAUDE.md says "New Legendary = 10K coins". Either this is a placeholder or a bug. Verify against the balance spreadsheet.
-
+No Owner said thats good. You mast change only documentation.
 ---
 
 ## HIGH Priority

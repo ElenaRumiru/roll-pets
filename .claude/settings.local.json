@@ -80,7 +80,13 @@
       "Bash(node:*)",
       "Bash(npx vite:*)",
       "Bash(git status:*)",
-      "Bash(grep:*)"
+      "Bash(grep:*)",
+      "Bash(wc:*)",
+      "Bash(du:*)",
+      "Bash(for f:*)",
+      "Bash(do echo:*)",
+      "Read(//c/Users/ilyar/Desktop/PETS WEB/**)",
+      "Bash(done)"
     ]
   }
 }
