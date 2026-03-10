@@ -5,10 +5,8 @@ import { EggSelectPopup, EggOption } from '../ui/EggSelectPopup';
 import { NestHatchOverlay } from '../ui/NestHatchOverlay';
 import { renderEmptySlot, renderIncubatingSlot, renderReadySlot, renderLockedSlot, SlotLayout } from '../ui/NestSlotCard';
 import { t } from '../data/locales';
-import { showCoinSpend } from '../ui/components/FloatingText';
 import { showToast } from '../ui/components/Toast';
 import { showInterstitial } from '../platform/interstitial';
-import { formatCoins } from '../core/formatCoins';
 import { createSceneHeader } from '../ui/SceneHeader';
 import { CoinDisplay } from '../ui/CoinDisplay';
 
@@ -133,7 +131,7 @@ export class NestsScene extends Scene {
     private onBuySlot(index: number): void {
         const price = NEST_CONFIG.slotPrices[index] ?? 0;
         if (this.manager.unlockNestSlot(index)) {
-            showCoinSpend(this, GAME_WIDTH - 100, 55, formatCoins(price));
+            this.coinDisplay?.showFloatingSpend(price, this);
             this.refreshSlots();
         } else {
             showToast(this, t('nests_no_coins'), 'error');

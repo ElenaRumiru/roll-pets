@@ -6,11 +6,9 @@ import { buildPetCards } from '../ui/ShopPetsTab';
 import { buildEggCards, EggTabResult } from '../ui/ShopEggsTab';
 import { t } from '../data/locales';
 import { getEggTierConfig } from '../data/eggTiers';
-import { showCoinSpend } from '../ui/components/FloatingText';
 import { showToast } from '../ui/components/Toast';
 import { getEggNameKey } from '../data/eggs';
 import { showInterstitial } from '../platform/interstitial';
-import { formatCoins } from '../core/formatCoins';
 import { createSceneHeader } from '../ui/SceneHeader';
 import { CoinDisplay } from '../ui/CoinDisplay';
 
@@ -149,7 +147,7 @@ export class ShopScene extends Scene {
         const offer = this.manager.shop.getOffers().find(o => o.petId === petId);
         const success = this.manager.purchasePet(petId);
         if (!success) { showToast(this, t('shop_no_coins'), 'error'); return; }
-        if (offer) showCoinSpend(this, GAME_WIDTH - 100, 55, formatCoins(offer.price));
+        if (offer) this.coinDisplay?.showFloatingSpend(offer.price, this);
         this.coinDisplay?.updateCoins(this.manager.progression.coins);
         await showInterstitial(this);
         this.switchTab('pets');
@@ -159,7 +157,7 @@ export class ShopScene extends Scene {
         const cfg = getEggTierConfig(tier);
         const success = this.manager.purchaseEgg(tier, cfg.price);
         if (!success) { showToast(this, t('shop_no_coins'), 'error'); return; }
-        showCoinSpend(this, GAME_WIDTH - 100, 55, formatCoins(cfg.price));
+        this.coinDisplay?.showFloatingSpend(cfg.price, this);
         this.coinDisplay?.updateCoins(this.manager.progression.coins);
         const nameKey = getEggNameKey(`egg_${tier}`);
         showToast(this, t('toast_received', { count: 1, item: t(nameKey) }), 'info');

@@ -59,13 +59,54 @@ export class CoinDisplay extends GameObjects.Container {
             [icon, txt],
         ).setDepth(this.depth + 1);
 
+        const labelWorldY = HUD_Y + COIN_HUD.h / 2;
         scene.tweens.add({
             targets: container,
-            y: container.y - 30,
+            y: labelWorldY,
+            alpha: 0,
+            duration: 500,
+            ease: 'Power2',
+            onComplete: () => { container.destroy(); this.pulse(); },
+        });
+    }
+
+    showFloatingSpend(amount: number, scene: Scene): void {
+        if (amount <= 0) return;
+        const icon = scene.add.image(0, 0, 'ui_coin_sm').setDisplaySize(15, 15);
+        const txt = scene.add.text(11, 0, `-${this.formatNumber(amount)}`, {
+            fontFamily: UI.FONT_STROKE,
+            fontSize: '14px',
+            color: '#ff4444',
+            stroke: '#000000',
+            strokeThickness: 2,
+        }).setOrigin(0, 0.5);
+
+        const container = scene.add.container(
+            HUD_X + COIN_HUD.w / 2,
+            HUD_Y + COIN_HUD.h + 2,
+            [icon, txt],
+        ).setDepth(this.depth + 1);
+
+        this.pulse();
+
+        scene.tweens.add({
+            targets: container,
+            y: container.y + 30,
             alpha: 0,
             duration: 800,
             ease: 'Power2',
             onComplete: () => container.destroy(),
+        });
+    }
+
+    private pulse(): void {
+        this.scene.tweens.add({
+            targets: this.label,
+            scaleX: 1.15,
+            scaleY: 1.15,
+            duration: 120,
+            yoyo: true,
+            ease: 'Quad.easeOut',
         });
     }
 

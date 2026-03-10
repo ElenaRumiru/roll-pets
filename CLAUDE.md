@@ -81,7 +81,7 @@ src/
 │
 ├── ui/
 │   ├── TopBar.ts                   # Shield icon with level number + blue XP bar (top-left, clickable → ProgressionScene)
-│   ├── CoinDisplay.ts             # Coin HUD (top-right, left of settings)
+│   ├── CoinDisplay.ts             # Coin HUD (top-right) + floating gain/spend animations + label pulse
 │   ├── SettingsButton.ts          # Settings icon image (top-right)
 │   ├── CollectionButton.ts        # Collection count (bottom-left)
 │   ├── ShopButton.ts              # Shop entry (bottom-right, aligned with bonus/quest panels)
@@ -105,7 +105,7 @@ src/
 │   └── components/
 │       ├── Button.ts               # Reusable button with tween
 │       ├── ProgressBar.ts          # Reusable progress bar
-│       ├── FloatingText.ts         # "+25 XP" floating text
+│       ├── FloatingText.ts         # "+25 XP" floating text (XP only; coin animations are in CoinDisplay)
 │       ├── fitText.ts              # Auto-shrink text to fit max width
 │       ├── buttonFeedback.ts       # Press/release scale tween for buttons
 │       └── shineEffect.ts         # Diagonal shine sweep for CLAIM/WATCH buttons
@@ -146,6 +146,10 @@ src/
 ## Security
 
 **Ad reward pattern:** All `showRewardedBreak()` call sites follow the same pattern: `if (sdk) { sdk.showRewardedBreak().then(...) } else { /* no-op or FREE reward only */ }`. When SDK is missing, NEVER grant ad-tier rewards — either do nothing (buffs, boost, shop refresh) or grant only the FREE amount (coins, quest rewards). 7 call sites: `MainScene.ts` (buffs, level-up coins, league promo coins, quest popup), `QuestScene.ts` (quest WATCH button), `NestsScene.ts` (incubation boost), `ShopScene.ts` (shop refresh).
+
+**Save immutability:** `getData()` returns `DeepReadonly<SaveData>` — direct mutations cause TypeScript errors. All writes go through `update(fn)` which grants temporary mutable access and auto-saves. Two patterns:
+- **Standalone mutation:** `save.update(data => { data.settings.music = on; })` — used in SettingsPanel
+- **Coordinated mutation:** `save.update(...)` followed by `persistSave()` — used in GameManager, RollCoordinator, EconomyCoordinator where multiple systems sync state atomically
 
 **Save integrity:** `SaveSystem.ts` wraps save data in `{data, hash}` envelope. Hash is FNV-1a with embedded salt. On load: if hash doesn't match → reset to defaults. Legacy saves (without hash) are accepted once and re-saved with hash. Salt in `HASH_SALT` constant — obfuscated in minified build.
 
@@ -200,7 +204,7 @@ When official docs are not enough, **search the wider internet**: Reddit, YouTub
 
 **Eggs:** Dynamic filter via `getEggFilterForLevel(level)` — each visual tier (1–17) removes one common pet from the pool. Tiers spread across 1000 levels: `[1, 15, 35, 60, 90, 125, 170, 225, 290, 365, 450, 545, 640, 735, 830, 910, 975]`. XP curve: sigmoid `XP_FLOOR + XP_SCALE * l² / (l² + XP_KNEE²)` (20–1050 range, knee at level 20). New pet = +25% XP bar, duplicate = +0.5-10% based on grade.
 
-**Coin economy:** Each roll awards coins based on grade. New pets: Common 5, Uncommon 10, Extra 25, Rare 50, Superior 100, Elite 250, Epic 500, Heroic 1K, Mythic 2.5K, Ancient 5K, Legendary 10K. Duplicates: ~10-20% of new (Common 1 → Legendary 1K). Coins persist in save, displayed via `CoinDisplay` HUD (top-right). Roll overlay shows EXP + coin rewards on one line with icons.
+**Coin economy:** Each roll awards coins based on grade. New pets: Common 5, Uncommon 10, Extra 25, Rare 50, Superior 100, Elite 250, Epic 500, Heroic 1K, Mythic 2.5K, Ancient 5K, Legendary 10K. Duplicates: ~10-20% of new (Common 1 → Legendary 1K). Coins persist in save, displayed via `CoinDisplay` HUD (top-right). Roll overlay shows EXP + coin rewards on one line with icons. Coin animations are centralized in `CoinDisplay`: `showFloatingGain()` (gold `#ffc107`, coin icon + `+N`, floats UP to label, 500ms, pulse on arrive) and `showFloatingSpend()` (red `#ff4444`, coin icon + `-N`, floats DOWN, 800ms, pulse immediately). Both use `ui_coin_sm` 15×15, `UI.FONT_STROKE` 14px, start below the HUD pill. Label `pulse()` = 1.15× scale bump, 120ms yoyo.
 
 **Level-up overlay:** Three variants triggered on level-up. Config in `LEVELUP_CONFIG`.
 - **Feature unlock variant** (`featureUnlock !== undefined`): double gold ring with level number, "New feature unlocked!" subtitle, 2x-sized feature icon centered between subtitle and name, feature name in gold, description in same style as egg effect line, "Tap to close (N)" countdown (5s). Triggers for Auto Roll at level 3 (`AUTOROLL_TOGGLE.unlockLevel`) and Incubation at level 5 (`NEST_CONFIG.unlockLevel`). Features configured via `FEATURE_INFO` lookup map (iconKey, nameKey, descKey).

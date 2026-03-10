@@ -17,10 +17,10 @@ const COOLDOWN_MS = 1000;
 const DISPLAY_MS = 1050;
 const FADE_MS = 500;
 const SLOT_H = 40;
-const BASE_Y = 25;
+const BASE_Y = GAME_HEIGHT / 2;
 
 const COLOR: Record<ToastType, string> = {
-    info: '#ffffff',
+    info: '#FEBF07',
     error: '#ff6666',
 };
 
@@ -56,7 +56,7 @@ function displayToast(scene: Scene, message: string, type: ToastType): void {
 
     const text = scene.add.text(GAME_WIDTH / 2, y, message, {
         fontFamily: UI.FONT_STROKE,
-        fontSize: '20px',
+        fontSize: '14px',
         color: COLOR[type],
         stroke: '#000000',
         strokeThickness: UI.STROKE_MEDIUM,
