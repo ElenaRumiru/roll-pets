@@ -53,26 +53,19 @@ Codebase: 83 files, ~13K LOC. Architecture is solid (logic/render separation, Ev
 - **Fixed:** `getData()` returns `DeepReadonly<SaveData>` (compile-time protection). New `update(fn)` method grants temporary mutable access + auto-saves. All 10 mutation sites migrated.
 - **Files:** `src/systems/SaveSystem.ts`, `src/core/GameManager.ts`, `src/core/RollCoordinator.ts`, `src/core/EconomyCoordinator.ts`, `src/ui/SettingsPanel.ts`
 
-### 2.4 EventBus is fully untyped
-- `EventBus.emit('roll-complete', result)` — result is `any`
-- Typo in event name = silent failure at runtime, zero compile-time help
-- 13+ events across the codebase, all string-keyed
-- **Fix:** Create typed event map + wrapper:
-  ```ts
-  interface GameEvents {
-    'roll-complete': [RollResult];
-    'level-up': [LevelUpData];
-    // ...
-  }
-  ```
-- **Files:** `src/core/EventBus.ts`, all emitters/listeners (~15 files)
+### 2.4 ~~EventBus is fully untyped~~ ✅ DONE
+- ~~`EventBus.emit('roll-complete', result)` — result is `any`~~
+- ~~Typo in event name = silent failure at runtime, zero compile-time help~~
+- ~~13+ events across the codebase, all string-keyed~~
+- **Fixed:** Created `GameEventMap` interface (22 events) + `TypedEventEmitter` facade. Wraps Phaser's `Events.EventEmitter` with compile-time type safety for `emit()`, `on()`, `off()`, `once()`. Zero runtime cost — same EventEmitter underneath, only the TypeScript types change. All 15+ emitter/listener sites now get autocomplete and payload type checking.
+- **Files:** `src/core/EventBus.ts` (4→43 lines), all emitters/listeners (~15 files)
 
-### 2.5 Overlay code duplication (~60 lines x3)
-- `LevelUpOverlay`, `LeaguePromotionOverlay`, `QuestClaimPopup` have **identical** `buildChoiceCard()` code
-- Same card background, button styling, shine effects, fitText calls
-- Bug fix = apply in 3 places
-- **Fix:** Extract `buildChoiceCard()` utility to `src/ui/components/ChoiceCardBuilder.ts`
-- **Files:** `src/ui/LevelUpOverlay.ts` (405 lines), `src/ui/LeaguePromotionOverlay.ts` (229 lines), `src/ui/QuestClaimPopup.ts`
+### 2.5 ~~Overlay code duplication (~60 lines x3)~~ ✅ DONE
+- ~~`LevelUpOverlay`, `LeaguePromotionOverlay`, `QuestClaimPopup` have **identical** `buildChoiceCard()` code~~
+- ~~Same card background, button styling, shine effects, fitText calls~~
+- ~~Bug fix = apply in 3 places~~
+- **Fixed:** Extracted shared utility `src/ui/components/ChoiceCard.ts` (103 lines) with `buildChoiceButton()`, `drawCardBg()`, `drawBadgeRibbon()`, and shared color/size constants (`FREE_COLOR`, `AD_COLOR`, `BTN_W`, `BTN_H`, etc.). All three overlay files now import from ChoiceCard instead of duplicating code.
+- **Files:** new `src/ui/components/ChoiceCard.ts`, `src/ui/LevelUpOverlay.ts`, `src/ui/LeaguePromotionOverlay.ts`, `src/ui/QuestClaimPopup.ts`
 
 ### 2.6 Depth management: no system, collision risks
 Scattered depth values with no documented hierarchy:
@@ -278,3 +271,22 @@ After each change:
 - 20 migration steps (v2→v21, ~130 lines) are dead code — no real players have old saves
 - Scheduled as last step before Poki submission
 - **File:** `TECH_REVIEW_2.md`
+
+### 2026-03-10 — Typed EventBus (2.4)
+
+**Fix: EventBus is fully untyped**
+- Added `GameEventMap` interface with 22 typed events in `src/core/EventBus.ts`
+- Created `TypedEventEmitter` facade: typed `emit()`, `on()`, `off()`, `once()` over Phaser's `Events.EventEmitter`
+- Zero runtime cost — same EventEmitter underneath, only compile-time types added
+- All ~15 emitter/listener files now get autocomplete + payload type checking
+- Event typos and wrong payloads now caught at compile time
+- **Files:** `src/core/EventBus.ts` (4→43 lines)
+
+### 2026-03-10 — ChoiceCard shared utility (2.5)
+
+**Fix: Overlay code duplication (~60 lines x3)**
+- Extracted `src/ui/components/ChoiceCard.ts` (103 lines) from duplicated code in LevelUpOverlay, LeaguePromotionOverlay, QuestClaimPopup
+- Exports: `buildChoiceButton()` (pill button with shadow, highlight, shine, feedback), `drawCardBg()` (rounded rect card), `drawBadgeRibbon()` (+300% ribbon)
+- Shared constants: `FREE_COLOR/AD_COLOR/FREE_DARK/AD_DARK`, `BTN_W=111/BTN_H=35/BTN_R/BTN_SHADOW`
+- All three overlay files refactored to import from ChoiceCard
+- **Files:** new `src/ui/components/ChoiceCard.ts`, `src/ui/LevelUpOverlay.ts`, `src/ui/LeaguePromotionOverlay.ts`, `src/ui/QuestClaimPopup.ts`

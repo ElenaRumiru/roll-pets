@@ -39,7 +39,7 @@ src/
 ├── game/main.ts                    # Phaser config & scene registration
 │
 ├── core/
-│   ├── EventBus.ts                 # Central event emitter (~10 lines)
+│   ├── EventBus.ts                 # Typed event emitter (GameEventMap + TypedEventEmitter facade)
 │   ├── GameManager.ts              # Thin delegator: creates systems, delegates to coordinators
 │   ├── RollCoordinator.ts          # Roll chain, level-up, league promo, rebirth, nest hatch
 │   ├── EconomyCoordinator.ts       # Purchases, claims, buff activation, nest operations
@@ -107,6 +107,7 @@ src/
 │       ├── ProgressBar.ts          # Reusable progress bar
 │       ├── FloatingText.ts         # "+25 XP" floating text (XP only; coin animations are in CoinDisplay)
 │       ├── fitText.ts              # Auto-shrink text to fit max width
+│       ├── ChoiceCard.ts           # Shared choice card: buildChoiceButton(), drawCardBg(), drawBadgeRibbon()
 │       ├── buttonFeedback.ts       # Press/release scale tween for buttons
 │       └── shineEffect.ts         # Diagonal shine sweep for CLAIM/WATCH buttons
 │

@@ -1,8 +1,11 @@
 import { GameObjects, Scene } from 'phaser';
 import { UI, GAME_WIDTH, GAME_HEIGHT, BUFF_CONFIG, QuestStepReward } from '../core/config';
 import { t } from '../data/locales';
-import { addButtonFeedback } from './components/buttonFeedback';
 import { fitText } from './components/fitText';
+import {
+    FREE_COLOR, FREE_DARK, AD_COLOR, AD_DARK, BTN_H,
+    drawCardBg, buildChoiceButton,
+} from './components/ChoiceCard';
 
 const POPUP_W = 345;
 const POPUP_H = 210;
@@ -10,15 +13,6 @@ const CARD_W = 136;
 const CARD_H = 138;
 const CARD_GAP = 20;
 const CARD_R = 12;
-const BTN_W = 111;
-const BTN_H = 35;
-const BTN_R = BTN_H / 2;
-const BTN_SHADOW = 2;
-
-const FREE_COLOR = 0x78C828;
-const FREE_DARK = 0x4E8A18;
-const AD_COLOR = 0x7B2FBE;
-const AD_DARK = 0x4A1A72;
 
 export class QuestClaimPopup {
     private container: GameObjects.Container;
@@ -100,63 +94,28 @@ export class QuestClaimPopup {
         btnColor: number, btnDark: number, btnLabel: string,
         onClick: () => void,
     ): void {
-        // Card background
-        const cardBg = scene.add.graphics();
-        cardBg.fillStyle(0x1a1a2e, 0.9);
-        cardBg.fillRoundedRect(cx - CARD_W / 2, topY, CARD_W, CARD_H, CARD_R);
-        cardBg.lineStyle(1.5, 0x333355, 0.5);
-        cardBg.strokeRoundedRect(cx - CARD_W / 2, topY, CARD_W, CARD_H, CARD_R);
-        this.container.add(cardBg);
+        drawCardBg(scene, this.container, cx, topY, CARD_W, CARD_H, CARD_R);
 
-        // Line 1: "{count} Lucky Rolls" — white, uses buff_lucky/buff_super locale
-        const line1 = t(`buff_${buffKey}`, { count });
+        // Line 1: "{count} Lucky Rolls"
         const line1Y = topY + 30;
-        const countLabel = scene.add.text(cx, line1Y, line1, {
+        const countLabel = scene.add.text(cx, line1Y, t(`buff_${buffKey}`, { count }), {
             fontFamily: UI.FONT_STROKE, fontSize: '16px', color: '#ffffff',
             stroke: '#000000', strokeThickness: UI.STROKE_THIN,
         }).setOrigin(0.5);
         fitText(countLabel, CARD_W - 10, 16);
         this.container.add(countLabel);
 
-        // Line 2: "x2 chance" — colored, like buff description
-        const line2Y = line1Y + 22;
-        const descLabel = scene.add.text(cx, line2Y, t(descKey), {
+        // Line 2: "x2 chance"
+        const descLabel = scene.add.text(cx, line1Y + 22, t(descKey), {
             fontFamily: UI.FONT_STROKE, fontSize: '14px', color: descColor,
             stroke: '#000000', strokeThickness: 1,
         }).setOrigin(0.5);
         this.container.add(descLabel);
 
-        // Action button at bottom of card
-        const btnY = topY + CARD_H - BTN_H / 2 - 10;
-        const btnWrap = scene.add.container(cx, btnY);
-        this.container.add(btnWrap);
-
-        const bg = scene.add.graphics();
-        bg.fillStyle(btnDark, 1);
-        bg.fillRoundedRect(-BTN_W / 2, -BTN_H / 2 + BTN_SHADOW, BTN_W, BTN_H, BTN_R);
-        bg.fillStyle(btnColor, 1);
-        bg.fillRoundedRect(-BTN_W / 2, -BTN_H / 2, BTN_W, BTN_H - BTN_SHADOW, BTN_R);
-        bg.fillStyle(0xffffff, 0.15);
-        bg.fillRoundedRect(
-            -BTN_W / 2 + 3, -BTN_H / 2 + 1,
-            BTN_W - 6, (BTN_H - BTN_SHADOW) * 0.4,
-            { tl: BTN_R - 1, tr: BTN_R - 1, bl: 0, br: 0 },
-        );
-        bg.lineStyle(1.5, 0x000000, 0.25);
-        bg.strokeRoundedRect(-BTN_W / 2, -BTN_H / 2, BTN_W, BTN_H, BTN_R);
-        btnWrap.add(bg);
-
-        const btnText = scene.add.text(0, -1, btnLabel, {
-            fontFamily: UI.FONT_STROKE, fontSize: '13px', color: '#ffffff',
-            stroke: '#000000', strokeThickness: 2,
-        }).setOrigin(0.5);
-        fitText(btnText, BTN_W - 10, 13);
-        btnWrap.add(btnText);
-
-        btnWrap.setSize(BTN_W, BTN_H + BTN_SHADOW);
-        btnWrap.setInteractive({ useHandCursor: true });
-        btnWrap.on('pointerdown', onClick);
-        addButtonFeedback(scene, btnWrap);
+        buildChoiceButton(scene, this.container, cx, topY + CARD_H - BTN_H / 2 - 10, {
+            color: btnColor, dark: btnDark, label: btnLabel, onClick,
+            shine: false, fontSize: 13, strokeThickness: 2,
+        });
     }
 
     /** Close popup without claiming — CLAIM button stays active */
