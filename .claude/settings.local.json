@@ -86,7 +86,8 @@
       "Bash(for f:*)",
       "Bash(do echo:*)",
       "Read(//c/Users/ilyar/Desktop/PETS WEB/**)",
-      "Bash(done)"
+      "Bash(done)",
+      "Bash(cd \"/c/Users/ilyar/Desktop/PETS WEB\" && npm run build 2>&1 | grep -i error; echo \"exit: $?\")"
     ]
   }
 }
