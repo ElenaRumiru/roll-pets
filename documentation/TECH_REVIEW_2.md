@@ -46,12 +46,12 @@ Codebase: 83 files, ~13K LOC. Architecture is solid (logic/render separation, Ev
 - `refreshUI()` called on every event, updates all 12+ panels even if only 1 data point changed — no batching
 - **Files:** `src/scenes/MainScene.ts` (676→624), new `src/ui/OverlayQueue.ts`
 
-### 2.3 SaveSystem.getData() returns mutable reference
-- Any code can directly mutate save data without triggering save/validation
-- GameManager calls `persistSave()` explicitly — implicit contract, not enforced
-- If a developer forgets `persistSave()`, data drifts from localStorage
-- **Fix:** Route all mutations through SaveSystem methods, or return frozen copies
-- **Files:** `src/systems/SaveSystem.ts`, `src/core/GameManager.ts`
+### 2.3 ~~SaveSystem.getData() returns mutable reference~~ ✅ DONE
+- ~~Any code can directly mutate save data without triggering save/validation~~
+- ~~GameManager calls `persistSave()` explicitly — implicit contract, not enforced~~
+- ~~If a developer forgets `persistSave()`, data drifts from localStorage~~
+- **Fixed:** `getData()` returns `DeepReadonly<SaveData>` (compile-time protection). New `update(fn)` method grants temporary mutable access + auto-saves. All 10 mutation sites migrated.
+- **Files:** `src/systems/SaveSystem.ts`, `src/core/GameManager.ts`, `src/core/RollCoordinator.ts`, `src/core/EconomyCoordinator.ts`, `src/ui/SettingsPanel.ts`
 
 ### 2.4 EventBus is fully untyped
 - `EventBus.emit('roll-complete', result)` — result is `any`
@@ -163,7 +163,20 @@ if (sdk) { sdk.showRewardedBreak().then(...) }
 - Poki players lose progress on device switch
 - **Fix (future):** `ISaveProvider` with `LocalStorageProvider` + `ServerProvider`
 
-### 4.5 MainScene depth update on every frame during autoroll
+### 4.5 Pre-launch: strip dev-era save migrations
+- `SaveSystem.ts` has 20 migration steps (v2→v21, ~130 lines) accumulated during development
+- No real player has saves older than the launch version — all migrations are dead code
+- Dead migrations add confusion for future devs and bloat a critical file (290 lines)
+- **Fix (before first publish):**
+  1. Delete entire `migrate()` function
+  2. In `load()`: if `parsed.version !== CURRENT_VERSION` → reset to `getDefaults()` (treat outdated save as corrupted)
+  3. Keep `patchDefaults()` as safety net for partial field corruption
+  4. Set `CURRENT_VERSION` to 1 (clean start for production)
+  5. Future migrations start from v1→v2 with real player data in mind
+- **Timing:** Do this as the very last step before Poki submission — after all other save-format changes are finalized. Any change that bumps save version (new fields, restructuring) should land first.
+- **Files:** `src/systems/SaveSystem.ts`
+
+### 4.6 MainScene depth update on every frame during autoroll
 ```ts
 if (autoActive && !this.wasAutorollActive) {
   this.setUIDepth(105); // called per frame, not just on state change
@@ -179,7 +192,7 @@ if (autoActive && !this.wasAutorollActive) {
 - **EventBus** — 4 lines, proper decoupling, no over-engineering.
 - **Config-driven balance** — all numbers in config.ts, not scattered in logic.
 - **Compact codebase** — 83 files, ~13K lines for a full game with 9 scenes.
-- **Save migrations** (v2→v21) — mature, no progress loss on updates.
+- **Save migrations** (v2→v21) — mature pattern, to be stripped before launch (see 4.5).
 - **Composition over inheritance** — zero class hierarchies.
 - **Localization** — all strings through `t('key')`, two languages shipped.
 - **Security** — checksum on saves, delta capping, reward validation, level guards.
@@ -195,7 +208,8 @@ if (autoActive && !this.wasAutorollActive) {
 **Phase 1 (Blockers):** 1.1 → 1.2 → 1.3
 **Phase 2 (Architecture):** 2.5 → 2.6 → 2.4 → 2.1 → 2.2 → 2.3
 **Phase 3 (Quality):** 3.1 → 3.3 → 3.4 → 3.5 → 3.6 → 3.2
-**Phase 4 (Polish):** 4.1 → 4.5 → 4.2 → 4.3 → 4.4
+**Phase 4 (Polish):** 4.1 → 4.6 → 4.2 → 4.3 → 4.4
+**Pre-launch (last step):** 4.5
 
 Start with low-risk high-value items (overlay dedup, depth system, typed events) before touching core architecture (GameManager split, OverlayQueue).
 
@@ -245,3 +259,22 @@ After each change:
 - `onRollComplete` simplified: after hatch → `overlayQueue.start()` → queue drains → cleanup
 - Zero changes to overlay classes, CenterStage, GameManager, or EventBus
 - MainScene: 676→624 lines (-52)
+
+### 2026-03-10 — SaveSystem immutability (2.3)
+
+**Fix: `getData()` returns mutable reference**
+- Added `DeepReadonly<T>` recursive type to `SaveSystem.ts` — compile-time protection, zero runtime cost
+- `getData()` now returns `DeepReadonly<SaveData>` — direct mutations cause TypeScript errors
+- Added `update(fn: (data: SaveData) => void)` — grants temporary mutable access + auto-saves
+- All 10 mutation sites migrated to `update()`:
+  - `GameManager.persistSave()` — bulk sync wrapped in `save.update()`
+  - `RollCoordinator.performRebirth()` — `rebirthCount++` via `save.update()`
+  - `EconomyCoordinator` (3 sites) — `eggInventory` mutations via `save.update()`
+  - `SettingsPanel` (5 sites) — settings mutations via `save.update()`, removed manual `save()` calls
+- Read-only consumers unchanged (BootScene, MainScene, CollectionScene, GameManager getters)
+- **Files:** `SaveSystem.ts`, `GameManager.ts`, `RollCoordinator.ts`, `EconomyCoordinator.ts`, `SettingsPanel.ts`
+
+**Added pre-launch task 4.5: strip dev-era save migrations**
+- 20 migration steps (v2→v21, ~130 lines) are dead code — no real players have old saves
+- Scheduled as last step before Poki submission
+- **File:** `TECH_REVIEW_2.md`

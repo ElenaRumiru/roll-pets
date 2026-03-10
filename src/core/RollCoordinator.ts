@@ -120,10 +120,10 @@ export class RollCoordinator {
     }
 
     performRebirth(): void {
-        const data = this.deps.save.getData();
-        data.rebirthCount++;
+        let newCount = 0;
+        this.deps.save.update(data => { data.rebirthCount++; newCount = data.rebirthCount; });
         this.deps.onRebirthReset();
-        this.deps.buffs.setRebirthMultiplier(1 + data.rebirthCount);
+        this.deps.buffs.setRebirthMultiplier(1 + newCount);
         this.deps.buffs.setAutorollEnabled(false);
         this.deps.buffs.stopAutoroll();
         EventBus.emit('buffs-changed');

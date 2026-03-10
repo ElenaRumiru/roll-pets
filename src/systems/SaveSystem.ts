@@ -8,6 +8,11 @@ const HASH_SALT = 'pG!7kQ#xR2';
 
 const VALID_PET_IDS = new Set(PETS.map(p => p.id));
 
+export type DeepReadonly<T> =
+    T extends (infer U)[] ? readonly DeepReadonly<U>[]
+    : T extends object ? { readonly [K in keyof T]: DeepReadonly<T[K]> }
+    : T;
+
 function computeHash(json: string): string {
     let h = 0x811c9dc5;
     const s = HASH_SALT + json;
@@ -249,8 +254,13 @@ export class SaveSystem {
         } catch { /* silently fail */ }
     }
 
-    getData(): SaveData {
+    getData(): DeepReadonly<SaveData> {
         return this.data;
+    }
+
+    update(fn: (data: SaveData) => void): void {
+        fn(this.data);
+        this.save();
     }
 
     getNickname(): string {

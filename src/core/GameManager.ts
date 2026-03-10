@@ -170,30 +170,29 @@ export class GameManager {
     }
 
     private persistSave(result?: RollResult): void {
-        const data = this.save.getData();
-        data.level = this.progression.level;
-        data.xp = this.progression.xp;
-        data.coins = this.progression.coins;
-        data.collection = this.progression.getCollectionArray();
-        data.buffs = this.buffs.toSave();
-        data.quests = this.quests.toSave();
-        data.shop = this.shop.toSave();
-        data.dailyBonus = this.dailyBonus.toSave();
-        data.nests = this.nests.toSave();
-        data.collectionsClaimed = this.collectionTracker.toSaveClaimed();
-        data.collectionsSeenPets = this.collectionTracker.toSaveSeenPets();
+        this.save.update(data => {
+            data.level = this.progression.level;
+            data.xp = this.progression.xp;
+            data.coins = this.progression.coins;
+            data.collection = this.progression.getCollectionArray();
+            data.buffs = this.buffs.toSave();
+            data.quests = this.quests.toSave();
+            data.shop = this.shop.toSave();
+            data.dailyBonus = this.dailyBonus.toSave();
+            data.nests = this.nests.toSave();
+            data.collectionsClaimed = this.collectionTracker.toSaveClaimed();
+            data.collectionsSeenPets = this.collectionTracker.toSaveSeenPets();
 
-        if (result) {
-            data.totalRolls++;
-            if (data.totalRolls > 0 && data.totalRolls % INTERSTITIAL_CONFIG.everyNRolls === 0) {
-                this.rollCoord.pendingInterstitial = true;
+            if (result) {
+                data.totalRolls++;
+                if (data.totalRolls > 0 && data.totalRolls % INTERSTITIAL_CONFIG.everyNRolls === 0) {
+                    this.rollCoord.pendingInterstitial = true;
+                }
+                data.rollLog.unshift({
+                    id: result.pet.id, grade: result.grade, isNew: result.isNew, xp: result.xpGained,
+                });
+                if (data.rollLog.length > 20) data.rollLog.length = 20;
             }
-            data.rollLog.unshift({
-                id: result.pet.id, grade: result.grade, isNew: result.isNew, xp: result.xpGained,
-            });
-            if (data.rollLog.length > 20) data.rollLog.length = 20;
-        }
-
-        this.save.save();
+        });
     }
 }

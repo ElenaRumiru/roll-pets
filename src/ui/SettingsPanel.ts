@@ -112,8 +112,7 @@ export class SettingsPanel extends GameObjects.Container {
             this.audio.setMusicOn(on);
             this.musicToggle.setText(on ? t('sound_on') : t('sound_off'));
             this.musicToggle.setColor(on ? '#00ff88' : '#ff5555');
-            this.save.getData().settings.music = on;
-            this.save.save();
+            this.save.update(data => { data.settings.music = on; });
         });
         this.add(this.musicToggle);
     }
@@ -137,8 +136,7 @@ export class SettingsPanel extends GameObjects.Container {
             this.audio.setSfxOn(on);
             this.sfxToggle.setText(on ? t('sound_on') : t('sound_off'));
             this.sfxToggle.setColor(on ? '#00ff88' : '#ff5555');
-            this.save.getData().settings.sfx = on;
-            this.save.save();
+            this.save.update(data => { data.settings.sfx = on; });
         });
         this.add(this.sfxToggle);
     }
@@ -270,8 +268,7 @@ export class SettingsPanel extends GameObjects.Container {
                 this.closeLangDropdown();
                 if (lang === getLanguage()) return;
                 setLanguage(lang);
-                this.save.getData().settings.language = lang;
-                this.save.save();
+                this.save.update(data => { data.settings.language = lang; });
                 this.scene.registry.set('openSettings', true);
                 this.scene.scene.start('MainScene');
             });
@@ -354,14 +351,13 @@ export class SettingsPanel extends GameObjects.Container {
             const vol = Math.max(0, Math.min(1, (pointerX - sliderStartX) / sliderW));
             if (type === 'music') {
                 this.audio.setVolume(vol);
-                this.save.getData().settings.volume = vol;
+                this.save.update(data => { data.settings.volume = vol; });
             } else {
                 this.audio.setSfxVolume(vol);
-                this.save.getData().settings.sfxVolume = vol;
+                this.save.update(data => { data.settings.sfxVolume = vol; });
             }
             drawSlider(vol);
             pctText.setText(`${Math.round(vol * 100)}%`);
-            this.save.save();
         };
 
         hitZone.on('pointerdown', (p: Phaser.Input.Pointer) => {

@@ -48,18 +48,20 @@ export class EconomyCoordinator {
         const prog = this.deps.getProgression();
         if (prog.coins < price) return false;
         prog.addCoins(-price);
-        const inv = this.deps.save.getData().eggInventory;
-        const key = String(tier);
-        inv[key] = (inv[key] ?? 0) + 1;
+        this.deps.save.update(data => {
+            const key = String(tier);
+            data.eggInventory[key] = (data.eggInventory[key] ?? 0) + 1;
+        });
         EventBus.emit('egg-purchased', tier);
         this.deps.persistSave();
         return true;
     }
 
     addEggs(tier: number, count: number): void {
-        const inv = this.deps.save.getData().eggInventory;
-        const key = String(tier);
-        inv[key] = (inv[key] ?? 0) + count;
+        this.deps.save.update(data => {
+            const key = String(tier);
+            data.eggInventory[key] = (data.eggInventory[key] ?? 0) + count;
+        });
         this.deps.persistSave();
     }
     claimDailyBonus(): DailyBonusReward | null {
@@ -158,14 +160,17 @@ export class EconomyCoordinator {
     }
 
     placeNestEgg(slotIndex: number, tier: number): boolean {
-        const inv = this.deps.save.getData().eggInventory;
+        const inv = this.deps.save.getData();
         const key = String(tier);
-        if (!inv[key] || inv[key] <= 0) return false;
+        const count = inv.eggInventory[key];
+        if (!count || count <= 0) return false;
         const prog = this.deps.getProgression();
         const cfg = getEggTierConfig(tier);
         if (!this.deps.nests.placeEgg(slotIndex, tier, prog.level, cfg.incubationMs, cfg.buffMultiplier)) return false;
-        inv[key]--;
-        if (inv[key] <= 0) delete inv[key];
+        this.deps.save.update(data => {
+            data.eggInventory[key]--;
+            if (data.eggInventory[key] <= 0) delete data.eggInventory[key];
+        });
         EventBus.emit('nests-changed');
         this.deps.persistSave();
         return true;
