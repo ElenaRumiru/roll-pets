@@ -139,6 +139,7 @@ export class NestsScene extends Scene {
     }
 
     update(_time: number, delta: number): void {
+        this.manager.update(delta);
         this.timerAccum += delta;
         if (this.timerAccum < 100) return;
         this.timerAccum = 0;

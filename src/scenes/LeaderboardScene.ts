@@ -140,4 +140,8 @@ export class LeaderboardScene extends Scene {
         if (collected.length === 0) return 2;
         return collected.reduce((a, b) => a.chance > b.chance ? a : b).chance;
     }
+
+    update(_time: number, delta: number): void {
+        this.manager.update(delta);
+    }
 }

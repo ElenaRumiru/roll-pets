@@ -19,6 +19,7 @@ const RING_GRAY = 0x555566;
 const FILL_COLOR = 0x1a1a2e;
 
 export class ProgressionScene extends Scene {
+    private manager!: GameManager;
     private trackContainer!: Phaser.GameObjects.Container;
     private scrollOffset = 0;
     private maxScroll = 0;
@@ -28,7 +29,8 @@ export class ProgressionScene extends Scene {
     }
 
     create(): void {
-        const manager = this.registry.get('gameManager') as GameManager;
+        this.manager = this.registry.get('gameManager') as GameManager;
+        const manager = this.manager;
         const playerLevel = manager.progression.level;
         const milestones = getMilestones(playerLevel, manager.getRebirthCount());
 
@@ -235,5 +237,9 @@ export class ProgressionScene extends Scene {
     private clampScroll(): void {
         this.scrollOffset = Phaser.Math.Clamp(this.scrollOffset, 0, this.maxScroll);
         this.trackContainer.x = -this.scrollOffset;
+    }
+
+    update(_time: number, delta: number): void {
+        this.manager.update(delta);
     }
 }

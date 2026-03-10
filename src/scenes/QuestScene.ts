@@ -397,6 +397,7 @@ export class QuestScene extends Scene {
     }
 
     update(_time: number, delta: number): void {
+        this.manager.update(delta);
         this.timerElapsed += delta;
         if (this.timerElapsed >= 1000) {
             this.timerElapsed -= 1000;

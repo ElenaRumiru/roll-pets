@@ -166,4 +166,8 @@ export class CollectionScene extends Scene {
         this.hideDetail();
         this.cleanupTab();
     }
+
+    update(_time: number, delta: number): void {
+        this.manager.update(delta);
+    }
 }

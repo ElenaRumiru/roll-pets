@@ -25,7 +25,7 @@ No test framework configured yet. TypeScript checking is done by Vite at build t
 
 **Communication: EventBus pattern.** Scenes and systems never call each other directly. All communication goes through a central EventEmitter (`core/EventBus.ts`). Example: Scene emits `roll-requested` → GameManager handles logic → emits `roll-complete` → Scene plays animation.
 
-**GameManager** is the central coordinator (thin delegator). It creates all systems, exposes high-level methods, and delegates logic to two coordinators: `RollCoordinator` (roll chain, level-up, league promo, rebirth, nest hatch) and `EconomyCoordinator` (purchases, claims, buff activation, nest operations). Scenes access GameManager via Phaser's registry — no global variables.
+**GameManager** is the central coordinator (thin delegator). It creates all systems, exposes high-level methods, and delegates logic to two coordinators: `RollCoordinator` (roll chain, level-up, league promo, rebirth, nest hatch) and `EconomyCoordinator` (purchases, claims, buff activation, nest operations). Scenes access GameManager via Phaser's registry — no global variables. **Every scene must call `this.manager.update(delta)` in its `update()` loop** — this ticks buff timers, online quest accumulator, and daily reset checks. Without it, timers freeze when the player is in that scene.
 
 **Composition over inheritance.** UI panels are built from small reusable components (Button, ProgressBar, FloatingText). No class inheritance chains.
 
@@ -276,7 +276,7 @@ When official docs are not enough, **search the wider internet**: Reddit, YouTub
 - Quest types: Roll, Grade, Online. Each has a sequence of steps with escalating targets and per-step rewards.
 - Roll quest: targets [3, 5, 10, 20, 50], loops at 50. Rewards (free/ad): Lucky 3/5 → 5/10 → 10/20 → 25/50 → 25/50. Modest rewards — rolls are passive.
 - Grade quest: Uncommon x1,x2,x3 → Extra x1,x2,x3, loops at Extra x3. Accepts target grade or higher, count increments per qualifying roll. Rewards (free/ad): Super 3/8 → 5/12 → 5/12 → 8/20 → 10/25 → 12/30.
-- Online quest (main priority): targets [1, 3, 5, 10, 30, 60] minutes, loops at 60. Most generous rewards — incentivizes session length. Rewards (free/ad): Epic 3/6 → 5/10 → 8/15 → 15/30 → 30/60 → 50/100.
+- Online quest (main priority): targets [1, 2, 3, 4, 5] minutes, loops at 5. Ad reward = 2× free. Rewards (free/ad): Epic 3/6 → 5/10 → 8/16 → 10/20 → 15/30.
 - Milestones: at [3, 6, 9, 12, 15] quests completed, coin rewards [100, 500, 2K, 5K, 15K].
 - Claim flow: progress bar → CLAIM button → popup with two card choices (free lime / ad purple) → buff granted. Tap outside popup to dismiss without claiming (CLAIM button stays active).
 - Events: `quests-changed` emitted on progress/claim/reset. Daily reset checked on load, each roll, and periodic 60s timer.
