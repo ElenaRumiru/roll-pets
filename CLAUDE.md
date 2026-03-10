@@ -89,6 +89,7 @@ src/
 │   ├── RightPanel.ts              # Roll button (bottom-center) + autoroll toggle (locked/unlocked)
 │   ├── QuestPanel.ts              # Daily quest panel (right side, above BonusPanel)
 │   ├── QuestClaimPopup.ts         # Quest reward confirmation popup (free vs ad)
+│   ├── OverlayQueue.ts            # Queue-based overlay sequencer (levelUp → leaguePromo → rebirth)
 │   ├── LevelUpOverlay.ts          # Level-up popup: feature unlock / egg / coins variants
 │   ├── LeaguePromotionOverlay.ts  # League promotion popup: rating icon + free vs ad coin choice
 │   ├── RebirthOverlay.ts          # Rebirth/Samsara popup: informational overlay with ACCEPT button

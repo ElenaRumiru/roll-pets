@@ -38,13 +38,13 @@ Codebase: 83 files, ~13K LOC. Architecture is solid (logic/render separation, Ev
 - **Fixed:** Extracted `RollCoordinator` (170 lines: roll chain, level-up, league promo, rebirth, nest hatch) and `EconomyCoordinator` (200 lines: purchases, claims, buff activation, nest operations). GameManager is now a thin delegator (199 lines). Zero scene changes — full backward compatibility via delegation methods + getter/setters.
 - **Files:** `src/core/GameManager.ts` (494→199), new `src/core/RollCoordinator.ts`, new `src/core/EconomyCoordinator.ts`
 
-### 2.2 MainScene: 676 lines, overlay chaining is a hidden state machine
-- 3 `pending*` fields + 3 `show*` methods + 3 `finish*` methods = manual callback chain
-- Order: levelUp → leaguePromo → rebirth → finishRoll
-- Adding a 4th overlay (achievements? events?) makes this O(n^2) complexity
-- **Fix:** Extract `OverlayQueue` — queue-based system that shows overlays in sequence
+### 2.2 ~~MainScene: 676 lines, overlay chaining is a hidden state machine~~ ✅ DONE
+- ~~3 `pending*` fields + 3 `show*` methods + 3 `finish*` methods = manual callback chain~~
+- ~~Order: levelUp → leaguePromo → rebirth → finishRoll~~
+- ~~Adding a 4th overlay (achievements? events?) makes this O(n^2) complexity~~
+- **Fixed:** Extracted `OverlayQueue` (36 lines, pure TS) — queue-based system with `enqueue(task)` / `start(onAllComplete)`. Each event handler pushes a task closure; queue drains sequentially; single `dismissOverlayAndComplete()` replaces 3× duplicated cleanup. MainScene 676→624 lines. Zero changes to overlay classes, CenterStage, or GameManager.
 - `refreshUI()` called on every event, updates all 12+ panels even if only 1 data point changed — no batching
-- **Files:** `src/scenes/MainScene.ts`, new `src/ui/OverlayQueue.ts`
+- **Files:** `src/scenes/MainScene.ts` (676→624), new `src/ui/OverlayQueue.ts`
 
 ### 2.3 SaveSystem.getData() returns mutable reference
 - Any code can directly mutate save data without triggering save/validation
@@ -234,3 +234,14 @@ After each change:
 **Daily Bonus checkmark fix (`src/ui/DailyBonusCards.ts`)**
 - Bug: `setDisplaySize(20,20).setScale(0)` zeroed `displayWidth`, so `displayWidth/width = 0` → checkmark tween target was 0 (invisible forever)
 - Fix: save `targetScale` before `setScale(0)`, tween to saved value
+
+### 2026-03-10 — OverlayQueue (2.2)
+
+**Extract OverlayQueue from MainScene overlay chaining**
+- New `src/ui/OverlayQueue.ts` (36 lines) — pure TS queue: `enqueue(task)` / `start(onAllComplete)` / `clear()`
+- Removed 3 `pending*` fields + 5 chaining methods (`finishLevelUp`, `showLeaguePromo`, `finishLeaguePromo`, `showRebirth`, `finishRebirth`)
+- 3× duplicated cleanup code (setKeepOverlay + fade tween + completeRoll) → single `dismissOverlayAndComplete()`
+- Event handlers (`onLevelUp`, `onLeaguePromotion`, `onRebirthTriggered`) now push task closures to queue
+- `onRollComplete` simplified: after hatch → `overlayQueue.start()` → queue drains → cleanup
+- Zero changes to overlay classes, CenterStage, GameManager, or EventBus
+- MainScene: 676→624 lines (-52)

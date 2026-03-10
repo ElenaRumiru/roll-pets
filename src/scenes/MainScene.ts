@@ -30,6 +30,7 @@ import { showInterstitial } from '../platform/interstitial';
 import { AudioSystem } from '../systems/AudioSystem';
 import { t } from '../data/locales';
 import { showToast } from '../ui/components/Toast';
+import { OverlayQueue } from '../ui/OverlayQueue';
 
 export class MainScene extends Scene {
     private manager!: GameManager;
@@ -58,9 +59,7 @@ export class MainScene extends Scene {
     private levelUpOverlay!: LevelUpOverlay;
     private leaguePromoOverlay!: LeaguePromotionOverlay;
     private rebirthOverlay!: RebirthOverlay;
-    private pendingLevelUp: LevelUpData | null = null;
-    private pendingLeaguePromo: LeaguePromotionData | null = null;
-    private pendingRebirth: RebirthData | null = null;
+    private overlayQueue = new OverlayQueue();
 
     constructor() {
         super('MainScene');
@@ -302,29 +301,47 @@ export class MainScene extends Scene {
         this.rightPanel.setRolling(true);
         this.centerStage.playHatch(result, () => {
             this.coinDisplay.showFloatingGain(this.manager.lastRollCoinGain, this);
-            if (this.pendingLevelUp) {
-                const data = this.pendingLevelUp;
-                this.pendingLevelUp = null;
-                this.levelUpOverlay.show(data, (chosenCoinAmount: number) => {
-                    if (chosenCoinAmount > 0) {
-                        this.handleLevelUpCoinChoice(data, chosenCoinAmount);
-                    } else {
-                        this.finishLevelUp(data);
-                    }
-                });
-            } else if (this.pendingLeaguePromo) {
-                this.showLeaguePromo();
-            } else if (this.pendingRebirth) {
-                this.showRebirth();
-            } else {
-                this.completeRoll();
-            }
+            this.overlayQueue.start(() => this.dismissOverlayAndComplete());
         });
     }
 
-    private handleLevelUpCoinChoice(data: LevelUpData, chosenAmount: number): void {
+    private onLevelUp(data: LevelUpData): void {
+        this.centerStage.setKeepOverlay(true);
+        this.overlayQueue.enqueue((next) => {
+            this.levelUpOverlay.show(data, (chosenCoinAmount: number) => {
+                if (chosenCoinAmount > 0) {
+                    this.claimLevelUpCoins(data, chosenCoinAmount, next);
+                } else {
+                    this.applyLevelUpSideEffects(data);
+                    next();
+                }
+            });
+        });
+    }
+
+    private onLeaguePromotion(data: LeaguePromotionData): void {
+        this.centerStage.setKeepOverlay(true);
+        this.overlayQueue.enqueue((next) => {
+            this.leaguePromoOverlay.show(data, (chosenCoinAmount: number) => {
+                this.claimLeaguePromoCoins(data, chosenCoinAmount, next);
+            });
+        });
+    }
+
+    private onRebirthTriggered(data: RebirthData): void {
+        this.centerStage.setKeepOverlay(true);
+        this.overlayQueue.enqueue((next) => {
+            this.rebirthOverlay.show(data, () => {
+                this.applyRebirthSideEffects();
+                next();
+            });
+        });
+    }
+
+    private claimLevelUpCoins(data: LevelUpData, chosenAmount: number, next: () => void): void {
         const baseAmount = data.coinReward;
         const adAmount = baseAmount * LEVELUP_CONFIG.adCoinMultiplier;
+        const finish = () => { this.applyLevelUpSideEffects(data); next(); };
 
         if (chosenAmount === adAmount) {
             const sdk = this.registry.get('platformSDK') as PlatformSDK | undefined;
@@ -333,65 +350,21 @@ export class MainScene extends Scene {
                     const finalAmount = success ? adAmount : baseAmount;
                     this.manager.claimLevelUpCoins(finalAmount);
                     this.coinDisplay.showFloatingGain(finalAmount, this);
-                    this.finishLevelUp(data);
+                    finish();
                 });
             } else {
                 this.manager.claimLevelUpCoins(baseAmount);
                 this.coinDisplay.showFloatingGain(baseAmount, this);
-                this.finishLevelUp(data);
+                finish();
             }
         } else {
             this.manager.claimLevelUpCoins(baseAmount);
             this.coinDisplay.showFloatingGain(baseAmount, this);
-            this.finishLevelUp(data);
+            finish();
         }
     }
 
-    private finishLevelUp(data: LevelUpData): void {
-        this.centerStage.setEggImage(data.eggKey);
-        this.bgImage.setTexture(data.bgKey);
-
-        // Chain to league promotion if pending
-        if (this.pendingLeaguePromo) {
-            this.showLeaguePromo();
-            return;
-        }
-        // Chain to rebirth if pending
-        if (this.pendingRebirth) {
-            this.showRebirth();
-            return;
-        }
-
-        this.centerStage.setKeepOverlay(false);
-        if (!this.manager.buffs.isAutorollActive()) {
-            this.tweens.add({
-                targets: this.centerStage.getOverlay(),
-                fillAlpha: 0,
-                duration: 250,
-            });
-        }
-        this.completeRoll();
-    }
-
-    private onLevelUp(data: LevelUpData): void {
-        this.pendingLevelUp = data;
-        this.centerStage.setKeepOverlay(true);
-    }
-
-    private onLeaguePromotion(data: LeaguePromotionData): void {
-        this.pendingLeaguePromo = data;
-        this.centerStage.setKeepOverlay(true);
-    }
-
-    private showLeaguePromo(): void {
-        const data = this.pendingLeaguePromo!;
-        this.pendingLeaguePromo = null;
-        this.leaguePromoOverlay.show(data, (chosenCoinAmount: number) => {
-            this.handleLeaguePromoCoinChoice(data, chosenCoinAmount);
-        });
-    }
-
-    private handleLeaguePromoCoinChoice(data: LeaguePromotionData, chosenAmount: number): void {
+    private claimLeaguePromoCoins(data: LeaguePromotionData, chosenAmount: number, next: () => void): void {
         const baseAmount = data.coinReward;
         const adAmount = baseAmount * LEVELUP_CONFIG.adCoinMultiplier;
 
@@ -402,56 +375,31 @@ export class MainScene extends Scene {
                     const finalAmount = success ? adAmount : baseAmount;
                     this.manager.claimLeaguePromoCoins(finalAmount);
                     this.coinDisplay.showFloatingGain(finalAmount, this);
-                    this.finishLeaguePromo();
+                    next();
                 });
             } else {
                 this.manager.claimLeaguePromoCoins(baseAmount);
                 this.coinDisplay.showFloatingGain(baseAmount, this);
-                this.finishLeaguePromo();
+                next();
             }
         } else {
             this.manager.claimLeaguePromoCoins(baseAmount);
             this.coinDisplay.showFloatingGain(baseAmount, this);
-            this.finishLeaguePromo();
+            next();
         }
     }
 
-    private finishLeaguePromo(): void {
-        // Chain to rebirth if pending
-        if (this.pendingRebirth) {
-            this.showRebirth();
-            return;
-        }
-
-        this.centerStage.setKeepOverlay(false);
-        if (!this.manager.buffs.isAutorollActive()) {
-            this.tweens.add({
-                targets: this.centerStage.getOverlay(),
-                fillAlpha: 0,
-                duration: 250,
-            });
-        }
-        this.completeRoll();
+    private applyLevelUpSideEffects(data: LevelUpData): void {
+        this.centerStage.setEggImage(data.eggKey);
+        this.bgImage.setTexture(data.bgKey);
     }
 
-    private onRebirthTriggered(data: RebirthData): void {
-        this.pendingRebirth = data;
-        this.centerStage.setKeepOverlay(true);
+    private applyRebirthSideEffects(): void {
+        this.centerStage.setEggImage(this.manager.getEggImageKey());
+        this.bgImage.setTexture(this.manager.getBgImageKey());
     }
 
-    private showRebirth(): void {
-        const data = this.pendingRebirth!;
-        this.pendingRebirth = null;
-        this.rebirthOverlay.show(data, () => {
-            this.finishRebirth();
-        });
-    }
-
-    private finishRebirth(): void {
-        const eggKey = this.manager.getEggImageKey();
-        const bgKey = this.manager.getBgImageKey();
-        this.centerStage.setEggImage(eggKey);
-        this.bgImage.setTexture(bgKey);
+    private dismissOverlayAndComplete(): void {
         this.centerStage.setKeepOverlay(false);
         if (!this.manager.buffs.isAutorollActive()) {
             this.tweens.add({
@@ -654,7 +602,7 @@ export class MainScene extends Scene {
     }
 
     shutdown(): void {
-        // Stop autoroll & reset rolling state before scene is destroyed
+        this.overlayQueue.clear();
         this.manager.buffs.stopAutoroll();
         this.manager.isRolling = false;
         this.manager.saveState();
