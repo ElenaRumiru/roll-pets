@@ -19,18 +19,97 @@ export class BootScene extends Scene {
         const cx = GAME_WIDTH / 2;
         const cy = GAME_HEIGHT / 2;
 
-        // Loading bar
-        this.add.rectangle(cx, cy, 370, 25).setStrokeStyle(2, 0xffffff);
-        const bar = this.add.rectangle(cx - 183, cy, 5, 20, 0xffffff);
+        // Dark background matching THEME.SCENE_BG
+        this.add.rectangle(cx, cy, GAME_WIDTH, GAME_HEIGHT, 0x12121e);
 
-        this.add.text(cx, cy - 37, 'PETS GO Lite', {
-            fontFamily: 'Arial Black',
-            fontSize: '30px',
+        // Load illustration first (inline base64 not needed — just load early)
+        this.load.image('ui_illustration', 'assets/ui/illustration.png');
+
+        // Illustration — pre-downscale via canvas for crisp rendering
+        const illustrationY = cy - 75;
+        const TARGET_ILLUST_W = 420;
+        this.load.once('filecomplete-image-ui_illustration', () => {
+            const src = this.textures.get('ui_illustration').getSourceImage() as HTMLImageElement;
+            const ratio = TARGET_ILLUST_W / src.width;
+            const dw = TARGET_ILLUST_W;
+            const dh = Math.round(src.height * ratio);
+            const c = document.createElement('canvas');
+            c.width = dw;
+            c.height = dh;
+            const ctx = c.getContext('2d')!;
+            ctx.imageSmoothingEnabled = true;
+            ctx.imageSmoothingQuality = 'high';
+            ctx.drawImage(src, 0, 0, dw, dh);
+            this.textures.remove('ui_illustration');
+            this.textures.addCanvas('ui_illustration_hq', c);
+            this.add.image(cx, illustrationY, 'ui_illustration_hq').setOrigin(0.5);
+        });
+
+        // Title
+        this.add.text(cx, cy + 42, 'PETS ROLL', {
+            fontFamily: 'Rubik Black',
+            fontSize: '38px',
             color: '#ffffff',
+            stroke: '#000000',
+            strokeThickness: 8,
         }).setOrigin(0.5);
 
+        // Progress bar (game-style: pill shape, triple outline, highlight shine)
+        const BAR_W = 300;
+        const BAR_H = 22;
+        const BAR_R = BAR_H / 2;
+        const barY = cy + 82;
+        const barX = cx - BAR_W / 2;
+
+        const barGfx = this.add.graphics();
+
+        // Percentage text on top of bar
+        const pctText = this.add.text(cx, barY, '0%', {
+            fontFamily: 'Rubik',
+            fontSize: '13px',
+            color: '#ffffff',
+            stroke: '#000000',
+            strokeThickness: 2,
+        }).setOrigin(0.5).setDepth(1);
+
+        const drawBar = (value: number) => {
+            barGfx.clear();
+
+            // Bar background
+            barGfx.fillStyle(0x222244, 0.6);
+            barGfx.fillRoundedRect(barX, barY - BAR_H / 2, BAR_W, BAR_H, BAR_R);
+
+            // Triple outline (black → gold → black)
+            barGfx.lineStyle(1.5, 0x000000, 0.9);
+            barGfx.strokeRoundedRect(barX - 4, barY - BAR_H / 2 - 4, BAR_W + 8, BAR_H + 8, BAR_R + 3);
+            barGfx.lineStyle(2.5, 0xFEBF07, 1);
+            barGfx.strokeRoundedRect(barX - 2, barY - BAR_H / 2 - 2, BAR_W + 4, BAR_H + 4, BAR_R + 2);
+            barGfx.lineStyle(1.5, 0x000000, 0.9);
+            barGfx.strokeRoundedRect(barX, barY - BAR_H / 2, BAR_W, BAR_H, BAR_R);
+
+            // Fill
+            const fillW = Math.max(0, value * BAR_W);
+            if (fillW > 2) {
+                const fw = Math.min(fillW, BAR_W - 2);
+                const fr = fw >= BAR_H ? BAR_R - 1 : 0;
+                barGfx.fillStyle(0x3cb8e8, 1);
+                barGfx.fillRoundedRect(barX + 1, barY - BAR_H / 2 + 1, fw, BAR_H - 2, fr);
+
+                // Highlight shine on fill
+                if (fw > 4) {
+                    const hr = fw >= BAR_H ? { tl: BAR_R - 2, tr: BAR_R - 2, bl: 0, br: 0 } : 0;
+                    barGfx.fillStyle(0xffffff, 0.2);
+                    barGfx.fillRoundedRect(barX + 2, barY - BAR_H / 2 + 2, fw - 2, (BAR_H - 4) * 0.4, hr);
+                }
+            }
+
+            pctText.setText(`${Math.round(value * 100)}%`);
+        };
+
+        drawBar(0);
+
         this.load.on('progress', (value: number) => {
-            bar.width = 5 + 360 * value;
+            drawBar(value);
         });
 
         // Backgrounds (location_1 .. location_17)

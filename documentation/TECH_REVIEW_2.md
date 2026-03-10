@@ -226,7 +226,11 @@ After each change:
 
 **Loading screen redesign (`src/scenes/BootScene.ts`)**
 - Dark background `0x12121e` (THEME.SCENE_BG) instead of black
-- Illustration (`public/assets/ui/illustration.png`) centered above progress bar
+- Illustration (`public/assets/ui/illustration.png`) pre-downscaled via canvas to 420px with `imageSmoothingQuality: 'high'` (same pipeline as all other assets), positioned at `cy - 75`
 - Title "PETS ROLL" in Rubik Black 38px, white fill, black stroke 8px
 - Progress bar: pill-shaped 300×22, triple outline (black→gold→black), blue fill `0x3cb8e8`, highlight shine, percentage text centered
 - Matches game-wide visual patterns (THEME colors, triple outlines, Rubik fonts, ProgressBar shine)
+
+**Daily Bonus checkmark fix (`src/ui/DailyBonusCards.ts`)**
+- Bug: `setDisplaySize(20,20).setScale(0)` zeroed `displayWidth`, so `displayWidth/width = 0` → checkmark tween target was 0 (invisible forever)
+- Fix: save `targetScale` before `setScale(0)`, tween to saved value

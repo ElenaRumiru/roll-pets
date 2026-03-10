@@ -88,8 +88,10 @@ function drawCard(scene: Scene, cx: number, cy: number, w: number, h: number,
     if (isDone) {
         drawRewardIcon(scene, cx, iconY, iconSize, reward, 0.5);
         const check = scene.add.image(cx + iconSize / 3, cy - iconSize / 3, 'ui_ok_sm')
-            .setDisplaySize(20, 20).setScale(0);
-        scene.tweens.add({ targets: check, scale: check.displayWidth / check.width,
+            .setDisplaySize(20, 20);
+        const targetScale = check.scale;
+        check.setScale(0);
+        scene.tweens.add({ targets: check, scale: targetScale,
             duration: 350, ease: 'Back.easeOut' });
     } else if (isToday && !db.claimedToday) {
         drawRewardIcon(scene, cx, iconY, iconSize, reward, 1);
