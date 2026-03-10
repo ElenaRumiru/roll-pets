@@ -1,7 +1,6 @@
 import { Scene, GameObjects } from 'phaser';
 import { GAME_WIDTH, GAME_HEIGHT, UI, NEST_CONFIG } from '../core/config';
 import { GameManager } from '../core/GameManager';
-import { Button } from '../ui/components/Button';
 import { EggSelectPopup, EggOption } from '../ui/EggSelectPopup';
 import { NestHatchOverlay } from '../ui/NestHatchOverlay';
 import { renderEmptySlot, renderIncubatingSlot, renderReadySlot, renderLockedSlot, SlotLayout } from '../ui/NestSlotCard';
@@ -10,8 +9,9 @@ import { showCoinSpend } from '../ui/components/FloatingText';
 import { showToast } from '../ui/components/Toast';
 import { showInterstitial } from '../platform/interstitial';
 import { formatCoins } from '../core/formatCoins';
+import { createSceneHeader } from '../ui/SceneHeader';
+import { CoinDisplay } from '../ui/CoinDisplay';
 
-const HEADER_H = 74;
 const SLOT_W = 200;
 const SLOT_GAP = 30;
 const LAYOUT: SlotLayout = {
@@ -24,7 +24,7 @@ const LAYOUT: SlotLayout = {
 export class NestsScene extends Scene {
     private manager!: GameManager;
     private slotsContainer!: GameObjects.Container;
-    private coinText!: GameObjects.Text;
+    private coinDisplay: CoinDisplay | null = null;
     private timerAccum = 0;
     private popup: EggSelectPopup | null = null;
 
@@ -36,30 +36,14 @@ export class NestsScene extends Scene {
         this.popup = null;
         this.add.rectangle(GAME_WIDTH / 2, GAME_HEIGHT / 2, GAME_WIDTH, GAME_HEIGHT, 0x12121e);
         this.slotsContainer = this.add.container(0, 0);
-        this.createHeader();
+        const hdr = createSceneHeader({
+            scene: this, titleKey: 'nests_title', backKey: 'nests_back',
+            onBack: () => this.scene.start('MainScene'),
+            coins: this.manager.progression.coins,
+        });
+        this.coinDisplay = hdr.coinDisplay;
         this.refreshSlots();
         this.createHint();
-    }
-
-    private createHeader(): void {
-        const hdr = this.add.graphics();
-        hdr.fillStyle(0x000000, 0.5);
-        hdr.fillRect(0, 0, GAME_WIDTH, HEADER_H);
-        hdr.lineStyle(1, UI.PANEL_BORDER, 0.3);
-        hdr.lineBetween(0, HEADER_H, GAME_WIDTH, HEADER_H);
-        new Button(this, 68, 37, 111, 39, `\u2190 ${t('nests_back')}`, 0x444455, () => {
-            this.scene.start('MainScene');
-        });
-        this.add.text(GAME_WIDTH / 2, 37, t('nests_title'), {
-            fontFamily: UI.FONT_STROKE, fontSize: '25px', color: '#ffffff',
-            stroke: '#000000', strokeThickness: UI.STROKE_MEDIUM,
-        }).setOrigin(0.5);
-        this.add.image(GAME_WIDTH - 123, 37, 'ui_coin_md').setDisplaySize(35, 35);
-        this.coinText = this.add.text(GAME_WIDTH - 101, 37,
-            formatCoins(this.manager.progression.coins), {
-                fontFamily: UI.FONT_STROKE, fontSize: '17px', color: '#ffffff',
-                stroke: '#000000', strokeThickness: UI.STROKE_THIN,
-            }).setOrigin(0, 0.5);
     }
 
     private createHint(): void {
@@ -96,7 +80,7 @@ export class NestsScene extends Scene {
                     this.manager.nests, index, this.formatTime, () => this.onSpeedUp(index));
             }
         }
-        this.coinText.setText(formatCoins(this.manager.progression.coins));
+        this.coinDisplay?.updateCoins(this.manager.progression.coins);
     }
 
     private onSelect(slotIndex: number): void {

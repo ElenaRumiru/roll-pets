@@ -9,6 +9,7 @@ import { buildDetailView } from '../ui/CollectionDetail';
 import { t } from '../data/locales';
 import { showToast } from '../ui/components/Toast';
 import { showInterstitial } from '../platform/interstitial';
+import { createSceneHeader } from '../ui/SceneHeader';
 
 type CollTab = 'collections' | 'all';
 
@@ -34,27 +35,13 @@ export class CollectionScene extends Scene {
         this.add.rectangle(GAME_WIDTH / 2, GAME_HEIGHT / 2, GAME_WIDTH, GAME_HEIGHT, 0x12121e);
         this.content = this.add.container(0, 0);
 
-        this.createHeader();
+        createSceneHeader({
+            scene: this, titleKey: 'collection_title', backKey: 'collection_back',
+            onBack: () => { this.cleanupAll(); this.scene.start('MainScene'); },
+            coins: this.manager.progression.coins,
+        });
         this.createTabs();
         this.switchTab(this.activeTab);
-    }
-
-    private createHeader(): void {
-        const hdr = this.add.graphics();
-        hdr.fillStyle(0x000000, 0.5);
-        hdr.fillRect(0, 0, GAME_WIDTH, 74);
-        hdr.lineStyle(1, 0x000000, 0.3);
-        hdr.lineBetween(0, 74, GAME_WIDTH, 74);
-
-        new Button(this, 68, 37, 111, 39, `\u2190 ${t('collection_back')}`, 0x444455, () => {
-            this.cleanupAll();
-            this.scene.start('MainScene');
-        });
-
-        this.add.text(GAME_WIDTH / 2, 37, t('collection_title'), {
-            fontFamily: UI.FONT_STROKE, fontSize: '25px', color: '#ffffff',
-            stroke: '#000000', strokeThickness: UI.STROKE_MEDIUM,
-        }).setOrigin(0.5);
     }
 
     private createTabs(): void {

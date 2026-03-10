@@ -1,12 +1,12 @@
 import { Scene } from 'phaser';
 import { GAME_WIDTH, GAME_HEIGHT, UI } from '../core/config';
 import { getMilestones, Milestone } from '../data/milestones';
-import { Button } from '../ui/components/Button';
 import { t } from '../data/locales';
 import { GameManager } from '../core/GameManager';
 import { fitText } from '../ui/components/fitText';
+import { createSceneHeader } from '../ui/SceneHeader';
 
-const HEADER_H = 62;
+const HEADER_H = 74;
 const TRACK_Y = Math.round(GAME_HEIGHT * 0.55);
 const TRACK_H = 12;
 const MILESTONE_GAP = 321;
@@ -40,27 +40,13 @@ export class ProgressionScene extends Scene {
         this.trackContainer.setMask(maskGfx.createGeometryMask());
 
         this.buildTrack(milestones, playerLevel);
-        this.createHeader();
+        createSceneHeader({
+            scene: this, titleKey: 'progression_title', backKey: 'progression_back',
+            onBack: () => this.scene.start('MainScene'),
+            coins: manager.progression.coins, depth: 10,
+        });
         this.setupScroll();
         this.setInitialScroll(milestones, playerLevel);
-    }
-
-    private createHeader(): void {
-        const hdr = this.add.graphics();
-        hdr.fillStyle(0x000000, 0.5);
-        hdr.fillRect(0, 0, GAME_WIDTH, HEADER_H);
-        hdr.lineStyle(1, UI.PANEL_BORDER, 0.3);
-        hdr.lineBetween(0, HEADER_H, GAME_WIDTH, HEADER_H);
-        hdr.setDepth(10);
-
-        new Button(this, 68, 31, 111, 39, `← ${t('progression_back')}`, 0x444455, () => {
-            this.scene.start('MainScene');
-        });
-
-        this.add.text(GAME_WIDTH / 2, 31, t('progression_title'), {
-            fontFamily: UI.FONT_STROKE, fontSize: '23px',
-            color: '#ffffff', stroke: '#000000', strokeThickness: UI.STROKE_MEDIUM,
-        }).setOrigin(0.5).setDepth(10);
     }
 
     private buildTrack(milestones: Milestone[], playerLevel: number): void {

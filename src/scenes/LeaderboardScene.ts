@@ -6,6 +6,7 @@ import { PETS } from '../data/pets';
 import { Button } from '../ui/components/Button';
 import { t } from '../data/locales';
 import { LeaderboardEntry, LeagueTier } from '../types';
+import { createSceneHeader } from '../ui/SceneHeader';
 
 const HEADER_H = 74;
 const ROW_H = 26;
@@ -26,29 +27,15 @@ export class LeaderboardScene extends Scene {
         this.tabs = [];
         this.add.rectangle(GAME_WIDTH / 2, GAME_HEIGHT / 2, GAME_WIDTH, GAME_HEIGHT, 0x12121e);
         this.entriesContainer = this.add.container(0, 0);
-        this.createHeader();
+        createSceneHeader({
+            scene: this, titleKey: 'leaderboard_scene_title', backKey: 'leaderboard_back',
+            onBack: () => this.scene.start('MainScene'),
+            coins: this.manager.progression.coins, depth: 10,
+        });
         this.createTabs();
 
         const league = this.manager.leaderboard.getPlayerLeague(this.getBestChance());
         this.showLeague(league.tier);
-    }
-
-    private createHeader(): void {
-        const hdr = this.add.graphics();
-        hdr.fillStyle(0x000000, 0.5);
-        hdr.fillRect(0, 0, GAME_WIDTH, HEADER_H);
-        hdr.lineStyle(1, UI.PANEL_BORDER, 0.3);
-        hdr.lineBetween(0, HEADER_H, GAME_WIDTH, HEADER_H);
-        hdr.setDepth(10);
-
-        new Button(this, 68, 37, 111, 39, `← ${t('leaderboard_back')}`, 0x444455, () => {
-            this.scene.start('MainScene');
-        });
-
-        this.add.text(GAME_WIDTH / 2, 37, t('leaderboard_scene_title'), {
-            fontFamily: UI.FONT_STROKE, fontSize: '25px', color: '#ffffff',
-            stroke: '#000000', strokeThickness: UI.STROKE_MEDIUM,
-        }).setOrigin(0.5).setDepth(10);
     }
 
     private createTabs(): void {

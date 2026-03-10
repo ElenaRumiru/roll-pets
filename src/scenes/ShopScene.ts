@@ -11,6 +11,8 @@ import { showToast } from '../ui/components/Toast';
 import { getEggNameKey } from '../data/eggs';
 import { showInterstitial } from '../platform/interstitial';
 import { formatCoins } from '../core/formatCoins';
+import { createSceneHeader } from '../ui/SceneHeader';
+import { CoinDisplay } from '../ui/CoinDisplay';
 
 const HEADER_H = 74;
 const TAB_Y = HEADER_H + 25;
@@ -26,7 +28,7 @@ export class ShopScene extends Scene {
     private manager!: GameManager;
     private cardsContainer!: GameObjects.Container;
     private timerText!: GameObjects.Text;
-    private coinText!: GameObjects.Text;
+    private coinDisplay: CoinDisplay | null = null;
     private emptyText!: GameObjects.Text;
     private refreshBtn!: Button;
     private timerElapsed = 0;
@@ -48,7 +50,12 @@ export class ShopScene extends Scene {
         this.activeTab = (data?.tab === 'eggs' && nestsUnlocked) ? 'eggs' : 'pets';
         this.add.rectangle(GAME_WIDTH / 2, GAME_HEIGHT / 2, GAME_WIDTH, GAME_HEIGHT, 0x12121e);
         this.cardsContainer = this.add.container(0, 0);
-        this.createHeader();
+        const hdr = createSceneHeader({
+            scene: this, titleKey: 'shop_title', backKey: 'shop_back',
+            onBack: () => { this.cleanupEggTab(); this.scene.start('MainScene'); },
+            coins: this.manager.progression.coins,
+        });
+        this.coinDisplay = hdr.coinDisplay;
         if (nestsUnlocked) this.createTabs();
         this.createTimer();
         this.emptyText = this.add.text(GAME_WIDTH / 2, CARDS_Y, t('shop_empty'), {
@@ -60,27 +67,6 @@ export class ShopScene extends Scene {
             fontFamily: UI.FONT_BODY, fontSize: '14px', color: '#666688',
         }).setOrigin(0.5);
         this.switchTab(this.activeTab);
-    }
-
-    private createHeader(): void {
-        const hdr = this.add.graphics();
-        hdr.fillStyle(0x000000, 0.5);
-        hdr.fillRect(0, 0, GAME_WIDTH, HEADER_H);
-        hdr.lineStyle(1, UI.PANEL_BORDER, 0.3);
-        hdr.lineBetween(0, HEADER_H, GAME_WIDTH, HEADER_H);
-        new Button(this, 68, 37, 111, 39, `\u2190 ${t('shop_back')}`, 0x444455, () => {
-            this.cleanupEggTab();
-            this.scene.start('MainScene');
-        });
-        this.add.text(GAME_WIDTH / 2, 37, t('shop_title'), {
-            fontFamily: UI.FONT_STROKE, fontSize: '25px', color: '#ffffff',
-            stroke: '#000000', strokeThickness: UI.STROKE_MEDIUM,
-        }).setOrigin(0.5);
-        this.add.image(GAME_WIDTH - 123, 37, 'ui_coin_md').setDisplaySize(35, 35);
-        this.coinText = this.add.text(GAME_WIDTH - 101, 37, formatCoins(this.manager.progression.coins), {
-            fontFamily: UI.FONT_STROKE, fontSize: '17px', color: '#ffffff',
-            stroke: '#000000', strokeThickness: UI.STROKE_THIN,
-        }).setOrigin(0, 0.5);
     }
 
     private createTabs(): void {
@@ -164,7 +150,7 @@ export class ShopScene extends Scene {
         const success = this.manager.purchasePet(petId);
         if (!success) { showToast(this, t('shop_no_coins'), 'error'); return; }
         if (offer) showCoinSpend(this, GAME_WIDTH - 100, 55, formatCoins(offer.price));
-        this.coinText.setText(formatCoins(this.manager.progression.coins));
+        this.coinDisplay?.updateCoins(this.manager.progression.coins);
         await showInterstitial(this);
         this.switchTab('pets');
     }
@@ -174,7 +160,7 @@ export class ShopScene extends Scene {
         const success = this.manager.purchaseEgg(tier, cfg.price);
         if (!success) { showToast(this, t('shop_no_coins'), 'error'); return; }
         showCoinSpend(this, GAME_WIDTH - 100, 55, formatCoins(cfg.price));
-        this.coinText.setText(formatCoins(this.manager.progression.coins));
+        this.coinDisplay?.updateCoins(this.manager.progression.coins);
         const nameKey = getEggNameKey(`egg_${tier}`);
         showToast(this, t('toast_received', { count: 1, item: t(nameKey) }), 'info');
         await showInterstitial(this);

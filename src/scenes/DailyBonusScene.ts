@@ -1,14 +1,13 @@
 import { Scene, GameObjects } from 'phaser';
 import { GAME_WIDTH, GAME_HEIGHT, UI } from '../core/config';
 import { GameManager } from '../core/GameManager';
-import { Button } from '../ui/components/Button';
 import { t } from '../data/locales';
 import { addButtonFeedback } from '../ui/components/buttonFeedback';
 import { addShineEffect } from '../ui/components/shineEffect';
 import { showToast } from '../ui/components/Toast';
 import { createCardGrid, createMilestoneTrack, CARD_H, CARD_GAP } from '../ui/DailyBonusCards';
+import { createSceneHeader } from '../ui/SceneHeader';
 
-const HEADER_H = 74;
 const TRACK_Y = 98;
 const GRID_TOP = 200;
 const DAY7_H = CARD_H * 2 + CARD_GAP;
@@ -29,7 +28,11 @@ export class DailyBonusScene extends Scene {
         this.manager = this.registry.get('gameManager') as GameManager;
         this.timerElapsed = 0;
         this.add.rectangle(GAME_WIDTH / 2, GAME_HEIGHT / 2, GAME_WIDTH, GAME_HEIGHT, 0x12121e);
-        this.createHeader();
+        createSceneHeader({
+            scene: this, titleKey: 'daily_bonus_title', backKey: 'daily_bonus_back',
+            onBack: () => this.scene.start('MainScene'),
+            coins: this.manager.progression.coins,
+        });
         createMilestoneTrack(this, TRACK_Y, this.manager);
         createCardGrid(this, GRID_TOP, this.manager.dailyBonus);
         this.add.text(GAME_WIDTH / 2, HINT_Y, t('daily_bonus_hint'), {
@@ -37,21 +40,6 @@ export class DailyBonusScene extends Scene {
         }).setOrigin(0.5);
         this.createClaimButton();
         this.createTimer();
-    }
-
-    private createHeader(): void {
-        const hdr = this.add.graphics();
-        hdr.fillStyle(0x000000, 0.5);
-        hdr.fillRect(0, 0, GAME_WIDTH, HEADER_H);
-        hdr.lineStyle(1, UI.PANEL_BORDER, 0.3);
-        hdr.lineBetween(0, HEADER_H, GAME_WIDTH, HEADER_H);
-        new Button(this, 68, 37, 111, 39, `\u2190 ${t('daily_bonus_back')}`, 0x444455, () => {
-            this.scene.start('MainScene');
-        });
-        this.add.text(GAME_WIDTH / 2, 37, t('daily_bonus_title'), {
-            fontFamily: UI.FONT_STROKE, fontSize: '25px', color: '#ffffff',
-            stroke: '#000000', strokeThickness: UI.STROKE_MEDIUM,
-        }).setOrigin(0.5);
     }
 
     private createClaimButton(): void {
