@@ -92,10 +92,9 @@ Codebase: 83 files, ~13K LOC. Architecture is solid (logic/render separation, Ev
 - QuestScene: extract quest card builder
 - SettingsPanel: extract language dropdown logic
 
-### 3.2 config.ts (342 lines) — mixed concerns
-- Grade configs, quest configs, nest configs, UI constants, theme, utility functions all in one file
-- **Fix:** Split into `config/grades.ts`, `config/quests.ts`, `config/ui.ts`, `config/theme.ts`
-- Keep re-export barrel `config/index.ts` for backward compatibility
+### 3.2 ~~config.ts (342 lines) — mixed concerns~~ WON'T FIX
+- ~~Grade configs, quest configs, nest configs, UI constants, theme, utility functions all in one file~~
+- **Analysis:** File contains only flat constants and simple utility functions — no complex logic. 59 files import from it; splitting with barrel re-export changes nothing for consumers. The 200-line rule targets complex logic files, not declarative config. File is already well-organized with clear commented sections.
 
 ### 3.3 Hardcoded magic numbers across overlays
 - Button interaction delay `1500` ms — 3 files
