@@ -25,11 +25,5 @@ export function getGameWidth(): number {
 }
 
 export function getGameHeight(): number {
-    if (!portrait) return LANDSCAPE_H;
-    // Match screen aspect ratio so the game fills 100% of screen height
-    if (typeof window !== 'undefined') {
-        const ratio = window.innerHeight / window.innerWidth;
-        return Math.round(PORTRAIT_W * ratio);
-    }
-    return PORTRAIT_H;
+    return portrait ? PORTRAIT_H : LANDSCAPE_H;
 }

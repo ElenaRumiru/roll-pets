@@ -22,13 +22,35 @@ body {
     padding: 0;
     color: rgba(255, 255, 255, 0.87);
     background-color: #0f0f0f;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
 }
 
 #app {
-    width: 100%;
-    height: 100vh;
     overflow: hidden;
     display: flex;
     justify-content: center;
     align-items: center;
+}
+
+/* Landscape: fill 100% width, height follows 16:9 ratio */
+@media (orientation: landscape) {
+    #app {
+        width: 100vw;
+        height: calc(100vw * 580 / 1031);
+        max-height: 100vh;
+    }
+}
+
+/* Portrait: fill 100% height, width follows 9:16 ratio */
+@media (orientation: portrait) {
+    #app {
+        height: 100vh;
+        width: calc(100vh * 580 / 1031);
+        max-width: 100vw;
+    }
 }
