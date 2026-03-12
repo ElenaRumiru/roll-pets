@@ -1,5 +1,6 @@
 import { GameObjects, Scene } from 'phaser';
-import { GAME_WIDTH, GAME_HEIGHT, UI, LEVELUP_CONFIG } from '../core/config';
+import { UI, LEVELUP_CONFIG } from '../core/config';
+import { getLayout } from '../core/layout';
 import { LeaguePromotionData } from '../types';
 import { AudioSystem } from '../systems/AudioSystem';
 import { LEAGUES } from '../data/leaderboard';
@@ -11,8 +12,6 @@ import {
     drawCardBg, drawBadgeRibbon, buildChoiceButton,
 } from './components/ChoiceCard';
 
-const CX = GAME_WIDTH / 2;
-const CY = GAME_HEIGHT / 2;
 const DEPTH = 500;
 
 const ICON_H = 100;
@@ -38,11 +37,15 @@ export class LeaguePromotionOverlay {
         const audio = this.scene.registry.get('audio') as AudioSystem | undefined;
         audio?.playSfx('sfx_levelup');
 
+        const l = getLayout();
+        const CX = l.cx;
+        const CY = l.cy;
+
         const league = LEAGUES.find(l => l.tier === data.tier)!;
         const baseAmount = data.coinReward;
         const adAmount = baseAmount * LEVELUP_CONFIG.adCoinMultiplier;
 
-        const blocker = this.scene.add.rectangle(CX, CY, GAME_WIDTH, GAME_HEIGHT, 0x000000, 0.75)
+        const blocker = this.scene.add.rectangle(CX, CY, l.gw + 4, l.gh + 4, 0x000000, 0.75)
             .setDepth(DEPTH).setInteractive();
         this.elements.push(blocker);
 

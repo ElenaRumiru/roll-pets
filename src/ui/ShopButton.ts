@@ -1,5 +1,6 @@
 import { GameObjects, Geom, Scene } from 'phaser';
-import { UI, GAME_WIDTH, GAME_HEIGHT, THEME } from '../core/config';
+import { UI, THEME } from '../core/config';
+import { getLayout } from '../core/layout';
 import { t } from '../data/locales';
 import { addButtonFeedback } from './components/buttonFeedback';
 import { fitText } from './components/fitText';
@@ -11,7 +12,8 @@ const RADIUS = 14;
 
 export class ShopButton extends GameObjects.Container {
     constructor(scene: Scene, onClick: () => void) {
-        super(scene, GAME_WIDTH - PANEL_W - 15, GAME_HEIGHT - TOTAL_H - 15);
+        const l = getLayout();
+        super(scene, l.shopBtn.x, l.shopBtn.y);
 
         // Dark panel (lower portion)
         const bg = scene.add.graphics();

@@ -1,5 +1,6 @@
 import { GameObjects, Geom, Scene } from 'phaser';
-import { UI, LEFT_PANEL, XP_HUD, xpForLevel, THEME } from '../core/config';
+import { UI, XP_HUD, THEME } from '../core/config';
+import { getLayout } from '../core/layout';
 import { ProgressBar } from './components/ProgressBar';
 import { addButtonFeedback } from './components/buttonFeedback';
 
@@ -14,7 +15,8 @@ export class TopBar extends GameObjects.Container {
     private xpLabel: GameObjects.Text;
 
     constructor(scene: Scene, onClick?: () => void) {
-        super(scene, LEFT_PANEL.x, 15);
+        const l = getLayout();
+        super(scene, l.topBar.x, l.topBar.y);
 
         // XP progress bar (pill-shaped, serves as the panel)
         this.xpBar = new ProgressBar(

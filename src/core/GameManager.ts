@@ -11,7 +11,7 @@ import { DailyBonusSystem } from '../systems/DailyBonusSystem';
 import { NestSystem } from '../systems/NestSystem';
 import { CollectionTracker } from '../systems/CollectionTracker';
 import { getEggImageKey } from '../data/eggs';
-import { getBgImageKey } from '../data/backgrounds';
+import { getBgImageKey, getPortraitBgImageKey } from '../data/backgrounds';
 import { RollResult, RebirthData, DailyBonusReward } from '../types';
 import { RollCoordinator } from './RollCoordinator';
 import { EconomyCoordinator } from './EconomyCoordinator';
@@ -138,6 +138,7 @@ export class GameManager {
     getRebirthMultiplier(): number { return this.buffs.getRebirthMultiplier(); }
     getEggImageKey() { return getEggImageKey(this.progression.level); }
     getBgImageKey() { return getBgImageKey(this.progression.level); }
+    getPortraitBgImageKey() { return getPortraitBgImageKey(this.progression.level); }
     getEggInventory(): Record<string, number> { return this.save.getData().eggInventory; }
     saveState(): void { this.persistSave(); }
 

@@ -1,10 +1,12 @@
 import { GameObjects, Scene } from 'phaser';
-import { GAME_WIDTH, THEME } from '../core/config';
+import { THEME } from '../core/config';
+import { getLayout } from '../core/layout';
 import { addButtonFeedback } from './components/buttonFeedback';
 
 export class SettingsButton extends GameObjects.Container {
     constructor(scene: Scene, onPress: () => void) {
-        super(scene, GAME_WIDTH - 49, 33);
+        const l = getLayout();
+        super(scene, l.settingsBtn.x, l.settingsBtn.y);
 
         const bg = scene.add.graphics();
         bg.fillStyle(THEME.PANEL_BG, THEME.PANEL_ALPHA);

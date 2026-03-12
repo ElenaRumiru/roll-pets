@@ -3,7 +3,7 @@ import { GAME_WIDTH, GAME_HEIGHT } from '../core/config';
 import { IdleWobbleFX } from '../ui/IdleWobbleFX';
 import { PETS } from '../data/pets';
 import { TOTAL_EGGS } from '../data/eggs';
-import { TOTAL_BACKGROUNDS } from '../data/backgrounds';
+import { TOTAL_BACKGROUNDS, TOTAL_PORTRAIT_BACKGROUNDS } from '../data/backgrounds';
 import { AudioSystem } from '../systems/AudioSystem';
 import { GameManager } from '../core/GameManager';
 import { setLanguage } from '../data/locales';
@@ -117,6 +117,11 @@ export class BootScene extends Scene {
             this.load.image(`bg_${i}`, `assets/backgrounds/location_${i}.webp`);
         }
 
+        // Portrait backgrounds (location_1 .. location_16)
+        for (let i = 1; i <= TOTAL_PORTRAIT_BACKGROUNDS; i++) {
+            this.load.image(`bg_p_${i}`, `assets/backgrounds/portrait/location_${i}.webp`);
+        }
+
         // Eggs (egg_1 .. egg_17)
         for (let i = 1; i <= TOTAL_EGGS; i++) {
             this.load.image(`egg_${i}`, `assets/eggs/egg_${i}.png`);
@@ -138,6 +143,7 @@ export class BootScene extends Scene {
 
         // UI assets
         this.load.image('ui_roll', 'assets/ui/roll.png');
+        this.load.image('ui_roll_portrait_raw', 'assets/ui/roll_mini_square.png');
         this.load.image('ui_collections', 'assets/ui/collections.png');
         // Luck clover icons (24 variants)
         const LUCK_SUFFIXES = [
@@ -206,6 +212,9 @@ export class BootScene extends Scene {
             this.textures.remove(key);
             this.textures.addCanvas(key, c);
         }
+
+        // Pre-downscale portrait roll button
+        this.trimToWidth('ui_roll_portrait_raw', 'ui_roll_portrait', 400);
 
         // Pre-downscale pet textures (512px → 250px) to avoid WebGL aliasing
         const TARGET_PET = 250;

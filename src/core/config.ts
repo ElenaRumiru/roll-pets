@@ -1,7 +1,14 @@
 import { Grade, GradeConfig, QuestState, DailyBonusState, DailyBonusReward, NestState } from '../types';
+import { getGameWidth, getGameHeight, LANDSCAPE_W, LANDSCAPE_H } from './orientation';
 
-export const GAME_WIDTH = 1031;
-export const GAME_HEIGHT = 580;
+/** Dynamic game dimensions — use these for code that runs per-frame or per-create.
+ *  Returns landscape (1031×580) or portrait (580×1031) depending on current orientation. */
+export { getGameWidth, getGameHeight };
+
+/** Fixed landscape constants — use these ONLY for static sub-scene layouts
+ *  that haven't been refactored for portrait yet. */
+export const GAME_WIDTH = LANDSCAPE_W;
+export const GAME_HEIGHT = LANDSCAPE_H;
 
 export const XP_PER_ROLL = 5;
 /** Minimum XP for any level (~4 rolls) */

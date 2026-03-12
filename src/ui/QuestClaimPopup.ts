@@ -1,5 +1,6 @@
 import { GameObjects, Scene } from 'phaser';
-import { UI, GAME_WIDTH, GAME_HEIGHT, BUFF_CONFIG, QuestStepReward } from '../core/config';
+import { UI, BUFF_CONFIG, QuestStepReward } from '../core/config';
+import { getGameWidth, getGameHeight } from '../core/orientation';
 import { t } from '../data/locales';
 import { fitText } from './components/fitText';
 import {
@@ -28,13 +29,13 @@ export class QuestClaimPopup {
     ) {
         this.container = scene.add.container(0, 0).setDepth(1000);
 
-        const cx = GAME_WIDTH / 2;
-        const cy = GAME_HEIGHT / 2;
+        const cx = getGameWidth() / 2;
+        const cy = getGameHeight() / 2;
         const popLeft = cx - POPUP_W / 2;
         const popTop = cy - POPUP_H / 2;
 
         // Overlay — tap outside popup to dismiss
-        const overlay = scene.add.rectangle(cx, cy, GAME_WIDTH, GAME_HEIGHT, 0x000000, 0.7);
+        const overlay = scene.add.rectangle(cx, cy, getGameWidth(), getGameHeight(), 0x000000, 0.7);
         overlay.setInteractive();
         overlay.on('pointerdown', (p: Phaser.Input.Pointer) => {
             const lx = p.x, ly = p.y;

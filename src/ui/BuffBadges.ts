@@ -41,9 +41,11 @@ export class BuffBadges extends GameObjects.Container {
     private tooltipBg: GameObjects.Graphics;
     private tooltipText: GameObjects.Text;
     private longPressTimer: Phaser.Time.TimerEvent | null = null;
+    private direction: 'row' | 'column';
 
-    constructor(scene: Scene, x: number, y: number) {
+    constructor(scene: Scene, x: number, y: number, direction: 'row' | 'column' = 'row') {
         super(scene, x, y);
+        this.direction = direction;
 
         // Dark background behind all badges
         this.bgPanel = scene.add.graphics();
@@ -197,13 +199,26 @@ export class BuffBadges extends GameObjects.Container {
             const textW = b.text.width;
             return PAD_L + ICON_SZ + ICON_TEXT_GAP + textW + PAD_R;
         });
-        const totalW = widths.reduce((s, w) => s + w, 0)
-            + Math.max(0, visible.length - 1) * BADGE_GAP;
-        let curX = -totalW / 2;
-        visible.forEach((b, i) => {
-            b.container.setX(curX + widths[i] / 2);
-            curX += widths[i] + BADGE_GAP;
-        });
+
+        if (this.direction === 'column') {
+            // Vertical column layout
+            const totalH = visible.length * BADGE_H
+                + Math.max(0, visible.length - 1) * BADGE_GAP;
+            let curY = -totalH / 2;
+            visible.forEach((b) => {
+                b.container.setPosition(0, curY + BADGE_H / 2);
+                curY += BADGE_H + BADGE_GAP;
+            });
+        } else {
+            // Horizontal row layout
+            const totalW = widths.reduce((s, w) => s + w, 0)
+                + Math.max(0, visible.length - 1) * BADGE_GAP;
+            let curX = -totalW / 2;
+            visible.forEach((b, i) => {
+                b.container.setPosition(curX + widths[i] / 2, 0);
+                curX += widths[i] + BADGE_GAP;
+            });
+        }
 
         this.bgPanel.clear();
     }

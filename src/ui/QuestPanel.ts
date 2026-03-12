@@ -1,12 +1,13 @@
 import { GameObjects, Scene } from 'phaser';
-import { UI, QUEST_PANEL, THEME } from '../core/config';
+import { UI, THEME } from '../core/config';
+import { getLayout } from '../core/layout';
 import { QuestSystem, QuestType } from '../systems/QuestSystem';
 import { t } from '../data/locales';
 import { addButtonFeedback } from './components/buttonFeedback';
 import { fitText } from './components/fitText';
 import { addShineEffect } from './components/shineEffect';
 
-const PW = QUEST_PANEL.w;
+const PW = 135;
 const PAD = 10;
 const ICON_AREA = 30;
 const HEADER_H = 36;
@@ -51,7 +52,8 @@ export class QuestPanel extends GameObjects.Container {
         private onPanelClick: () => void,
     ) {
         const totalH = PAD + ICON_AREA + HEADER_H + ROW_H + ROW_GAP + ROW_H + 12;
-        super(scene, QUEST_PANEL.x, 0);
+        const l = getLayout();
+        super(scene, l.questPanel.x, 0);
         this.panelHeight = totalH;
 
         // Background (clickable → QuestScene)

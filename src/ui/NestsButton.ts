@@ -1,5 +1,6 @@
 import { GameObjects, Geom, Scene } from 'phaser';
-import { UI, GAME_HEIGHT, LEFT_PANEL, NEST_CONFIG, THEME } from '../core/config';
+import { UI, NEST_CONFIG, THEME } from '../core/config';
+import { getLayout } from '../core/layout';
 import { t } from '../data/locales';
 import { addButtonFeedback } from './components/buttonFeedback';
 import { showToast } from './components/Toast';
@@ -9,7 +10,6 @@ const PANEL_W = 118;
 const BG_H = 67;
 const TOTAL_H = 93;
 const RADIUS = 14;
-const GAP_FROM_COLLECTION = 11;
 const BADGE_X = PANEL_W - 2;
 const BADGE_Y = TOTAL_H - BG_H + 7;
 const BADGE_R = 12;
@@ -24,7 +24,8 @@ export class NestsButton extends GameObjects.Container {
     private isLocked: boolean;
 
     constructor(scene: Scene, locked: boolean, onClick: () => void) {
-        super(scene, LEFT_PANEL.x + PANEL_W + GAP_FROM_COLLECTION, GAME_HEIGHT - TOTAL_H - 15);
+        const l = getLayout();
+        super(scene, l.nestsBtn.x, l.nestsBtn.y);
         this.isLocked = locked;
 
         const bg = scene.add.graphics();

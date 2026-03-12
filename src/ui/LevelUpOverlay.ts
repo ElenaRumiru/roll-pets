@@ -1,5 +1,6 @@
 import { GameObjects, Scene } from 'phaser';
-import { GAME_WIDTH, GAME_HEIGHT, UI, LEVELUP_CONFIG } from '../core/config';
+import { UI, LEVELUP_CONFIG } from '../core/config';
+import { getLayout } from '../core/layout';
 import { LevelUpData } from '../types';
 import { AudioSystem } from '../systems/AudioSystem';
 import { getEggNameKey, getEggMinOdds } from '../data/eggs';
@@ -10,8 +11,6 @@ import {
     drawCardBg, drawBadgeRibbon, buildChoiceButton,
 } from './components/ChoiceCard';
 
-const CX = GAME_WIDTH / 2;
-const CY = GAME_HEIGHT / 2;
 const DEPTH = 500;          // above autoroll UI (105) and pause (1001 handled separately)
 
 const RING_OUTER = 42;
@@ -44,8 +43,12 @@ export class LevelUpOverlay {
         const audio = this.scene.registry.get('audio') as AudioSystem | undefined;
         audio?.playSfx('sfx_levelup');
 
+        const l = getLayout();
+        const CX = l.cx;
+        const CY = l.cy;
+
         // Fullscreen dark blocker — oversized to avoid sub-pixel gaps
-        const blocker = this.scene.add.rectangle(CX, CY, GAME_WIDTH + 4, GAME_HEIGHT + 4, 0x000000, 0.75)
+        const blocker = this.scene.add.rectangle(CX, CY, l.gw + 4, l.gh + 4, 0x000000, 0.75)
             .setDepth(DEPTH).setInteractive();
         this.elements.push(blocker);
 

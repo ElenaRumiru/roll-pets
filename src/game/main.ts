@@ -1,5 +1,5 @@
 import { AUTO, Game, Scale } from 'phaser';
-import { GAME_WIDTH, GAME_HEIGHT } from '../core/config';
+import { detectOrientation, setPortrait, getGameWidth, getGameHeight } from '../core/orientation';
 import { BootScene } from '../scenes/BootScene';
 import { MainScene } from '../scenes/MainScene';
 import { CollectionScene } from '../scenes/CollectionScene';
@@ -10,32 +10,86 @@ import { QuestScene } from '../scenes/QuestScene';
 import { DailyBonusScene } from '../scenes/DailyBonusScene';
 import { NestsScene } from '../scenes/NestsScene';
 
-const config: Phaser.Types.Core.GameConfig = {
-    type: AUTO,
-    width: GAME_WIDTH,
-    height: GAME_HEIGHT,
-    parent: 'game-container',
-    backgroundColor: '#1a1a2e',
-    roundPixels: true,
-    scale: {
-        mode: Scale.FIT,
-        autoCenter: Scale.CENTER_BOTH,
-    },
-    scene: [
-        BootScene,
-        MainScene,
-        CollectionScene,
-        ProgressionScene,
-        ShopScene,
-        LeaderboardScene,
-        QuestScene,
-        DailyBonusScene,
-        NestsScene,
-    ],
-};
+const SCENES_WITH_PORTRAIT = ['MainScene'];
 
 const StartGame = (parent: string) => {
-    return new Game({ ...config, parent });
+    // Detect initial orientation
+    setPortrait(detectOrientation());
+
+    const config: Phaser.Types.Core.GameConfig = {
+        type: AUTO,
+        width: getGameWidth(),
+        height: getGameHeight(),
+        parent,
+        backgroundColor: '#1a1a2e',
+        roundPixels: true,
+        scale: {
+            mode: Scale.FIT,
+            autoCenter: Scale.CENTER_BOTH,
+        },
+        scene: [
+            BootScene,
+            MainScene,
+            CollectionScene,
+            ProgressionScene,
+            ShopScene,
+            LeaderboardScene,
+            QuestScene,
+            DailyBonusScene,
+            NestsScene,
+        ],
+    };
+
+    const game = new Game(config);
+
+    // Orientation change handler (debounced)
+    let debounceTimer = 0;
+    let currentPortrait = detectOrientation();
+
+    window.addEventListener('resize', () => {
+        if (debounceTimer) clearTimeout(debounceTimer);
+        debounceTimer = window.setTimeout(() => {
+            const nowPortrait = detectOrientation();
+            if (nowPortrait === currentPortrait) return;
+            currentPortrait = nowPortrait;
+            setPortrait(nowPortrait);
+
+            game.scale.setGameSize(getGameWidth(), getGameHeight());
+
+
+            // Restart active scene if it supports portrait
+            const activeScene = game.scene.getScenes(true)[0];
+            if (!activeScene) return;
+
+            const key = activeScene.scene.key;
+
+            // Guard: don't restart if mid-roll
+            const manager = game.registry.get('gameManager') as { isRolling?: boolean } | undefined;
+            if (manager?.isRolling) {
+                // Defer restart until roll finishes
+                const check = () => {
+                    if (!manager.isRolling) {
+                        game.scale.setGameSize(getGameWidth(), getGameHeight());
+            
+                        if (SCENES_WITH_PORTRAIT.includes(key)) {
+                            activeScene.scene.restart();
+                        }
+                    } else {
+                        setTimeout(check, 100);
+                    }
+                };
+                setTimeout(check, 100);
+                return;
+            }
+
+            if (SCENES_WITH_PORTRAIT.includes(key)) {
+                activeScene.scene.restart();
+            }
+            // Sub-scenes without portrait support just get letterboxed
+        }, 150);
+    });
+
+    return game;
 };
 
 export default StartGame;

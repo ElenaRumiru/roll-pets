@@ -87,7 +87,16 @@
       "Bash(do echo:*)",
       "Read(//c/Users/ilyar/Desktop/PETS WEB/**)",
       "Bash(done)",
-      "Bash(cd \"/c/Users/ilyar/Desktop/PETS WEB\" && npm run build 2>&1 | grep -i error; echo \"exit: $?\")"
+      "Bash(cd \"/c/Users/ilyar/Desktop/PETS WEB\" && npm run build 2>&1 | grep -i error; echo \"exit: $?\")",
+      "Bash(magick --version 2>/dev/null; pip show Pillow 2>/dev/null | head -2; python -c \"from PIL import Image; print\\('Pillow OK'\\)\" 2>/dev/null)",
+      "mcp__figma__generate_figma_design",
+      "Bash(cd \"C:/Users/ilyar/Desktop/PETS WEB\" && npx http-server . -p 3001 --cors)",
+      "mcp__figma__get_screenshot",
+      "mcp__plugin_playwright_playwright__browser_resize",
+      "Bash(start \"\" \"http://localhost:3001/figma-mockup.html#figmacapture=0a0735c0-8a41-4655-b30c-c9b353251b24&figmaendpoint=https%3A%2F%2Fmcp.figma.com%2Fmcp%2Fcapture%2F0a0735c0-8a41-4655-b30c-c9b353251b24%2Fsubmit&figmadelay=3000\")",
+      "mcp__figma__get_design_context",
+      "WebFetch(domain:rexrainbow.github.io)",
+      "WebFetch(domain:docs.phaser.io)"
     ]
   }
 }

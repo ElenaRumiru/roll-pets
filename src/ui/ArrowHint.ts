@@ -1,16 +1,18 @@
 import { Scene, GameObjects, Tweens } from 'phaser';
-import { ROLL_BTN, ONBOARDING } from '../core/config';
+import { ONBOARDING } from '../core/config';
+import { getLayout } from '../core/layout';
 
 export class ArrowHint {
     private image: GameObjects.Image;
-    private bobTween: Tweens.Tween;
+    private bobTween: Tweens.Tween | Tweens.TweenChain;
     private scene: Scene;
     private alive = true;
 
     constructor(scene: Scene) {
         this.scene = scene;
+        const l = getLayout();
 
-        this.image = scene.add.image(ROLL_BTN.x, ONBOARDING.arrowY, 'ui_arrow')
+        this.image = scene.add.image(l.rollBtn.x, l.arrowY, 'ui_arrow')
             .setDepth(10)
             .setAlpha(0);
 
@@ -23,8 +25,8 @@ export class ArrowHint {
         });
 
         // Springy bob: fast drop down, slow float up
-        const top = ONBOARDING.arrowY - ONBOARDING.bobDistance;
-        const bottom = ONBOARDING.arrowY;
+        const top = l.arrowY - ONBOARDING.bobDistance;
+        const bottom = l.arrowY;
         this.bobTween = scene.tweens.chain({
             targets: this.image,
             loop: -1,

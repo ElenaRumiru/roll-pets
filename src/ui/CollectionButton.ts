@@ -1,5 +1,6 @@
 import { GameObjects, Geom, Scene } from 'phaser';
-import { UI, GAME_HEIGHT, LEFT_PANEL, THEME } from '../core/config';
+import { UI, THEME } from '../core/config';
+import { getLayout } from '../core/layout';
 import { t } from '../data/locales';
 import { addButtonFeedback } from './components/buttonFeedback';
 import { fitText } from './components/fitText';
@@ -14,7 +15,8 @@ export class CollectionButton extends GameObjects.Container {
     private badgeText: GameObjects.Text;
 
     constructor(scene: Scene, onClick: () => void) {
-        super(scene, LEFT_PANEL.x, GAME_HEIGHT - TOTAL_H - 15);
+        const l = getLayout();
+        super(scene, l.collectionBtn.x, l.collectionBtn.y);
 
         // Dark panel (lower portion)
         const bg = scene.add.graphics();

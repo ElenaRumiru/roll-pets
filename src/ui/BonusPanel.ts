@@ -1,12 +1,13 @@
 import { GameObjects, Geom, Scene } from 'phaser';
-import { UI, BONUS_PANEL, BUFF_CONFIG } from '../core/config';
+import { UI, BUFF_CONFIG } from '../core/config';
+import { getLayout } from '../core/layout';
 import { BuffSystem } from '../systems/BuffSystem';
 import { t } from '../data/locales';
 import { addButtonFeedback } from './components/buttonFeedback';
 import { fitText } from './components/fitText';
 import { addShineEffect } from './components/shineEffect';
 
-const ROW_W = BONUS_PANEL.w;
+const ROW_W = 150;
 const ICON_SZ = 54;
 const ACCENT_H = 1;
 const PAD = 4;
@@ -59,7 +60,8 @@ export class BonusPanel extends GameObjects.Container {
     private longPressTimer: Phaser.Time.TimerEvent | null = null;
 
     constructor(scene: Scene, private onBuff: (type: string) => void) {
-        super(scene, BONUS_PANEL.x, 0);
+        const l = getLayout();
+        super(scene, l.bonusPanel.x, 0);
 
         this.tooltipBg = scene.add.graphics().setDepth(200).setVisible(false);
         this.tooltipText = scene.add.text(0, 0, '', {

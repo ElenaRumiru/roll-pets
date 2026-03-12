@@ -1,13 +1,11 @@
 import { GameObjects, Scene } from 'phaser';
-import { GAME_WIDTH, GAME_HEIGHT, GRADE, GRADE_HOLD_MS, getGradeForChance, UI, PEDESTAL, PET_OFFSET_Y, getOddsString } from '../core/config';
+import { GRADE, GRADE_HOLD_MS, getGradeForChance, UI, PET_OFFSET_Y, getOddsString } from '../core/config';
+import { getLayout } from '../core/layout';
 import { PetDef, RollResult } from '../types';
 import { AudioSystem, SfxKey } from '../systems/AudioSystem';
 import { IdleWobbleFX } from './IdleWobbleFX';
 import { t } from '../data/locales';
 import { fitText } from './components/fitText';
-
-const CX = GAME_WIDTH / 2;
-const CY = GAME_HEIGHT / 2;
 
 interface PedestalSlot {
     shadow: GameObjects.Graphics | null;
@@ -32,10 +30,16 @@ export class CenterStage extends GameObjects.Container {
     private newBadge: GameObjects.Text;
     private rewardsContainer: GameObjects.Container;
 
+    private cx: number;
+    private cy: number;
+
     constructor(scene: Scene) {
         super(scene, 0, 0);
+        const l = getLayout();
+        this.cx = l.cx;
+        this.cy = l.cy;
 
-        const positions = [PEDESTAL.first, PEDESTAL.second, PEDESTAL.third];
+        const positions = [l.pedestal.first, l.pedestal.second, l.pedestal.third];
 
         // Create 3 pedestal slots
         for (let i = 0; i < 3; i++) {
@@ -63,9 +67,11 @@ export class CenterStage extends GameObjects.Container {
         }
 
         // --- ROLL OVERLAY (all hidden initially, rendered on top) ---
+        const CX = this.cx;
+        const CY = this.cy;
 
         // Dark overlay
-        this.overlay = scene.add.rectangle(CX, CY, GAME_WIDTH, GAME_HEIGHT, 0x000000, 0)
+        this.overlay = scene.add.rectangle(CX, CY, l.gw, l.gh, 0x000000, 0)
             .setDepth(100);
 
         // Egg container
@@ -124,7 +130,8 @@ export class CenterStage extends GameObjects.Container {
     }
 
     updatePedestals(topPets: PetDef[]): void {
-        const positions = [PEDESTAL.first, PEDESTAL.second, PEDESTAL.third];
+        const l = getLayout();
+        const positions = [l.pedestal.first, l.pedestal.second, l.pedestal.third];
 
         for (let i = 0; i < 3; i++) {
             const slot = this.slots[i];
@@ -194,6 +201,8 @@ export class CenterStage extends GameObjects.Container {
     playHatch(result: RollResult, onComplete: () => void): void {
         const scene = this.scene;
         const cfg = GRADE[result.grade];
+        const CX = this.cx;
+        const CY = this.cy;
 
         // 1) Fade in dark overlay (skip if autoroll keeps it persistent)
         if (!this.autorollOverlayActive) {
@@ -246,6 +255,8 @@ export class CenterStage extends GameObjects.Container {
 
     private showReveal(result: RollResult, cfg: { colorHex: string; outlineHex: string; label: string; strokeThickness: number }, onComplete: () => void): void {
         const scene = this.scene;
+        const CX = this.cx;
+        const CY = this.cy;
 
         // Grade-specific jackpot SFX — common uses old reveal, rest get escalating arpeggio
         if (result.grade === 'common') {

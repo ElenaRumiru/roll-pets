@@ -1,16 +1,22 @@
 import { GameObjects, Scene } from 'phaser';
-import { GAME_WIDTH, COIN_HUD, UI, THEME } from '../core/config';
+import { COIN_HUD, UI, THEME } from '../core/config';
+import { getLayout } from '../core/layout';
 
-const HUD_X = GAME_WIDTH - 49 - 21 - COIN_HUD.gap - COIN_HUD.w;
-const HUD_Y = 15;
 const TEXT_LEFT = COIN_HUD.iconSize * 0.6 + 2;
 const TEXT_CENTER_X = TEXT_LEFT + (COIN_HUD.w - TEXT_LEFT) / 2;
 
 export class CoinDisplay extends GameObjects.Container {
     private label: GameObjects.Text;
+    private hudX: number;
+    private hudY: number;
 
     constructor(scene: Scene) {
-        super(scene, HUD_X, HUD_Y);
+        const l = getLayout();
+        const hx = l.coinDisplay.x;
+        const hy = l.coinDisplay.y;
+        super(scene, hx, hy);
+        this.hudX = hx;
+        this.hudY = hy;
 
         const bg = scene.add.graphics();
         bg.fillStyle(THEME.PANEL_BG, THEME.PANEL_ALPHA);
@@ -54,12 +60,12 @@ export class CoinDisplay extends GameObjects.Container {
         }).setOrigin(0, 0.5);
 
         const container = scene.add.container(
-            HUD_X + COIN_HUD.w / 2,
-            HUD_Y + COIN_HUD.h + 2,
+            this.hudX + COIN_HUD.w / 2,
+            this.hudY + COIN_HUD.h + 2,
             [icon, txt],
         ).setDepth(this.depth + 1);
 
-        const labelWorldY = HUD_Y + COIN_HUD.h / 2;
+        const labelWorldY = this.hudY + COIN_HUD.h / 2;
         scene.tweens.add({
             targets: container,
             y: labelWorldY,
@@ -82,8 +88,8 @@ export class CoinDisplay extends GameObjects.Container {
         }).setOrigin(0, 0.5);
 
         const container = scene.add.container(
-            HUD_X + COIN_HUD.w / 2,
-            HUD_Y + COIN_HUD.h + 2,
+            this.hudX + COIN_HUD.w / 2,
+            this.hudY + COIN_HUD.h + 2,
             [icon, txt],
         ).setDepth(this.depth + 1);
 

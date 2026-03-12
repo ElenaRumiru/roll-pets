@@ -1,13 +1,12 @@
 import { GameObjects, Scene } from 'phaser';
-import { GAME_WIDTH, GAME_HEIGHT, UI, REBIRTH_CONFIG } from '../core/config';
+import { UI, REBIRTH_CONFIG } from '../core/config';
+import { getLayout } from '../core/layout';
 import { RebirthData } from '../types';
 import { AudioSystem } from '../systems/AudioSystem';
 import { Button } from './components/Button';
 import { t } from '../data/locales';
 import { fitText } from './components/fitText';
 
-const CX = GAME_WIDTH / 2;
-const CY = GAME_HEIGHT / 2;
 const DEPTH = 500;
 
 export class RebirthOverlay {
@@ -24,7 +23,11 @@ export class RebirthOverlay {
         const audio = this.scene.registry.get('audio') as AudioSystem | undefined;
         audio?.playSfx('sfx_levelup');
 
-        const blocker = this.scene.add.rectangle(CX, CY, GAME_WIDTH, GAME_HEIGHT, 0x000000, 0.75)
+        const l = getLayout();
+        const CX = l.cx;
+        const CY = l.cy;
+
+        const blocker = this.scene.add.rectangle(CX, CY, l.gw + 4, l.gh + 4, 0x000000, 0.75)
             .setDepth(DEPTH).setInteractive();
         this.elements.push(blocker);
 

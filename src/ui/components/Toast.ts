@@ -1,5 +1,6 @@
 import { Scene, GameObjects } from 'phaser';
-import { GAME_WIDTH, GAME_HEIGHT, UI } from '../../core/config';
+import { UI } from '../../core/config';
+import { getGameWidth, getGameHeight } from '../../core/orientation';
 
 type ToastType = 'info' | 'error';
 
@@ -17,7 +18,6 @@ const COOLDOWN_MS = 1000;
 const DISPLAY_MS = 1050;
 const FADE_MS = 500;
 const SLOT_H = 40;
-const BASE_Y = GAME_HEIGHT * 0.4;
 
 const COLOR: Record<ToastType, string> = {
     info: '#FEBF07',
@@ -30,7 +30,7 @@ let lastShowTime = 0;
 let timer: ReturnType<typeof setTimeout> | null = null;
 
 function slotY(slot: number): number {
-    return BASE_Y + slot * SLOT_H;
+    return getGameHeight() * 0.4 + slot * SLOT_H;
 }
 
 function removeToast(scene: Scene, toast: ActiveToast): void {
@@ -54,7 +54,7 @@ function displayToast(scene: Scene, message: string, type: ToastType): void {
     const slot = active.length;
     const y = slotY(slot);
 
-    const text = scene.add.text(GAME_WIDTH / 2, y, message, {
+    const text = scene.add.text(getGameWidth() / 2, y, message, {
         fontFamily: UI.FONT_STROKE,
         fontSize: '14px',
         color: COLOR[type],

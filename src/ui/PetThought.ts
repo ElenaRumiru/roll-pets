@@ -1,5 +1,6 @@
 import { GameObjects, Scene } from 'phaser';
 import { UI, THOUGHT_BUBBLE_CONFIG } from '../core/config';
+import { getLayout } from '../core/layout';
 import { t } from '../data/locales';
 import { fitText } from './components/fitText';
 import { addButtonFeedback } from './components/buttonFeedback';
@@ -9,9 +10,6 @@ type BubbleSide = 'right' | 'left';
 type BubblePhase = 'counting' | 'ready' | 'cooldown';
 
 const REGISTRY_KEY = 'petThoughtState';
-
-const RIGHT_POS = { x: 658, y: 110 };
-const LEFT_POS  = { x: 380, y: 110 };
 
 // Cloud center offset from image center (tail takes bottom ~28%)
 const CLOUD_OFF_R = { cx: 4,  cy: -14 };
@@ -46,7 +44,8 @@ export class PetThought extends GameObjects.Container {
     private reg: Phaser.Data.DataManager;
 
     constructor(scene: Scene, onClaim: () => void) {
-        super(scene, RIGHT_POS.x, RIGHT_POS.y);
+        const l = getLayout();
+        super(scene, l.thoughtRight.x, l.thoughtRight.y);
         this.claimCb = onClaim;
         this.timer = THOUGHT_BUBBLE_CONFIG.initialDelayMs;
         this.reg = scene.game.registry;
@@ -151,7 +150,8 @@ export class PetThought extends GameObjects.Container {
     }
 
     private applyPosition(): void {
-        const pos = this.side === 'right' ? RIGHT_POS : LEFT_POS;
+        const l = getLayout();
+        const pos = this.side === 'right' ? l.thoughtRight : l.thoughtLeft;
         this.setPosition(pos.x, pos.y);
 
         const texKey = this.side === 'right' ? 'ui_dialog_right' : 'ui_dialog_left';

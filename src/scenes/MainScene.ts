@@ -1,5 +1,7 @@
 import { Scene } from 'phaser';
-import { GAME_WIDTH, GAME_HEIGHT, AUTOROLL_INTERVAL, xpForLevel, UI, ONBOARDING, LEVELUP_CONFIG, NEST_CONFIG, AUTOROLL_TOGGLE, BUFF_CONFIG } from '../core/config';
+import { AUTOROLL_INTERVAL, xpForLevel, UI, ONBOARDING, LEVELUP_CONFIG, NEST_CONFIG, AUTOROLL_TOGGLE, BUFF_CONFIG } from '../core/config';
+import { getLayout } from '../core/layout';
+import { isPortrait } from '../core/orientation';
 import { EventBus } from '../core/EventBus';
 import { GameManager } from '../core/GameManager';
 import { TopBar } from '../ui/TopBar';
@@ -82,10 +84,23 @@ export class MainScene extends Scene {
     }
 
     private buildUI(): void {
+        const l = getLayout();
+
         // Background image
-        this.bgImage = this.add.image(GAME_WIDTH / 2, GAME_HEIGHT / 2, this.manager.getBgImageKey())
-            .setDisplaySize(GAME_WIDTH, GAME_HEIGHT)
+        const bgKey = isPortrait()
+            ? this.manager.getPortraitBgImageKey()
+            : this.manager.getBgImageKey();
+        this.bgImage = this.add.image(l.cx, l.cy, bgKey)
+            .setDisplaySize(l.gw, l.gh)
             .setDepth(-1);
+
+        // Portrait bottom bar overlay
+        if (l.bottomBar) {
+            const bar = this.add.graphics();
+            bar.fillStyle(0x000000, 0.6);
+            bar.fillRect(0, l.bottomBar.y, l.gw, l.bottomBar.h);
+            bar.setDepth(0);
+        }
 
         // UI components
         this.topBar = new TopBar(this, () => {
@@ -155,12 +170,18 @@ export class MainScene extends Scene {
             },
         );
 
-        // Position quest panel + bonus panel aligned with leaderboard
-        const COMBINED_GAP = 6;
-        const leaderboardY = Math.round((GAME_HEIGHT - 175) / 2) - 22 - 25; // shifted 25px up for shop button
-        this.questPanel.y = leaderboardY - 20;
-        this.leaderboard.y = leaderboardY - 38;
-        this.bonusPanel.y = this.questPanel.y + this.questPanel.panelHeight + COMBINED_GAP;
+        // Position quest panel + bonus panel + leaderboard from layout
+        this.questPanel.y = l.questPanel.y;
+        this.leaderboard.y = l.leaderboard.y;
+
+        if (isPortrait()) {
+            // In portrait, bonusPanel y is set from layout directly
+            this.bonusPanel.y = l.bonusPanel.y;
+        } else {
+            // In landscape, bonus panel stacks below quest panel
+            const COMBINED_GAP = 6;
+            this.bonusPanel.y = this.questPanel.y + this.questPanel.panelHeight + COMBINED_GAP;
+        }
 
         // Audio (singleton from registry)
         this.audio = this.registry.get('audio') as AudioSystem;
@@ -395,7 +416,10 @@ export class MainScene extends Scene {
 
     private applyRebirthSideEffects(): void {
         this.centerStage.setEggImage(this.manager.getEggImageKey());
-        this.bgImage.setTexture(this.manager.getBgImageKey());
+        const bgKey = isPortrait()
+            ? this.manager.getPortraitBgImageKey()
+            : this.manager.getBgImageKey();
+        this.bgImage.setTexture(bgKey);
     }
 
     private dismissOverlayAndComplete(): void {
@@ -504,23 +528,24 @@ export class MainScene extends Scene {
     }
 
     private createPauseOverlay(): Phaser.GameObjects.Container {
+        const l = getLayout();
         const container = this.add.container(0, 0);
         container.setDepth(1001);
 
         const bg = this.add.rectangle(
-            GAME_WIDTH / 2, GAME_HEIGHT / 2,
-            GAME_WIDTH, GAME_HEIGHT, 0x000000, 0.7,
+            l.cx, l.cy,
+            l.gw, l.gh, 0x000000, 0.7,
         );
         bg.setInteractive();
         container.add(bg);
 
-        const title = this.add.text(GAME_WIDTH / 2, GAME_HEIGHT / 2 - 25, t('paused'), {
+        const title = this.add.text(l.cx, l.cy - 25, t('paused'), {
             fontFamily: UI.FONT_STROKE, fontSize: '59px', color: '#ffffff',
             stroke: '#000000', strokeThickness: UI.STROKE_THICK,
         }).setOrigin(0.5);
         container.add(title);
 
-        const hint = this.add.text(GAME_WIDTH / 2, GAME_HEIGHT / 2 + 37, t('press_esc'), {
+        const hint = this.add.text(l.cx, l.cy + 37, t('press_esc'), {
             fontFamily: UI.FONT_BODY, fontSize: '20px', color: '#aaaaaa',
         }).setOrigin(0.5);
         container.add(hint);

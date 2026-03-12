@@ -1,5 +1,6 @@
 import { GameObjects, Geom, Scene } from 'phaser';
-import { UI, LEFT_PANEL, GRADE, getGradeForChance, getOddsString, THEME } from '../core/config';
+import { UI, GRADE, getGradeForChance, getOddsString, THEME } from '../core/config';
+import { getLayout } from '../core/layout';
 import { t } from '../data/locales';
 import { LeaderboardEntry, LeagueConfig } from '../types';
 import { addButtonFeedback } from './components/buttonFeedback';
@@ -28,7 +29,8 @@ export class Leaderboard extends GameObjects.Container {
     private currentH = EXPANDED_H;
 
     constructor(scene: Scene, onClick: () => void) {
-        super(scene, LEFT_PANEL.x, 0);
+        const l = getLayout();
+        super(scene, l.leaderboard.x, 0);
 
         // Panel background (redrawn dynamically)
         this.bg = scene.add.graphics();

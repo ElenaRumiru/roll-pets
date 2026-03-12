@@ -1,5 +1,6 @@
 import { GameObjects, Geom, Scene } from 'phaser';
-import { UI, GAME_WIDTH, GAME_HEIGHT, THEME } from '../core/config';
+import { UI, THEME } from '../core/config';
+import { getLayout } from '../core/layout';
 import { t } from '../data/locales';
 import { addButtonFeedback } from './components/buttonFeedback';
 import { fitText } from './components/fitText';
@@ -8,15 +9,14 @@ const PANEL_W = 118;
 const BG_H = 67;
 const TOTAL_H = 93;
 const RADIUS = 14;
-const GAP_FROM_SHOP = 11;
 
 export class DailyBonusButton extends GameObjects.Container {
     private badgeGfx: GameObjects.Graphics;
     private badgeText: GameObjects.Text;
 
     constructor(scene: Scene, onClick: () => void) {
-        const shopX = GAME_WIDTH - PANEL_W - 15;
-        super(scene, shopX - PANEL_W - GAP_FROM_SHOP, GAME_HEIGHT - TOTAL_H - 15);
+        const l = getLayout();
+        super(scene, l.dailyBonusBtn.x, l.dailyBonusBtn.y);
 
         const bg = scene.add.graphics();
         bg.fillStyle(THEME.PANEL_BG, THEME.PANEL_ALPHA);

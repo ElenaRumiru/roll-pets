@@ -1,5 +1,6 @@
 import { GameObjects, Geom, Scene } from 'phaser';
-import { UI, ROLL_BTN, AUTOROLL_TOGGLE } from '../core/config';
+import { UI, AUTOROLL_TOGGLE } from '../core/config';
+import { getLayout } from '../core/layout';
 import { BuffBadges } from './BuffBadges';
 import { BuffSystem } from '../systems/BuffSystem';
 import { t } from '../data/locales';
@@ -19,6 +20,7 @@ export class RightPanel extends GameObjects.Container {
     private lockOverlay!: GameObjects.Graphics;
     private lockIcon!: GameObjects.Image;
     private lockLabel!: GameObjects.Text;
+    private rollW: number;
 
     private onRoll: () => void;
     private onStopAutoroll: () => void;
@@ -39,36 +41,40 @@ export class RightPanel extends GameObjects.Container {
         this.onStartAutoroll = onStartAutoroll;
         this.onToggleAutoroll = onToggleAutoroll;
 
+        const l = getLayout();
+        const rb = l.rollBtn;
+        const ar = l.autoroll;
+        this.rollW = rb.w;
+
         // Roll button wrapper (for scaling image + text together)
-        this.rollWrap = scene.add.container(ROLL_BTN.x, ROLL_BTN.y);
+        this.rollWrap = scene.add.container(rb.x, rb.y);
         this.add(this.rollWrap);
 
-        this.rollBg = scene.add.image(0, 0, 'ui_roll')
-            .setDisplaySize(ROLL_BTN.width, ROLL_BTN.height)
+        this.rollBg = scene.add.image(0, 0, rb.texture)
+            .setDisplaySize(rb.w, rb.h)
             .setInteractive({ useHandCursor: true });
         this.rollBg.on('pointerdown', () => this.handleRollClick());
         this.rollWrap.add(this.rollBg);
 
         this.rollLabel = scene.add.text(0, -1, t('roll_button'), {
             fontFamily: UI.FONT_STROKE,
-            fontSize: '30px',
+            fontSize: rb.fontSize,
             color: '#ffffff',
             stroke: '#000000',
             strokeThickness: 6,
             shadow: { offsetX: 2, offsetY: 2, color: '#000000', blur: 4, fill: true },
         }).setOrigin(0.5);
-        fitText(this.rollLabel, ROLL_BTN.width - 25, 30);
+        fitText(this.rollLabel, rb.w - 25, parseInt(rb.fontSize));
         this.rollWrap.add(this.rollLabel);
 
 
         addButtonFeedback(scene, this.rollBg, { scaleTarget: this.rollWrap });
 
-        // Autoroll toggle button (right of Roll, bottom-aligned)
-        const toggleX = ROLL_BTN.x + ROLL_BTN.width / 2 + 4 + AUTOROLL_TOGGLE.width / 2;
-        const safeBottom = 580 - 15;
-        const toggleY = safeBottom - AUTOROLL_TOGGLE.height / 2;
+        // Autoroll toggle button
+        const toggleX = ar.x;
+        const toggleY = ar.y;
         this.toggleImg = scene.add.image(toggleX, toggleY, 'ui_automod_off')
-            .setDisplaySize(AUTOROLL_TOGGLE.width, AUTOROLL_TOGGLE.height)
+            .setDisplaySize(ar.w, ar.h)
             .setInteractive({ useHandCursor: true });
         this.toggleImg.on('pointerdown', () => this.handleToggleClick());
         this.add(this.toggleImg);
@@ -78,18 +84,18 @@ export class RightPanel extends GameObjects.Container {
         this.lockOverlay = scene.add.graphics();
         this.lockOverlay.fillStyle(0x111122, 0.75);
         this.lockOverlay.fillRoundedRect(
-            toggleX - AUTOROLL_TOGGLE.width / 2,
-            toggleY - AUTOROLL_TOGGLE.height / 2,
-            AUTOROLL_TOGGLE.width,
-            AUTOROLL_TOGGLE.height,
+            toggleX - ar.w / 2,
+            toggleY - ar.h / 2,
+            ar.w,
+            ar.h,
             8,
         );
         this.lockOverlay.setInteractive(
             new Geom.Rectangle(
-                toggleX - AUTOROLL_TOGGLE.width / 2,
-                toggleY - AUTOROLL_TOGGLE.height / 2,
-                AUTOROLL_TOGGLE.width,
-                AUTOROLL_TOGGLE.height,
+                toggleX - ar.w / 2,
+                toggleY - ar.h / 2,
+                ar.w,
+                ar.h,
             ),
             Geom.Rectangle.Contains,
         );
@@ -110,8 +116,8 @@ export class RightPanel extends GameObjects.Container {
         this.lockIcon.setVisible(false);
         this.lockLabel.setVisible(false);
 
-        // Buff badges above roll button (almost touching top edge)
-        this.badges = new BuffBadges(scene, ROLL_BTN.x, ROLL_BTN.y - ROLL_BTN.height / 2 - 15);
+        // Buff badges
+        this.badges = new BuffBadges(scene, l.badges.x, l.badges.y, l.badges.direction);
         this.add(this.badges);
 
         scene.add.existing(this);
@@ -199,6 +205,6 @@ export class RightPanel extends GameObjects.Container {
 
     private setRollLabel(text: string): void {
         this.rollLabel.setText(text);
-        fitText(this.rollLabel, ROLL_BTN.width - 25, 30);
+        fitText(this.rollLabel, this.rollW - 25, parseInt(this.rollLabel.style.fontSize as string));
     }
 }

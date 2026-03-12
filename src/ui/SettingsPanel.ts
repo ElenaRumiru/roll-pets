@@ -1,5 +1,6 @@
 import { GameObjects, Scene } from 'phaser';
-import { GAME_WIDTH, GAME_HEIGHT, UI } from '../core/config';
+import { UI } from '../core/config';
+import { getGameWidth, getGameHeight } from '../core/orientation';
 import { EventBus } from '../core/EventBus';
 import { t, setLanguage, getLanguage } from '../data/locales';
 import { AudioSystem } from '../systems/AudioSystem';
@@ -27,12 +28,12 @@ export class SettingsPanel extends GameObjects.Container {
         this.save = save;
         this.setDepth(1000);
 
-        const px = GAME_WIDTH / 2 - PANEL_W / 2;
-        const py = GAME_HEIGHT / 2 - PANEL_H / 2;
+        const px = getGameWidth() / 2 - PANEL_W / 2;
+        const py = getGameHeight() / 2 - PANEL_H / 2;
 
         // Dark overlay
-        this.overlay = scene.add.rectangle(GAME_WIDTH / 2, GAME_HEIGHT / 2,
-            GAME_WIDTH, GAME_HEIGHT, 0x000000, 0.6);
+        this.overlay = scene.add.rectangle(getGameWidth() / 2, getGameHeight() / 2,
+            getGameWidth(), getGameHeight(), 0x000000, 0.6);
         this.overlay.setInteractive();
         this.overlay.on('pointerdown', () => this.hide());
         this.add(this.overlay);
@@ -46,7 +47,7 @@ export class SettingsPanel extends GameObjects.Container {
         this.add(panel);
 
         // Title
-        const title = scene.add.text(GAME_WIDTH / 2, py + 35, t('settings'), {
+        const title = scene.add.text(getGameWidth() / 2, py + 35, t('settings'), {
             fontFamily: UI.FONT_STROKE, fontSize: '25px', color: '#ffffff',
             stroke: '#000000', strokeThickness: UI.STROKE_MEDIUM,
         }).setOrigin(0.5);
