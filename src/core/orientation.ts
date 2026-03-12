@@ -20,9 +20,16 @@ export function setPortrait(p: boolean): void {
 }
 
 export function getGameWidth(): number {
-    return portrait ? PORTRAIT_W : LANDSCAPE_W;
+    if (!portrait) return LANDSCAPE_W;
+    return PORTRAIT_W;
 }
 
 export function getGameHeight(): number {
-    return portrait ? PORTRAIT_H : LANDSCAPE_H;
+    if (!portrait) return LANDSCAPE_H;
+    // Match screen aspect ratio so the game fills 100% of screen height
+    if (typeof window !== 'undefined') {
+        const ratio = window.innerHeight / window.innerWidth;
+        return Math.round(PORTRAIT_W * ratio);
+    }
+    return PORTRAIT_H;
 }

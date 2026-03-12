@@ -1,4 +1,4 @@
-import { isPortrait, LANDSCAPE_W, LANDSCAPE_H, PORTRAIT_W, PORTRAIT_H } from './orientation';
+import { isPortrait, LANDSCAPE_W, LANDSCAPE_H, PORTRAIT_W, getGameHeight } from './orientation';
 
 export interface PedestalPos { x: number; y: number; scale: number }
 
@@ -51,7 +51,7 @@ export interface MainLayout {
     bottomBar: { visible: boolean; y: number; h: number } | null;
 }
 
-// ─── LANDSCAPE (current hardcoded values) ───────────────────
+// ─── LANDSCAPE (fixed 16:9 = 1031×580) ──────────────────────
 
 const LANDSCAPE_QUEST_X = LANDSCAPE_W - 135 - 15;
 const LANDSCAPE_BONUS_X = LANDSCAPE_W - 150 - 15;
@@ -86,7 +86,7 @@ const LANDSCAPE: MainLayout = {
 
     leaderboard: { x: 15, y: LB_Y_BASE - 38 },
     questPanel:  { x: LANDSCAPE_QUEST_X, y: LB_Y_BASE - 20 },
-    bonusPanel:  { x: LANDSCAPE_BONUS_X, y: 0 }, // set dynamically in MainScene
+    bonusPanel:  { x: LANDSCAPE_BONUS_X, y: 0 },
 
     collectionBtn: { x: 15, y: LANDSCAPE_H - 93 - 15 },
     nestsBtn:      { x: 15 + 118 + 11, y: LANDSCAPE_H - 93 - 15 },
@@ -99,54 +99,60 @@ const LANDSCAPE: MainLayout = {
     bottomBar: null,
 };
 
-// ─── PORTRAIT (from Figma mockup 554×896 → 580×1031) ──────
+// ─── PORTRAIT (dynamic height to fill 100% of screen) ──────
 
-const P_BOTTOM_BAR_Y = 958;
 const P_BOTTOM_BAR_H = 73;
-const P_BTN_ROW_Y = 922;
 
-const PORTRAIT: MainLayout = {
-    gw: PORTRAIT_W,
-    gh: PORTRAIT_H,
-    cx: PORTRAIT_W / 2,
-    cy: PORTRAIT_H / 2,
+function buildPortrait(): MainLayout {
+    const gh = getGameHeight();
+    const btnRowY = gh - 109;
+    const rollY = gh - 131;
+    const bottomBarY = gh - P_BOTTOM_BAR_H;
+    const bonusY = gh - 228;
 
-    pedestal: {
-        first:  { x: 293, y: 552, scale: 0.68 },
-        second: { x: 157, y: 610, scale: 0.55 },
-        third:  { x: 424, y: 639, scale: 0.49 },
-    },
+    return {
+        gw: PORTRAIT_W,
+        gh,
+        cx: PORTRAIT_W / 2,
+        cy: gh / 2,
 
-    rollBtn: { x: 290, y: 900, w: 200, h: 140, texture: 'ui_roll_portrait', fontSize: '35px' },
-    autoroll: {
-        x: 290,
-        y: 900 - 140 / 2 - 7 - 61 / 2,  // above roll btn
-        w: 99,
-        h: 61,
-    },
-    arrowY: 900 - 140 / 2 - 50,
+        pedestal: {
+            first:  { x: 293, y: 552, scale: 0.68 },
+            second: { x: 157, y: 610, scale: 0.55 },
+            third:  { x: 424, y: 639, scale: 0.49 },
+        },
 
-    badges: { x: 39, y: 670, direction: 'column' },
+        rollBtn: { x: 290, y: rollY, w: 200, h: 140, texture: 'ui_roll_portrait', fontSize: '35px' },
+        autoroll: {
+            x: 290,
+            y: rollY - 140 / 2 - 7 - 61 / 2,
+            w: 99,
+            h: 61,
+        },
+        arrowY: rollY - 140 / 2 - 50,
 
-    topBar: { x: 50, y: 15 },
-    coinDisplay: { x: 383, y: 13 },
-    settingsBtn: { x: 531, y: 28 },
+        badges: { x: 39, y: 670, direction: 'column' },
 
-    leaderboard: { x: 41, y: 70 },
-    questPanel:  { x: PORTRAIT_W - 135 - 15, y: 86 },
-    bonusPanel:  { x: PORTRAIT_W - 150 - 15, y: 803 },
+        topBar: { x: 50, y: 15 },
+        coinDisplay: { x: 383, y: 13 },
+        settingsBtn: { x: 531, y: 28 },
 
-    collectionBtn: { x: 15, y: P_BTN_ROW_Y },
-    nestsBtn:      { x: 144, y: P_BTN_ROW_Y },
-    shopBtn:       { x: 440, y: P_BTN_ROW_Y },
-    dailyBonusBtn: { x: 340, y: P_BTN_ROW_Y },
+        leaderboard: { x: 41, y: 70 },
+        questPanel:  { x: PORTRAIT_W - 135 - 15, y: 86 },
+        bonusPanel:  { x: PORTRAIT_W - 150 - 15, y: bonusY },
 
-    thoughtRight: { x: 400, y: 370 },
-    thoughtLeft:  { x: 180, y: 370 },
+        collectionBtn: { x: 15, y: btnRowY },
+        nestsBtn:      { x: 144, y: btnRowY },
+        shopBtn:       { x: 440, y: btnRowY },
+        dailyBonusBtn: { x: 340, y: btnRowY },
 
-    bottomBar: { visible: true, y: P_BOTTOM_BAR_Y, h: P_BOTTOM_BAR_H },
-};
+        thoughtRight: { x: 400, y: 370 },
+        thoughtLeft:  { x: 180, y: 370 },
+
+        bottomBar: { visible: true, y: bottomBarY, h: P_BOTTOM_BAR_H },
+    };
+}
 
 export function getLayout(): MainLayout {
-    return isPortrait() ? PORTRAIT : LANDSCAPE;
+    return isPortrait() ? buildPortrait() : LANDSCAPE;
 }

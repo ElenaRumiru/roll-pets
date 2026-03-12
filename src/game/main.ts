@@ -56,7 +56,6 @@ const StartGame = (parent: string) => {
 
             game.scale.setGameSize(getGameWidth(), getGameHeight());
 
-
             // Restart active scene if it supports portrait
             const activeScene = game.scene.getScenes(true)[0];
             if (!activeScene) return;
@@ -66,11 +65,9 @@ const StartGame = (parent: string) => {
             // Guard: don't restart if mid-roll
             const manager = game.registry.get('gameManager') as { isRolling?: boolean } | undefined;
             if (manager?.isRolling) {
-                // Defer restart until roll finishes
                 const check = () => {
                     if (!manager.isRolling) {
                         game.scale.setGameSize(getGameWidth(), getGameHeight());
-            
                         if (SCENES_WITH_PORTRAIT.includes(key)) {
                             activeScene.scene.restart();
                         }
@@ -85,7 +82,6 @@ const StartGame = (parent: string) => {
             if (SCENES_WITH_PORTRAIT.includes(key)) {
                 activeScene.scene.restart();
             }
-            // Sub-scenes without portrait support just get letterboxed
         }, 150);
     });
 
