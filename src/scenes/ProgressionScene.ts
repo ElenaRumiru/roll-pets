@@ -9,7 +9,8 @@ import { createSceneHeader } from '../ui/SceneHeader';
 
 const HEADER_H = 74;
 const TRACK_H = 12;
-const MILESTONE_GAP = 321;
+const MILESTONE_GAP = 273;
+const MILESTONE_GAP_P = 232;
 const FIRST_OFFSET = 173;
 
 const EGG_R = 76;
@@ -71,11 +72,11 @@ export class ProgressionScene extends Scene {
             const gw = getGameWidth();
             const gh = getGameHeight();
             const trackX = Math.round(gw * 0.42);
-            const totalH = FIRST_OFFSET + (n - 1) * MILESTONE_GAP + FIRST_OFFSET;
+            const totalH = FIRST_OFFSET + (n - 1) * MILESTONE_GAP_P + FIRST_OFFSET;
 
             /* Milestone positions: bottom-to-top in container space */
-            const transitionY = totalH - FIRST_OFFSET - lastReachedIdx * MILESTONE_GAP;
-            const topY = totalH - FIRST_OFFSET - (n - 1) * MILESTONE_GAP;
+            const transitionY = totalH - FIRST_OFFSET - lastReachedIdx * MILESTONE_GAP_P;
+            const topY = totalH - FIRST_OFFSET - (n - 1) * MILESTONE_GAP_P;
             const bottomY = totalH - FIRST_OFFSET;
 
             /* Gold bar: from bottom to transition */
@@ -88,7 +89,7 @@ export class ProgressionScene extends Scene {
 
             for (let i = 0; i < n; i++) {
                 const m = milestones[i];
-                const my = totalH - FIRST_OFFSET - i * MILESTONE_GAP;
+                const my = totalH - FIRST_OFFSET - i * MILESTONE_GAP_P;
                 const reached = m.level <= playerLevel;
                 this.drawMilestonePortrait(trackX, my, m, reached);
             }
@@ -256,15 +257,15 @@ export class ProgressionScene extends Scene {
             if (m.eggMinOdds) {
                 this.trackContainer.add(this.add.text(x, labelY + 27,
                     t('egg_effect', { odds: m.eggMinOdds }), {
-                        fontFamily: UI.FONT_BODY, fontSize: '15px',
+                        fontFamily: UI.FONT_BODY, fontSize: '14px',
                         color: reached ? '#aaaaaa' : '#555555',
                         stroke: '#000000', strokeThickness: 1,
                     }).setOrigin(0.5));
             }
             if (m.eggBuffLabel && m.eggIncubationLabel) {
-                this.trackContainer.add(this.add.text(x, labelY + 50,
+                this.trackContainer.add(this.add.text(x, labelY + 48,
                     t('egg_incubation_info', { buff: m.eggBuffLabel, time: m.eggIncubationLabel }), {
-                        fontFamily: UI.FONT_BODY, fontSize: '13px',
+                        fontFamily: UI.FONT_BODY, fontSize: '14px',
                         color: reached ? '#78C828' : '#555555',
                         stroke: '#000000', strokeThickness: 1,
                     }).setOrigin(0.5));
@@ -312,10 +313,10 @@ export class ProgressionScene extends Scene {
             this.trackContainer.add(nameText);
 
             if (m.eggMinOdds) {
-                topY += 24;
+                topY += 22;
                 this.trackContainer.add(this.add.text(labelX, topY,
                     t('egg_effect', { odds: m.eggMinOdds }), {
-                        fontFamily: UI.FONT_BODY, fontSize: '15px',
+                        fontFamily: UI.FONT_BODY, fontSize: '14px',
                         color: reached ? '#aaaaaa' : '#555555',
                         stroke: '#000000', strokeThickness: 1,
                         wordWrap: { width: maxW },
@@ -325,7 +326,7 @@ export class ProgressionScene extends Scene {
                 topY += 22;
                 this.trackContainer.add(this.add.text(labelX, topY,
                     t('egg_incubation_info', { buff: m.eggBuffLabel, time: m.eggIncubationLabel }), {
-                        fontFamily: UI.FONT_BODY, fontSize: '13px',
+                        fontFamily: UI.FONT_BODY, fontSize: '14px',
                         color: reached ? '#78C828' : '#555555',
                         stroke: '#000000', strokeThickness: 1,
                         wordWrap: { width: maxW },
@@ -357,8 +358,8 @@ export class ProgressionScene extends Scene {
         if (isPortrait()) {
             const gh = getGameHeight();
             const n = milestones.length;
-            const totalH = FIRST_OFFSET + (n - 1) * MILESTONE_GAP + FIRST_OFFSET;
-            const targetY = totalH - FIRST_OFFSET - lastReachedIdx * MILESTONE_GAP;
+            const totalH = FIRST_OFFSET + (n - 1) * MILESTONE_GAP_P + FIRST_OFFSET;
+            const targetY = totalH - FIRST_OFFSET - lastReachedIdx * MILESTONE_GAP_P;
             this.scrollOffset = Math.max(0, targetY - (gh - HEADER_H) * 0.80);
         } else {
             const targetX = FIRST_OFFSET + lastReachedIdx * MILESTONE_GAP;
