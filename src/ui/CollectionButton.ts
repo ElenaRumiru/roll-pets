@@ -1,11 +1,11 @@
 import { GameObjects, Geom, Scene } from 'phaser';
 import { UI, THEME } from '../core/config';
 import { getLayout } from '../core/layout';
+import { isPortrait } from '../core/orientation';
 import { t } from '../data/locales';
 import { addButtonFeedback } from './components/buttonFeedback';
 import { fitText } from './components/fitText';
 
-const PANEL_W = 118;
 const BG_H = 67;
 const TOTAL_H = 93;
 const RADIUS = 14;
@@ -13,41 +13,41 @@ const RADIUS = 14;
 export class CollectionButton extends GameObjects.Container {
     private badgeGfx: GameObjects.Graphics;
     private badgeText: GameObjects.Text;
+    private pw: number;
 
     constructor(scene: Scene, onClick: () => void) {
         const l = getLayout();
         super(scene, l.collectionBtn.x, l.collectionBtn.y);
+        const pw = l.btnW;
+        this.pw = pw;
 
-        // Dark panel (lower portion)
         const bg = scene.add.graphics();
         bg.fillStyle(THEME.PANEL_BG, THEME.PANEL_ALPHA);
-        bg.fillRoundedRect(0, TOTAL_H - BG_H, PANEL_W, BG_H, RADIUS);
+        bg.fillRoundedRect(0, TOTAL_H - BG_H, pw, BG_H, RADIUS);
         bg.lineStyle(4, 0x000000, 1);
-        bg.strokeRoundedRect(0, TOTAL_H - BG_H, PANEL_W, BG_H, RADIUS);
+        bg.strokeRoundedRect(0, TOTAL_H - BG_H, pw, BG_H, RADIUS);
         bg.lineStyle(1.5, 0xFEBF07, 1);
-        bg.strokeRoundedRect(0, TOTAL_H - BG_H, PANEL_W, BG_H, RADIUS);
+        bg.strokeRoundedRect(0, TOTAL_H - BG_H, pw, BG_H, RADIUS);
         this.add(bg);
 
-        // Book icon — centered, overlaps dark panel top
-        const icon = scene.add.image(PANEL_W / 2, 39, 'ui_collections')
-            .setDisplaySize(118, 98);
+        const icon = scene.add.image(pw / 2, 39, 'ui_collections')
+            .setDisplaySize(pw, Math.round(98 * pw / 118));
         this.add(icon);
 
-        // "Collection" label — centered in dark panel
-        const label = scene.add.text(PANEL_W / 2, TOTAL_H - BG_H / 2 + 14, t('collection_button'), {
+        const label = scene.add.text(pw / 2, TOTAL_H - BG_H / 2 + 14, t('collection_button'), {
             fontFamily: UI.FONT_STROKE,
             fontSize: '17px',
             color: '#ffffff',
             stroke: '#000000',
             strokeThickness: UI.STROKE_MEDIUM,
         }).setOrigin(0.5);
-        fitText(label, PANEL_W - 8, 17);
+        fitText(label, pw - 8, 17);
         this.add(label);
 
-        // Notification badge (top-right corner of dark panel)
-        const badgeX = PANEL_W - 2;
-        const badgeY = TOTAL_H - BG_H + 7;
-        const badgeR = 12;
+        const portrait = isPortrait();
+        const badgeX = portrait ? pw - 7 : pw - 2;
+        const badgeY = portrait ? TOTAL_H - BG_H + 5 : TOTAL_H - BG_H + 4;
+        const badgeR = portrait ? 9 : 11;
         this.badgeGfx = scene.add.graphics();
         this.badgeGfx.fillStyle(0x000000, 1);
         this.badgeGfx.fillCircle(badgeX, badgeY, badgeR + 1.5);
@@ -57,7 +57,7 @@ export class CollectionButton extends GameObjects.Container {
 
         this.badgeText = scene.add.text(badgeX, badgeY, '', {
             fontFamily: UI.FONT_STROKE,
-            fontSize: '13px',
+            fontSize: portrait ? '11px' : '13px',
             color: '#ffffff',
             stroke: '#000000',
             strokeThickness: 2,
@@ -68,20 +68,22 @@ export class CollectionButton extends GameObjects.Container {
         this.badgeText.setVisible(false);
 
         this.setInteractive(
-            new Geom.Rectangle(-6, -21, PANEL_W + 12, TOTAL_H + 27),
+            new Geom.Rectangle(-6, -21, pw + 12, TOTAL_H + 27),
             Geom.Rectangle.Contains,
         );
         this.input!.cursor = 'pointer';
         this.on('pointerdown', onClick);
-        addButtonFeedback(scene, this, { pivot: { x: PANEL_W / 2, y: TOTAL_H / 2 } });
+        addButtonFeedback(scene, this, { pivot: { x: pw / 2, y: TOTAL_H / 2 } });
 
+        if (isPortrait()) this.setDepth(2);
         scene.add.existing(this);
     }
 
     updateBadge(hasUnseen: boolean, claimableCount: number): void {
-        const badgeX = PANEL_W - 2;
-        const badgeY = TOTAL_H - BG_H + 7;
-        const badgeR = 12;
+        const portrait = isPortrait();
+        const badgeX = portrait ? this.pw - 7 : this.pw - 2;
+        const badgeY = portrait ? TOTAL_H - BG_H + 5 : TOTAL_H - BG_H + 4;
+        const badgeR = portrait ? 9 : 11;
 
         if (claimableCount > 0) {
             this.badgeGfx.clear();
@@ -90,7 +92,8 @@ export class CollectionButton extends GameObjects.Container {
             this.badgeGfx.fillStyle(0x98CD5B, 1);
             this.badgeGfx.fillCircle(badgeX, badgeY, badgeR);
             this.badgeText.setText(String(claimableCount));
-            this.badgeText.setFontSize(claimableCount >= 10 ? '11px' : '13px');
+            const baseSz = portrait ? 11 : 13;
+            this.badgeText.setFontSize(claimableCount >= 10 ? `${baseSz - 2}px` : `${baseSz}px`);
             this.badgeGfx.setVisible(true);
             this.badgeText.setVisible(true);
         } else if (hasUnseen) {
@@ -100,7 +103,7 @@ export class CollectionButton extends GameObjects.Container {
             this.badgeGfx.fillStyle(0xcc0000, 1);
             this.badgeGfx.fillCircle(badgeX, badgeY, badgeR);
             this.badgeText.setText('!');
-            this.badgeText.setFontSize('13px');
+            this.badgeText.setFontSize(portrait ? '11px' : '13px');
             this.badgeGfx.setVisible(true);
             this.badgeText.setVisible(true);
         } else {

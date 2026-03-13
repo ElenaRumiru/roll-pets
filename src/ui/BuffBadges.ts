@@ -201,12 +201,12 @@ export class BuffBadges extends GameObjects.Container {
         });
 
         if (this.direction === 'column') {
-            // Vertical column layout
+            // Vertical column layout, left-aligned
             const totalH = visible.length * BADGE_H
                 + Math.max(0, visible.length - 1) * BADGE_GAP;
             let curY = -totalH / 2;
-            visible.forEach((b) => {
-                b.container.setPosition(0, curY + BADGE_H / 2);
+            visible.forEach((b, i) => {
+                b.container.setPosition(widths[i] / 2, curY + BADGE_H / 2);
                 curY += BADGE_H + BADGE_GAP;
             });
         } else {

@@ -38,6 +38,7 @@ export interface MainLayout {
     bonusPanel: { x: number; y: number };
 
     /** Bottom buttons */
+    btnW: number;
     collectionBtn: { x: number; y: number };
     nestsBtn: { x: number; y: number };
     shopBtn: { x: number; y: number };
@@ -78,7 +79,7 @@ const LANDSCAPE: MainLayout = {
     },
     arrowY: 532 - 67 / 2 - 50,
 
-    badges: { x: 487, y: 532 - 67 / 2 - 15, direction: 'row' },
+    badges: { x: 487, y: 532 - 67 / 2 - 18, direction: 'row' },
 
     topBar: { x: 15, y: 15 },
     coinDisplay: { x: LANDSCAPE_W - 49 - 21 - 10 - 102, y: 15 },
@@ -88,6 +89,7 @@ const LANDSCAPE: MainLayout = {
     questPanel:  { x: LANDSCAPE_QUEST_X, y: LB_Y_BASE - 20 },
     bonusPanel:  { x: LANDSCAPE_BONUS_X, y: 0 },
 
+    btnW: 118,
     collectionBtn: { x: 15, y: LANDSCAPE_H - 93 - 15 },
     nestsBtn:      { x: 15 + 118 + 11, y: LANDSCAPE_H - 93 - 15 },
     shopBtn:       { x: LANDSCAPE_W - 118 - 15, y: LANDSCAPE_H - 93 - 15 },
@@ -112,21 +114,21 @@ const PORTRAIT: MainLayout = {
     cy: PORTRAIT_H / 2,
 
     pedestal: {
-        first:  { x: 293, y: 552, scale: 0.68 },
-        second: { x: 157, y: 610, scale: 0.55 },
+        first:  { x: 285, y: 590, scale: 0.68 },
+        second: { x: 149, y: 620, scale: 0.55 },
         third:  { x: 424, y: 639, scale: 0.49 },
     },
 
-    rollBtn: { x: 290, y: 900, w: 200, h: 140, texture: 'ui_roll_portrait', fontSize: '35px' },
+    rollBtn: { x: 290, y: 969, w: 140, h: 140, texture: 'ui_roll_portrait', fontSize: '35px' },
     autoroll: {
         x: 290,
-        y: 900 - 140 / 2 - 7 - 61 / 2,
+        y: 969 - 140 / 2 - 7 - 61 / 2 + 15,
         w: 99,
         h: 61,
     },
-    arrowY: 900 - 140 / 2 - 50,
+    arrowY: 969 - 140 / 2 - 50,
 
-    badges: { x: 39, y: 670, direction: 'column' },
+    badges: { x: 15, y: 670, direction: 'column' },
 
     topBar: { x: 24, y: 15 },
     coinDisplay: { x: 413, y: 15 },
@@ -136,10 +138,11 @@ const PORTRAIT: MainLayout = {
     questPanel:  { x: PORTRAIT_W - 135 - 15, y: 86 },
     bonusPanel:  { x: PORTRAIT_W - 150 - 15, y: 803 },
 
-    collectionBtn: { x: 15, y: P_BTN_ROW_Y },
-    nestsBtn:      { x: 144, y: P_BTN_ROW_Y },
-    shopBtn:       { x: 440, y: P_BTN_ROW_Y },
-    dailyBonusBtn: { x: 340, y: P_BTN_ROW_Y },
+    btnW: 106,
+    collectionBtn: { x: 0, y: 934 },
+    nestsBtn:      { x: 110, y: 934 },
+    shopBtn:       { x: 474, y: 934 },
+    dailyBonusBtn: { x: 364, y: 934 },
 
     thoughtRight: { x: 400, y: 370 },
     thoughtLeft:  { x: 180, y: 370 },

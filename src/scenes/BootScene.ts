@@ -213,8 +213,9 @@ export class BootScene extends Scene {
             this.textures.addCanvas(key, c);
         }
 
-        // Pre-downscale portrait roll button
-        this.trimToWidth('ui_roll_portrait_raw', 'ui_roll_portrait', 400);
+        // Pre-downscale portrait roll button (trim + preserve aspect ratio)
+        // Source has semi-transparent corner artifacts (alpha 18-62), use higher threshold
+        this.trimToWidth('ui_roll_portrait_raw', 'ui_roll_portrait', 300, 80);
 
         // Pre-downscale pet textures (512px → 250px) to avoid WebGL aliasing
         const TARGET_PET = 250;
@@ -408,7 +409,7 @@ export class BootScene extends Scene {
     }
 
     /** Trim transparent pixels, then scale so width = targetWidth, preserving aspect ratio */
-    private trimToWidth(srcKey: string, destKey: string, targetWidth: number): void {
+    private trimToWidth(srcKey: string, destKey: string, targetWidth: number, alphaThreshold = 10): void {
         const src = this.textures.get(srcKey).getSourceImage() as HTMLImageElement;
         const tmp = document.createElement('canvas');
         tmp.width = src.width;
@@ -419,7 +420,7 @@ export class BootScene extends Scene {
         let top = tmp.height, left = tmp.width, bottom = 0, right = 0;
         for (let y = 0; y < tmp.height; y++) {
             for (let x = 0; x < tmp.width; x++) {
-                if (data.data[(y * tmp.width + x) * 4 + 3] > 10) {
+                if (data.data[(y * tmp.width + x) * 4 + 3] > alphaThreshold) {
                     if (y < top) top = y;
                     if (y > bottom) bottom = y;
                     if (x < left) left = x;

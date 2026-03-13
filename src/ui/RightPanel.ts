@@ -50,8 +50,11 @@ export class RightPanel extends GameObjects.Container {
         this.rollWrap = scene.add.container(rb.x, rb.y);
         this.add(this.rollWrap);
 
-        this.rollBg = scene.add.image(0, 0, rb.texture)
-            .setDisplaySize(rb.w, rb.h)
+        this.rollBg = scene.add.image(0, 0, rb.texture);
+        const texSrc = scene.textures.get(rb.texture).getSourceImage();
+        const texRatio = texSrc.height / texSrc.width;
+        const rollH = Math.round(rb.w * texRatio);
+        this.rollBg.setDisplaySize(rb.w, rollH)
             .setInteractive({ useHandCursor: true });
         this.rollBg.on('pointerdown', () => this.handleRollClick());
         this.rollWrap.add(this.rollBg);

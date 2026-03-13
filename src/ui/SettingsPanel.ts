@@ -39,11 +39,16 @@ export class SettingsPanel extends GameObjects.Container {
         this.add(this.overlay);
 
         // Panel background (semi-transparent)
+        const r = UI.CORNER_RADIUS;
         const panel = scene.add.graphics();
         panel.fillStyle(0x111122, 1);
-        panel.fillRoundedRect(px, py, PANEL_W, PANEL_H, UI.CORNER_RADIUS);
-        panel.lineStyle(1.5, 0x444466, 0.4);
-        panel.strokeRoundedRect(px, py, PANEL_W, PANEL_H, UI.CORNER_RADIUS);
+        panel.fillRoundedRect(px, py, PANEL_W, PANEL_H, r);
+        panel.lineStyle(1.5, 0x000000, 0.9);
+        panel.strokeRoundedRect(px - 4, py - 4, PANEL_W + 8, PANEL_H + 8, r + 3);
+        panel.lineStyle(3, 0xFEBF07, 1);
+        panel.strokeRoundedRect(px - 2, py - 2, PANEL_W + 4, PANEL_H + 4, r + 2);
+        panel.lineStyle(1.5, 0x000000, 0.9);
+        panel.strokeRoundedRect(px, py, PANEL_W, PANEL_H, r);
         this.add(panel);
 
         // Title

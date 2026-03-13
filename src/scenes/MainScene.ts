@@ -517,6 +517,12 @@ export class MainScene extends Scene {
             this.questPanel, this.leaderboard, this.collectionBtn, this.nestsBtn,
             this.shopBtn, this.dailyBonusBtn, this.coinDisplay, this.petThought])
             el.setDepth(depth);
+        // In portrait, bottom buttons need +2 so badges stay above roll button
+        if (isPortrait()) {
+            const btnDepth = depth + 2;
+            for (const el of [this.collectionBtn, this.nestsBtn, this.shopBtn, this.dailyBonusBtn])
+                el.setDepth(btnDepth);
+        }
     }
 
     private onAutorollStop(): void {
