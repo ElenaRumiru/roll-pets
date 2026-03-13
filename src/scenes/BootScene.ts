@@ -1,5 +1,5 @@
 import { Scene, Renderer } from 'phaser';
-import { GAME_WIDTH, GAME_HEIGHT } from '../core/config';
+import { getGameWidth, getGameHeight } from '../core/orientation';
 import { IdleWobbleFX } from '../ui/IdleWobbleFX';
 import { PETS } from '../data/pets';
 import { TOTAL_EGGS } from '../data/eggs';
@@ -16,11 +16,13 @@ export class BootScene extends Scene {
     }
 
     preload(): void {
-        const cx = GAME_WIDTH / 2;
-        const cy = GAME_HEIGHT / 2;
+        const gw = getGameWidth();
+        const gh = getGameHeight();
+        const cx = gw / 2;
+        const cy = gh / 2;
 
         // Dark background matching THEME.SCENE_BG
-        this.add.rectangle(cx, cy, GAME_WIDTH, GAME_HEIGHT, 0x12121e);
+        this.add.rectangle(cx, cy, gw, gh, 0x12121e);
 
         // Load illustration first (inline base64 not needed — just load early)
         this.load.image('ui_illustration', 'assets/ui/illustration.png');
