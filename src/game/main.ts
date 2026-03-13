@@ -10,7 +10,7 @@ import { QuestScene } from '../scenes/QuestScene';
 import { DailyBonusScene } from '../scenes/DailyBonusScene';
 import { NestsScene } from '../scenes/NestsScene';
 
-const SCENES_WITH_PORTRAIT = ['MainScene'];
+const SKIP_RESTART = ['BootScene'];
 
 const StartGame = (parent: string) => {
     // Detect initial orientation
@@ -68,7 +68,7 @@ const StartGame = (parent: string) => {
                 const check = () => {
                     if (!manager.isRolling) {
                         game.scale.setGameSize(getGameWidth(), getGameHeight());
-                        if (SCENES_WITH_PORTRAIT.includes(key)) {
+                        if (!SKIP_RESTART.includes(key)) {
                             activeScene.scene.restart();
                         }
                     } else {
@@ -79,7 +79,7 @@ const StartGame = (parent: string) => {
                 return;
             }
 
-            if (SCENES_WITH_PORTRAIT.includes(key)) {
+            if (!SKIP_RESTART.includes(key)) {
                 activeScene.scene.restart();
             }
         }, 150);
