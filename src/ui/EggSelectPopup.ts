@@ -1,5 +1,6 @@
 import { GameObjects, Scene } from 'phaser';
-import { UI, GAME_WIDTH, GAME_HEIGHT } from '../core/config';
+import { UI } from '../core/config';
+import { getGameWidth, getGameHeight } from '../core/orientation';
 import { getEggTierConfig, formatBuffMultiplier, formatIncubationTime } from '../data/eggTiers';
 import { getEggNameKey } from '../data/eggs';
 import { t } from '../data/locales';
@@ -11,6 +12,7 @@ const CARD_GAP = 12;
 const CARD_R = 10;
 const COLUMNS = 4;
 const PAD = 16;
+const TITLE_H = 50;
 
 export interface EggOption {
     tier: number;
@@ -20,6 +22,7 @@ export interface EggOption {
 export class EggSelectPopup {
     private container: GameObjects.Container;
     private destroyed = false;
+    private scrollCleanup: (() => void) | null = null;
 
     constructor(
         scene: Scene,
@@ -29,8 +32,10 @@ export class EggSelectPopup {
         onGoToShop?: () => void,
     ) {
         this.container = scene.add.container(0, 0).setDepth(1000);
-        const cx = GAME_WIDTH / 2;
-        const cy = GAME_HEIGHT / 2;
+        const gw = getGameWidth();
+        const gh = getGameHeight();
+        const cx = gw / 2;
+        const cy = gh / 2;
 
         // Calculate popup size based on content
         const totalItems = eggs.length + 1;
@@ -41,14 +46,16 @@ export class EggSelectPopup {
         const gridH = rows * rowH - CARD_GAP;
 
         const POPUP_W = gridW + PAD * 2;
-        const titleH = 50;
-        const POPUP_H = titleH + gridH + PAD * 2;
+        const naturalH = TITLE_H + gridH + PAD * 2;
+        const maxH = gh - 60;
+        const needsScroll = naturalH > maxH;
+        const POPUP_H = needsScroll ? maxH : naturalH;
 
         const popLeft = cx - POPUP_W / 2;
         const popTop = cy - POPUP_H / 2;
 
         // Blocker overlay
-        const overlay = scene.add.rectangle(cx, cy, GAME_WIDTH, GAME_HEIGHT, 0x000000, 0.7);
+        const overlay = scene.add.rectangle(cx, cy, gw, gh, 0x000000, 0.7);
         overlay.setInteractive();
         overlay.on('pointerdown', (p: Phaser.Input.Pointer) => {
             if (p.x < popLeft || p.x > popLeft + POPUP_W || p.y < popTop || p.y > popTop + POPUP_H) {
@@ -75,19 +82,69 @@ export class EggSelectPopup {
 
         // Grid layout
         const gridStartX = popLeft + PAD + CARD_W / 2;
-        const gridStartY = popTop + titleH + PAD + CARD_H / 2;
+        const gridAbsTop = popTop + TITLE_H + PAD;
+        const gridStartY = gridAbsTop + CARD_H / 2;
 
-        // Render egg cards
-        eggs.forEach((egg, i) => {
-            const col = i % COLUMNS;
-            const row = Math.floor(i / COLUMNS);
-            const ex = gridStartX + col * (CARD_W + CARD_GAP);
-            const ey = gridStartY + row * rowH;
-            this.buildEggCell(scene, ex, ey, egg, onSelect);
-        });
+        if (needsScroll) {
+            // Scrollable grid
+            const gridContainer = scene.add.container(0, 0);
+            const viewH = POPUP_H - TITLE_H - PAD * 2;
+            const maskGfx = scene.make.graphics({});
+            maskGfx.fillRect(popLeft, gridAbsTop, POPUP_W, viewH);
+            gridContainer.setMask(maskGfx.createGeometryMask());
+            this.container.add(gridContainer);
 
-        // "+" cell to go to shop
-        this.buildPlusCell(scene, gridStartX, gridStartY, eggs.length, rowH, onDismiss, onGoToShop);
+            eggs.forEach((egg, i) => {
+                const col = i % COLUMNS;
+                const row = Math.floor(i / COLUMNS);
+                const ex = gridStartX + col * (CARD_W + CARD_GAP);
+                const ey = gridStartY + row * rowH;
+                this.buildEggCell(scene, ex, ey, egg, onSelect, gridContainer);
+            });
+            this.buildPlusCell(scene, gridStartX, gridStartY, eggs.length, rowH, onDismiss, onGoToShop, gridContainer);
+
+            const maxScroll = Math.max(0, gridH - viewH);
+            let scrollOffset = 0;
+            const clampScroll = () => {
+                scrollOffset = Phaser.Math.Clamp(scrollOffset, 0, maxScroll);
+                gridContainer.y = -scrollOffset;
+            };
+            const wheelHandler = (_p: Phaser.Input.Pointer, _go: GameObjects.GameObject[], _dx: number, dy: number) => {
+                scrollOffset += dy * 0.5; clampScroll();
+            };
+            let dragY = 0;
+            let startOff = 0;
+            const downHandler = (p: Phaser.Input.Pointer) => {
+                if (p.y > gridAbsTop && p.y < gridAbsTop + viewH) { dragY = p.y; startOff = scrollOffset; }
+            };
+            const moveHandler = (p: Phaser.Input.Pointer) => {
+                if (p.isDown && dragY > 0) { scrollOffset = startOff - (p.y - dragY); clampScroll(); }
+            };
+            const upHandler = () => { dragY = 0; };
+
+            scene.input.on('wheel', wheelHandler);
+            scene.input.on('pointerdown', downHandler);
+            scene.input.on('pointermove', moveHandler);
+            scene.input.on('pointerup', upHandler);
+
+            this.scrollCleanup = () => {
+                scene.input.off('wheel', wheelHandler);
+                scene.input.off('pointerdown', downHandler);
+                scene.input.off('pointermove', moveHandler);
+                scene.input.off('pointerup', upHandler);
+                maskGfx.destroy();
+            };
+        } else {
+            // No scroll needed — render directly
+            eggs.forEach((egg, i) => {
+                const col = i % COLUMNS;
+                const row = Math.floor(i / COLUMNS);
+                const ex = gridStartX + col * (CARD_W + CARD_GAP);
+                const ey = gridStartY + row * rowH;
+                this.buildEggCell(scene, ex, ey, egg, onSelect);
+            });
+            this.buildPlusCell(scene, gridStartX, gridStartY, eggs.length, rowH, onDismiss, onGoToShop);
+        }
 
         // Entrance tween
         this.container.setScale(0);
@@ -99,6 +156,7 @@ export class EggSelectPopup {
     private buildEggCell(
         scene: Scene, ex: number, ey: number,
         egg: EggOption, onSelect: (tier: number) => void,
+        parent?: GameObjects.Container,
     ): void {
         const card = scene.add.container(ex, ey);
 
@@ -152,17 +210,19 @@ export class EggSelectPopup {
         card.on('pointerdown', () => {
             if (this.destroyed) return;
             this.destroyed = true;
+            this.cleanupScroll();
             this.container.destroy();
             onSelect(egg.tier);
         });
         addButtonFeedback(scene, card);
-        this.container.add(card);
+        (parent ?? this.container).add(card);
     }
 
     private buildPlusCell(
         scene: Scene, gridStartX: number, gridStartY: number,
         idx: number, rowH: number,
         onDismiss: () => void, onGoToShop?: () => void,
+        parent?: GameObjects.Container,
     ): void {
         const col = idx % COLUMNS;
         const row = Math.floor(idx / COLUMNS);
@@ -191,17 +251,23 @@ export class EggSelectPopup {
         plusCard.on('pointerdown', () => {
             if (this.destroyed) return;
             this.destroyed = true;
+            this.cleanupScroll();
             this.container.destroy();
             if (onGoToShop) onGoToShop();
             else onDismiss();
         });
         addButtonFeedback(scene, plusCard);
-        this.container.add(plusCard);
+        (parent ?? this.container).add(plusCard);
+    }
+
+    private cleanupScroll(): void {
+        if (this.scrollCleanup) { this.scrollCleanup(); this.scrollCleanup = null; }
     }
 
     private dismiss(onDismiss: () => void): void {
         if (this.destroyed) return;
         this.destroyed = true;
+        this.cleanupScroll();
         this.container.destroy();
         onDismiss();
     }

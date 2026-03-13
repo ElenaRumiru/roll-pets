@@ -21,6 +21,7 @@ export class RightPanel extends GameObjects.Container {
     private lockIcon!: GameObjects.Image;
     private lockLabel!: GameObjects.Text;
     private rollW: number;
+    private rollFontSize: number;
 
     private onRoll: () => void;
     private onStopAutoroll: () => void;
@@ -45,6 +46,7 @@ export class RightPanel extends GameObjects.Container {
         const rb = l.rollBtn;
         const ar = l.autoroll;
         this.rollW = rb.w;
+        this.rollFontSize = parseInt(rb.fontSize);
 
         // Roll button wrapper (for scaling image + text together)
         this.rollWrap = scene.add.container(rb.x, rb.y);
@@ -208,6 +210,6 @@ export class RightPanel extends GameObjects.Container {
 
     private setRollLabel(text: string): void {
         this.rollLabel.setText(text);
-        fitText(this.rollLabel, this.rollW - 25, parseInt(this.rollLabel.style.fontSize as string));
+        fitText(this.rollLabel, this.rollW - 25, this.rollFontSize);
     }
 }

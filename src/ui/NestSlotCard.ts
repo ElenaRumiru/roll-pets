@@ -20,6 +20,12 @@ export interface SlotLayout {
     btnY: number;
     btnW: number;
     btnH: number;
+    cardScale?: number;
+}
+
+function applyScale(layout: SlotLayout, card: GameObjects.Container, btn: GameObjects.Container): void {
+    const s = layout.cardScale ?? 1;
+    if (s !== 1) { card.setScale(s); btn.setScale(s); }
 }
 
 function nestHeight(scene: Scene): number {
@@ -47,6 +53,7 @@ export function renderEmptySlot(
     container.add(c);
     const btn = new Button(scene, x, layout.btnY, layout.btnW, layout.btnH, t('nests_select'), 0x3498db, onSelect);
     container.add(btn);
+    applyScale(layout, c, btn);
 }
 
 export function renderIncubatingSlot(
@@ -72,17 +79,16 @@ export function renderIncubatingSlot(
     c.add(timerText);
     container.add(c);
 
+    let btn: Button;
     if (slot.boosted) {
-        // Already boosted — disabled "In Progress" button
-        const btn = new Button(scene, x, layout.btnY, layout.btnW, layout.btnH, t('nests_in_progress'), 0xd4a017, () => {});
+        btn = new Button(scene, x, layout.btnY, layout.btnW, layout.btnH, t('nests_in_progress'), 0xd4a017, () => {});
         btn.setEnabled(false);
-        container.add(btn);
     } else {
-        // Purple ad button: "▶ Speed +30%"
-        const btn = new Button(scene, x, layout.btnY, layout.btnW, layout.btnH,
+        btn = new Button(scene, x, layout.btnY, layout.btnW, layout.btnH,
             `\u25B6 ${t('nests_speed_up')}`, 0x7B2FBE, onSpeedUp);
-        container.add(btn);
     }
+    container.add(btn);
+    applyScale(layout, c, btn);
 }
 
 // Shock particle spawn positions: upper third of egg, rotation so bottom→center
@@ -143,6 +149,7 @@ export function renderReadySlot(
     container.add(c);
     const btn = new Button(scene, x, layout.btnY, layout.btnW, layout.btnH, t('nests_collect'), 0x78C828, onCollect);
     container.add(btn);
+    applyScale(layout, c, btn);
 }
 
 export function renderLockedSlot(
@@ -172,4 +179,5 @@ export function renderLockedSlot(
     btn.add(scene.add.image(iconX, -3, 'ui_coin_md').setDisplaySize(iconSize, iconSize));
     if (!canAfford) btn.setEnabled(false);
     container.add(btn);
+    applyScale(layout, c, btn);
 }
