@@ -1,5 +1,6 @@
 import { Scene, GameObjects } from 'phaser';
-import { GAME_WIDTH, GAME_HEIGHT, UI, NEST_CONFIG } from '../core/config';
+import { UI, NEST_CONFIG } from '../core/config';
+import { getGameWidth, getGameHeight, isPortrait } from '../core/orientation';
 import { GameManager } from '../core/GameManager';
 import { Button } from '../ui/components/Button';
 import { buildPetCards } from '../ui/ShopPetsTab';
@@ -17,8 +18,6 @@ const TAB_Y = HEADER_H + 25;
 const TAB_W = 100;
 const TAB_GAP = 10;
 const TIMER_Y = HEADER_H + 64;
-const CARDS_Y = 265;
-const BUY_BTN_Y = CARDS_Y + 80 + 8 + 24; // card half-height(80) + gap(8) + btn half-height(24)
 
 type ShopTab = 'pets' | 'eggs';
 
@@ -44,9 +43,11 @@ export class ShopScene extends Scene {
         this.eggTabResult = null;
         this.petsTabBtn = null;
         this.eggsTabBtn = null;
+        const gw = getGameWidth();
+        const gh = getGameHeight();
         const nestsUnlocked = this.manager.progression.level >= NEST_CONFIG.unlockLevel;
         this.activeTab = (data?.tab === 'eggs' && nestsUnlocked) ? 'eggs' : 'pets';
-        this.add.rectangle(GAME_WIDTH / 2, GAME_HEIGHT / 2, GAME_WIDTH, GAME_HEIGHT, 0x12121e);
+        this.add.rectangle(gw / 2, gh / 2, gw, gh, 0x12121e);
         this.cardsContainer = this.add.container(0, 0);
         const hdr = createSceneHeader({
             scene: this, titleKey: 'shop_title', backKey: 'shop_back',
@@ -56,19 +57,21 @@ export class ShopScene extends Scene {
         this.coinDisplay = hdr.coinDisplay;
         if (nestsUnlocked) this.createTabs();
         this.createTimer();
-        this.emptyText = this.add.text(GAME_WIDTH / 2, CARDS_Y, t('shop_empty'), {
+        const cardsY = this.getCardsY();
+        this.emptyText = this.add.text(gw / 2, cardsY, t('shop_empty'), {
             fontFamily: UI.FONT_MAIN, fontSize: '20px', color: '#666688', align: 'center',
         }).setOrigin(0.5).setVisible(false);
-        this.refreshBtn = new Button(this, GAME_WIDTH / 2, GAME_HEIGHT - 50, 222, 52,
+        this.refreshBtn = new Button(this, gw / 2, gh - 50, 222, 52,
             `\u25B6 ${t('shop_refresh')}`, 0x7b42c9, () => this.onRefresh());
-        this.hintText = this.add.text(GAME_WIDTH / 2, TIMER_Y, '', {
-            fontFamily: UI.FONT_BODY, fontSize: '14px', color: '#666688',
+        const hintSize = isPortrait() ? '18px' : '14px';
+        this.hintText = this.add.text(gw / 2, TIMER_Y, '', {
+            fontFamily: UI.FONT_BODY, fontSize: hintSize, color: '#666688',
         }).setOrigin(0.5);
         this.switchTab(this.activeTab);
     }
 
     private createTabs(): void {
-        const cx = GAME_WIDTH / 2;
+        const cx = getGameWidth() / 2;
         const leftX = cx - TAB_W / 2 - TAB_GAP / 2;
         const rightX = cx + TAB_W / 2 + TAB_GAP / 2;
 
@@ -79,7 +82,7 @@ export class ShopScene extends Scene {
     }
 
     private createTimer(): void {
-        this.timerText = this.add.text(GAME_WIDTH / 2, GAME_HEIGHT - 93, '', {
+        this.timerText = this.add.text(getGameWidth() / 2, getGameHeight() - 93, '', {
             fontFamily: UI.FONT_BODY, fontSize: '14px', color: '#aaaaaa',
         }).setOrigin(0.5);
         this.updateTimerText();
@@ -116,23 +119,73 @@ export class ShopScene extends Scene {
         } else {
             this.buildEggsContent();
         }
+
+        this.layoutBottomElements(showPets);
+    }
+
+    private layoutBottomElements(showPets: boolean): void {
+        const gh = getGameHeight();
+        if (showPets && isPortrait()) {
+            const cardsY = this.getCardsY();
+            const offers = this.manager.shop.getOffers();
+            const rows = Math.max(1, Math.ceil(offers.length / 3));
+            const cardTop = cardsY - 80;
+            const blockBottom = cardsY + (rows - 1) * 240 + 135;
+            const gap = 25;
+            this.hintText.setY(cardTop - gap - 20);
+            this.timerText.setY(blockBottom + gap + 7);
+            this.refreshBtn.setY(blockBottom + 2 * gap + 14 + 26);
+        } else {
+            this.hintText.setY(TIMER_Y);
+            this.timerText.setY(gh - 93);
+            this.refreshBtn.setY(gh - 50);
+        }
+    }
+
+    private getCardsY(): number {
+        if (isPortrait()) {
+            const gh = getGameHeight();
+            const topArea = 140;
+            const bottomArea = gh - 110;
+            const rowH = 160 + 8 + 47; // card + gap + btn
+            const contentH = 2 * rowH + 25; // 2 rows + gap
+            return topArea + (bottomArea - topArea - contentH) / 2 + 160 / 2;
+        }
+        return 265;
+    }
+
+    private getBuyBtnY(): number {
+        return this.getCardsY() + 80 + 8 + 24;
     }
 
     private buildPetsContent(): void {
         const offers = this.manager.shop.getOffers();
         this.emptyText.setVisible(offers.length === 0);
+        const port = isPortrait();
+        const cardsY = this.getCardsY();
+        const buyBtnY = this.getBuyBtnY();
         buildPetCards(this, this.cardsContainer, offers,
-            this.manager.progression.coins, CARDS_Y, BUY_BTN_Y,
-            (petId, canAfford) => this.onBuy(petId, canAfford));
+            this.manager.progression.coins, cardsY, buyBtnY,
+            (petId, canAfford) => this.onBuy(petId, canAfford),
+            port ? 3 : undefined);
+    }
+
+    private getEggContentY(): number {
+        // Hint text at TIMER_Y (~138), ~14px tall; cards start below with gap
+        return TIMER_Y + 14 + 20 + 80; // hint bottom + gap + card half-height
     }
 
     private buildEggsContent(): void {
+        const port = isPortrait();
+        const contentY = this.getEggContentY();
+        const buyBtnY = contentY + 80 + 8 + 24;
         this.eggTabResult = buildEggCards(this, this.cardsContainer,
             this.manager.progression.level,
             this.manager.getEggInventory(),
             this.manager.progression.coins,
-            CARDS_Y, BUY_BTN_Y,
-            (tier) => this.onBuyEgg(tier));
+            contentY, buyBtnY,
+            (tier) => this.onBuyEgg(tier),
+            port ? 3 : undefined);
     }
 
     private cleanupEggTab(): void {

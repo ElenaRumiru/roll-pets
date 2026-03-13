@@ -1,5 +1,6 @@
 import { Scene, GameObjects } from 'phaser';
-import { GAME_WIDTH, UI, GRADE, getGradeForChance, getOddsString } from '../core/config';
+import { UI, GRADE, getGradeForChance, getOddsString } from '../core/config';
+import { getGameWidth } from '../core/orientation';
 import { PETS } from '../data/pets';
 import { Button } from './components/Button';
 import { fitText } from './components/fitText';
@@ -19,17 +20,40 @@ export function buildPetCards(
     cardsY: number,
     buyBtnY: number,
     onBuy: (petId: string, canAfford: boolean) => void,
+    cols?: number,
 ): void {
     container.removeAll(true);
     if (offers.length === 0) return;
-    const totalW = offers.length * CARD_W + (offers.length - 1) * CARD_GAP;
-    const startX = GAME_WIDTH / 2 - totalW / 2 + CARD_W / 2;
-    offers.forEach((offer, i) => {
-        const pet = PETS.find(p => p.id === offer.petId);
-        if (!pet) return;
-        const x = startX + i * (CARD_W + CARD_GAP);
-        createOfferCard(scene, container, x, cardsY, buyBtnY, offer, pet, coins, onBuy);
-    });
+    const gw = getGameWidth();
+
+    if (cols && cols < offers.length) {
+        // Multi-row layout (portrait)
+        const rowGap = 25;
+        const rowH = CARD_H + 8 + 47; // card + gap + btn
+        for (let i = 0; i < offers.length; i++) {
+            const row = Math.floor(i / cols);
+            const colIdx = i % cols;
+            const rowCount = Math.min(cols, offers.length - row * cols);
+            const rowW = rowCount * CARD_W + (rowCount - 1) * CARD_GAP;
+            const rowStartX = gw / 2 - rowW / 2 + CARD_W / 2;
+            const x = rowStartX + colIdx * (CARD_W + CARD_GAP);
+            const cy = cardsY + row * (rowH + rowGap);
+            const by = cy + CARD_H / 2 + 8 + 47 / 2;
+            const pet = PETS.find(p => p.id === offers[i].petId);
+            if (!pet) continue;
+            createOfferCard(scene, container, x, cy, by, offers[i], pet, coins, onBuy);
+        }
+    } else {
+        // Single-row layout (landscape)
+        const totalW = offers.length * CARD_W + (offers.length - 1) * CARD_GAP;
+        const startX = gw / 2 - totalW / 2 + CARD_W / 2;
+        offers.forEach((offer, i) => {
+            const pet = PETS.find(p => p.id === offer.petId);
+            if (!pet) return;
+            const x = startX + i * (CARD_W + CARD_GAP);
+            createOfferCard(scene, container, x, cardsY, buyBtnY, offer, pet, coins, onBuy);
+        });
+    }
 }
 
 function createOfferCard(

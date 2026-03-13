@@ -1,5 +1,6 @@
 import { Scene, GameObjects } from 'phaser';
-import { GAME_WIDTH, GAME_HEIGHT, UI, VISUAL_TIERS } from '../core/config';
+import { UI, VISUAL_TIERS } from '../core/config';
+import { getGameWidth, getGameHeight } from '../core/orientation';
 import { EGG_TIERS, formatBuffMultiplier, formatIncubationTime } from '../data/eggTiers';
 import { getEggNameKey } from '../data/eggs';
 import { Button } from './components/Button';
@@ -11,7 +12,7 @@ const CARD_W = 141;
 const CARD_H = 160;
 const CARD_GAP = 17;
 const CARD_R = 15;
-const COLS = 5;
+const DEFAULT_COLS = 5;
 const BTN_W = 140;
 const BTN_H = 44;
 const BTN_GAP = 8;
@@ -32,14 +33,18 @@ export function buildEggCards(
     contentY: number,
     _buyBtnY: number,
     onBuy: (tier: number) => void,
+    cols?: number,
 ): EggTabResult {
     container.removeAll(true);
+    const COLS = cols ?? DEFAULT_COLS;
+    const gw = getGameWidth();
+    const gh = getGameHeight();
 
     const scrollContainer = scene.add.container(0, 0);
     container.add(scrollContainer);
 
     const gridW = COLS * CARD_W + (COLS - 1) * CARD_GAP;
-    const startX = (GAME_WIDTH - gridW) / 2 + CARD_W / 2;
+    const startX = (gw - gridW) / 2 + CARD_W / 2;
     const startY = contentY - 10;
     const rows = Math.ceil(EGG_TIERS.length / COLS);
 
@@ -59,9 +64,9 @@ export function buildEggCards(
 
     // Mask for vertical scrolling
     const maskTop = startY - CARD_H / 2 - 10;
-    const maskBottom = GAME_HEIGHT - 10;
+    const maskBottom = gh - 10;
     const maskGfx = scene.make.graphics({});
-    maskGfx.fillRect(0, maskTop, GAME_WIDTH, maskBottom - maskTop);
+    maskGfx.fillRect(0, maskTop, gw, maskBottom - maskTop);
     scrollContainer.setMask(maskGfx.createGeometryMask());
 
     // Scroll state
