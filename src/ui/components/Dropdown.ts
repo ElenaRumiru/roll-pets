@@ -26,13 +26,17 @@ export class Dropdown extends GameObjects.Container {
     private options: DropdownOption[];
     private onChange: (value: string) => void;
     private outsideHandler: (() => void) | null = null;
+    private pillW: number;
+    private listW: number;
 
     constructor(scene: Scene, x: number, y: number, w: number, options: DropdownOption[],
-        defaultValue: string, onChange: (value: string) => void) {
+        defaultValue: string, onChange: (value: string) => void, listWidth?: number) {
         super(scene, x, y);
         this.options = options;
         this.selected = defaultValue;
         this.onChange = onChange;
+        this.pillW = w;
+        this.listW = listWidth ?? w;
 
         this.pillGfx = scene.add.graphics();
         this.drawPill();
@@ -47,7 +51,9 @@ export class Dropdown extends GameObjects.Container {
         this.add(this.pillText);
 
         this.listBg = scene.add.graphics();
-        this.listContainer = scene.add.container(0, PILL_H + 4);
+        // Offset list so its right edge aligns with pill's right edge
+        const listOffX = w - this.listW;
+        this.listContainer = scene.add.container(listOffX, PILL_H + 4);
         this.listContainer.add(this.listBg);
         this.listContainer.setVisible(false);
         this.listContainer.setDepth(DEPTH);
@@ -68,7 +74,7 @@ export class Dropdown extends GameObjects.Container {
     }
 
     private drawPill(): void {
-        const w = this.width || 130;
+        const w = this.pillW;
         this.pillGfx.clear();
         this.pillGfx.fillStyle(0x111122, 1);
         this.pillGfx.fillRoundedRect(0, 0, w, PILL_H, PILL_R);
@@ -79,7 +85,7 @@ export class Dropdown extends GameObjects.Container {
     private open(): void {
         if (this.isOpen) return;
         this.isOpen = true;
-        const w = this.width || 130;
+        const w = this.listW;
         const count = Math.min(this.options.length, MAX_VISIBLE);
         const listH = count * ITEM_H + 6;
 
@@ -154,7 +160,7 @@ export class Dropdown extends GameObjects.Container {
         this.selected = value;
         const opt = this.options.find(o => o.value === value) ?? this.options[0];
         this.pillText.setText(opt.label + ' \u25be');
-        fitText(this.pillText, (this.width || 130) - 14, 14, 9);
+        fitText(this.pillText, this.pillW - 14, 14, 9);
         this.close();
         this.onChange(value);
     }

@@ -1,5 +1,6 @@
 import { GameObjects, Scene } from 'phaser';
-import { GAME_WIDTH, GAME_HEIGHT, UI } from '../core/config';
+import { UI } from '../core/config';
+import { getGameWidth, getGameHeight, isPortrait } from '../core/orientation';
 import { CollectionDef } from '../data/collections';
 import { CollectionTracker } from '../systems/CollectionTracker';
 import { PETS } from '../data/pets';
@@ -9,14 +10,6 @@ import { t } from '../data/locales';
 import { addButtonFeedback } from './components/buttonFeedback';
 import { addShineEffect } from './components/shineEffect';
 
-const POPUP_W = 820;
-const POPUP_H = 470;
-const POPUP_R = 16;
-const PET_COLS = 6;
-const PET_CARD_SX = 123;
-const PET_CARD_SY = 138;
-const BAR_W = 180;
-const BAR_H_DETAIL = 21;
 const BAR_CORNER_R = 6;
 const BAR_GREEN = 0x78C828;
 const BAR_GREEN_DARK = 0x5A9A1E;
@@ -41,22 +34,35 @@ export function buildDetailView(
     onClaim: (collId: string) => void,
     onClose: () => void,
 ): DetailResult {
+    const gw = getGameWidth();
+    const gh = getGameHeight();
+    const port = isPortrait();
+
+    const POPUP_W = port ? 460 : 820;
+    const POPUP_H = port ? 810 : 470;
+    const POPUP_R = 16;
+    const PET_COLS = port ? 3 : 6;
+    const PET_CARD_SX = 123;
+    const PET_CARD_SY = 138;
+    const BAR_W = port ? 160 : 180;
+    const BAR_H_DETAIL = 21;
+    const titleFontSz = port ? 20 : 22;
+
     const progress = tracker.getProgressById(coll.id, playerCollection);
     const isClaimed = tracker.isClaimed(coll.id);
     const isComplete = progress.current === progress.total;
     const isClaimable = isComplete && !isClaimed;
     const ratio = progress.total > 0 ? progress.current / progress.total : 0;
 
-    // Determine unseen pets BEFORE marking as seen
     const unseenIds = new Set(tracker.getUnseenPetIds(coll.id, playerCollection));
     tracker.markSeen(coll.id, playerCollection);
 
-    const px = GAME_WIDTH / 2;
-    const py = GAME_HEIGHT / 2;
+    const px = gw / 2;
+    const py = gh / 2;
     const top = py - POPUP_H / 2;
 
     // Dim overlay
-    const dimBg = scene.add.rectangle(px, py, GAME_WIDTH, GAME_HEIGHT, 0x000000, 0.7);
+    const dimBg = scene.add.rectangle(px, py, gw, gh, 0x000000, 0.7);
     dimBg.setInteractive();
     dimBg.on('pointerdown', onClose);
     container.add(dimBg);
@@ -71,16 +77,15 @@ export function buildDetailView(
     panelBg.strokeRoundedRect(px - POPUP_W / 2, top, POPUP_W, POPUP_H, POPUP_R);
     container.add(panelBg);
 
-    // Panel zone blocks closing + blocks wheel events from reaching grid
+    // Panel zone blocks closing + blocks wheel events
     const panelZone = scene.add.zone(px, py, POPUP_W, POPUP_H).setInteractive();
     container.add(panelZone);
 
-    // === HEADER: title only ===
+    // === HEADER ===
     const titleY = top + 26;
 
-    // Close X button
     const closeX = scene.add.text(px + POPUP_W / 2 - 22, titleY, '\u2715', {
-        fontFamily: UI.FONT_STROKE, fontSize: '22px', color: '#aaaaaa',
+        fontFamily: UI.FONT_STROKE, fontSize: `${titleFontSz}px`, color: '#aaaaaa',
         stroke: '#000000', strokeThickness: 3,
     }).setOrigin(0.5).setInteractive({ useHandCursor: true });
     closeX.on('pointerdown', onClose);
@@ -88,30 +93,21 @@ export function buildDetailView(
     closeX.on('pointerout', () => closeX.setColor('#aaaaaa'));
     container.add(closeX);
     container.add(scene.add.text(px, titleY, t(coll.nameKey), {
-        fontFamily: UI.FONT_STROKE, fontSize: '22px', color: '#ffffff',
+        fontFamily: UI.FONT_STROKE, fontSize: `${titleFontSz}px`, color: '#ffffff',
         stroke: '#000000', strokeThickness: 3,
     }).setOrigin(0.5));
 
-    // === PROGRESS BAR — triple outline: black → yellow → black ===
+    // === PROGRESS BAR ===
     const barY = top + 60;
     const fillColor = isClaimed ? BAR_GREEN_DARK : BAR_GREEN;
     const barGfx = scene.add.graphics();
 
     barGfx.lineStyle(1.5, 0x000000, 0.9);
-    barGfx.strokeRoundedRect(
-        px - BAR_W / 2 - 4, barY - BAR_H_DETAIL / 2 - 4,
-        BAR_W + 8, BAR_H_DETAIL + 8, BAR_CORNER_R + 3,
-    );
+    barGfx.strokeRoundedRect(px - BAR_W / 2 - 4, barY - BAR_H_DETAIL / 2 - 4, BAR_W + 8, BAR_H_DETAIL + 8, BAR_CORNER_R + 3);
     barGfx.lineStyle(3, 0xFEBF07, 1);
-    barGfx.strokeRoundedRect(
-        px - BAR_W / 2 - 2, barY - BAR_H_DETAIL / 2 - 2,
-        BAR_W + 4, BAR_H_DETAIL + 4, BAR_CORNER_R + 2,
-    );
+    barGfx.strokeRoundedRect(px - BAR_W / 2 - 2, barY - BAR_H_DETAIL / 2 - 2, BAR_W + 4, BAR_H_DETAIL + 4, BAR_CORNER_R + 2);
     barGfx.lineStyle(1.5, 0x000000, 0.9);
-    barGfx.strokeRoundedRect(
-        px - BAR_W / 2, barY - BAR_H_DETAIL / 2,
-        BAR_W, BAR_H_DETAIL, BAR_CORNER_R,
-    );
+    barGfx.strokeRoundedRect(px - BAR_W / 2, barY - BAR_H_DETAIL / 2, BAR_W, BAR_H_DETAIL, BAR_CORNER_R);
 
     barGfx.fillStyle(0x222244, 0.6);
     barGfx.fillRoundedRect(px - BAR_W / 2, barY - BAR_H_DETAIL / 2, BAR_W, BAR_H_DETAIL, BAR_CORNER_R);
@@ -135,39 +131,40 @@ export function buildDetailView(
         stroke: '#000000', strokeThickness: 2,
     }).setOrigin(0.5));
 
-    // Circle at bar end — triple outline matching bar style
+    // Circle at bar end
     const circleR = 16;
-    const circleX = px + BAR_W / 2;
-    const circleY = barY;
+    const circleXPos = px + BAR_W / 2;
+    const circleYPos = barY;
     const coinGfx = scene.add.graphics();
 
     coinGfx.lineStyle(1.5, 0x000000, 0.9);
-    coinGfx.strokeCircle(circleX, circleY, circleR + 3.5);
+    coinGfx.strokeCircle(circleXPos, circleYPos, circleR + 3.5);
     coinGfx.lineStyle(1.5, 0xFEBF07, 1);
-    coinGfx.strokeCircle(circleX, circleY, circleR + 1.5);
+    coinGfx.strokeCircle(circleXPos, circleYPos, circleR + 1.5);
     coinGfx.lineStyle(1.5, 0x000000, 0.9);
-    coinGfx.strokeCircle(circleX, circleY, circleR);
+    coinGfx.strokeCircle(circleXPos, circleYPos, circleR);
     coinGfx.fillStyle(0x12121e, 1);
-    coinGfx.fillCircle(circleX, circleY, circleR);
+    coinGfx.fillCircle(circleXPos, circleYPos, circleR);
     container.add(coinGfx);
 
     if (isClaimed) {
         if (scene.textures.exists('ui_ok_md')) {
-            container.add(scene.add.image(circleX, circleY + 2, 'ui_ok_md').setDisplaySize(28, 28));
+            container.add(scene.add.image(circleXPos, circleYPos + 2, 'ui_ok_md').setDisplaySize(28, 28));
         }
     } else {
         if (scene.textures.exists('ui_coin_md')) {
-            container.add(scene.add.image(circleX, circleY - 4, 'ui_coin_md').setDisplaySize(23, 23));
+            container.add(scene.add.image(circleXPos, circleYPos - 4, 'ui_coin_md').setDisplaySize(23, 23));
         }
-        container.add(scene.add.text(circleX, circleY + 9, formatReward(coll.reward.coins), {
+        container.add(scene.add.text(circleXPos, circleYPos + 9, formatReward(coll.reward.coins), {
             fontFamily: UI.FONT_STROKE, fontSize: '10px', color: '#f5c842',
             stroke: '#000000', strokeThickness: 2,
         }).setOrigin(0.5));
     }
 
-    // === NAV ARROWS — centered vertically, outside popup ===
-    createArrowImg(scene, container, px - POPUP_W / 2 - 28, py, 'ui_arrow_l', () => onNav(-1));
-    createArrowImg(scene, container, px + POPUP_W / 2 + 28, py, 'ui_arrow_r', () => onNav(1));
+    // === NAV ARROWS ===
+    const arrowOffX = port ? 26 : 28;
+    createArrowImg(scene, container, px - POPUP_W / 2 - arrowOffX, py, 'ui_arrow_l', () => onNav(-1));
+    createArrowImg(scene, container, px + POPUP_W / 2 + arrowOffX, py, 'ui_arrow_r', () => onNav(1));
 
     // === STATUS BUTTON ===
     const gridTopOffset = 122;

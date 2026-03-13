@@ -1,16 +1,11 @@
 import { Scene, GameObjects } from 'phaser';
-import { GAME_WIDTH, GAME_HEIGHT, UI } from '../core/config';
+import { UI } from '../core/config';
+import { getGameWidth, getGameHeight, isPortrait } from '../core/orientation';
 import { CollectionTracker } from '../systems/CollectionTracker';
 import { CollectionCard, COL_CARD_W, COL_CARD_H } from './CollectionCard';
 import { t } from '../data/locales';
 
 const GRID_TOP = 118;
-const GRID_H = GAME_HEIGHT - GRID_TOP;
-const COLS = 5;
-const GAP_X = 12;
-const GAP_Y = 12;
-const CARD_SX = COL_CARD_W + GAP_X;
-const CARD_SY = COL_CARD_H + GAP_Y;
 
 export interface CardsGridResult {
     maxScroll: number;
@@ -24,11 +19,24 @@ export function buildCollectionCards(
     playerCollection: Set<string>,
     onCardClick: (collId: string) => void,
 ): CardsGridResult {
+    const gw = getGameWidth();
+    const gh = getGameHeight();
+    const gridH = gh - GRID_TOP;
+    const port = isPortrait();
+
+    const cols = port ? 3 : 5;
+    const cardW = port ? 160 : COL_CARD_W;
+    const cardH = port ? 192 : COL_CARD_H;
+    const gapX = port ? 10 : 12;
+    const gapY = port ? 10 : 12;
+    const cardSX = cardW + gapX;
+    const cardSY = cardH + gapY;
+
     const discovered = tracker.getDiscoveredSorted(playerCollection);
     let scrollOffset = 0;
 
     if (discovered.length === 0) {
-        const hint = scene.add.text(GAME_WIDTH / 2, GAME_HEIGHT / 2 - 20, t('col_hint_empty'), {
+        const hint = scene.add.text(gw / 2, gh / 2 - 20, t('col_hint_empty'), {
             fontFamily: UI.FONT_BODY, fontSize: '18px', color: '#777777',
             wordWrap: { width: 400 }, align: 'center',
         }).setOrigin(0.5);
@@ -37,20 +45,22 @@ export function buildCollectionCards(
     }
 
     const maskGfx = scene.make.graphics({});
-    maskGfx.fillRect(0, GRID_TOP, GAME_WIDTH, GRID_H);
+    maskGfx.fillRect(0, GRID_TOP, gw, gridH);
 
     const gridContainer = scene.add.container(0, 0);
     gridContainer.setMask(maskGfx.createGeometryMask());
     container.add(gridContainer);
 
-    const totalW = COLS * COL_CARD_W + (COLS - 1) * GAP_X;
-    const startX = (GAME_WIDTH - totalW) / 2 + COL_CARD_W / 2;
+    const totalW = cols * cardW + (cols - 1) * gapX;
+    const startX = (gw - totalW) / 2 + cardW / 2;
+
+    const cardOpts = port ? { cardW, cardH } : undefined;
 
     discovered.forEach((coll, i) => {
-        const col = i % COLS;
-        const row = Math.floor(i / COLS);
-        const x = startX + col * CARD_SX;
-        const y = GRID_TOP + 16 + COL_CARD_H / 2 + row * CARD_SY;
+        const col = i % cols;
+        const row = Math.floor(i / cols);
+        const x = startX + col * cardSX;
+        const y = GRID_TOP + 16 + cardH / 2 + row * cardSY;
         const progress = tracker.getProgressById(coll.id, playerCollection);
         const isClaimed = tracker.isClaimed(coll.id);
         const isClaimable = !isClaimed && progress.current === progress.total;
@@ -58,13 +68,13 @@ export function buildCollectionCards(
 
         const card = new CollectionCard(scene, x, y, coll, progress, isClaimed, isClaimable, hasUnseen, isClaimable ? 1 : 0, () => {
             onCardClick(coll.id);
-        });
+        }, cardOpts);
         gridContainer.add(card);
     });
 
-    const rows = Math.ceil(discovered.length / COLS);
-    const contentH = 16 + rows * CARD_SY;
-    const maxScroll = Math.max(0, contentH - GRID_H);
+    const rows = Math.ceil(discovered.length / cols);
+    const contentH = 16 + rows * cardSY;
+    const maxScroll = Math.max(0, contentH - gridH);
 
     function clampScroll() {
         scrollOffset = Phaser.Math.Clamp(scrollOffset, 0, maxScroll);

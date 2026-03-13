@@ -128,7 +128,7 @@ const PORTRAIT: MainLayout = {
     },
     arrowY: 969 - 140 / 2 - 50,
 
-    badges: { x: 15, y: 670, direction: 'column' },
+    badges: { x: 15, y: 740, direction: 'column' },
 
     topBar: { x: 24, y: 15 },
     coinDisplay: { x: 413, y: 15 },
@@ -139,10 +139,10 @@ const PORTRAIT: MainLayout = {
     bonusPanel:  { x: PORTRAIT_W - 150 - 15, y: 803 },
 
     btnW: 106,
-    collectionBtn: { x: 0, y: 934 },
-    nestsBtn:      { x: 110, y: 934 },
-    shopBtn:       { x: 474, y: 934 },
-    dailyBonusBtn: { x: 364, y: 934 },
+    collectionBtn: { x: 1, y: 934 },
+    nestsBtn:      { x: 111, y: 934 },
+    shopBtn:       { x: 473, y: 934 },
+    dailyBonusBtn: { x: 363, y: 934 },
 
     thoughtRight: { x: 400, y: 370 },
     thoughtLeft:  { x: 180, y: 370 },

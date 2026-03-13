@@ -1,5 +1,6 @@
 import { Scene } from 'phaser';
-import { GAME_WIDTH, GAME_HEIGHT, UI } from '../core/config';
+import { UI } from '../core/config';
+import { getGameWidth, getGameHeight, isPortrait } from '../core/orientation';
 import { COLLECTIONS } from '../data/collections';
 import { GameManager } from '../core/GameManager';
 import { Button } from '../ui/components/Button';
@@ -31,7 +32,10 @@ export class CollectionScene extends Scene {
         this.collection = new Set(this.manager.save.getData().collection);
         this.activeTab = data?.tab ?? 'collections';
 
-        this.add.rectangle(GAME_WIDTH / 2, GAME_HEIGHT / 2, GAME_WIDTH, GAME_HEIGHT, 0x12121e);
+        const gw = getGameWidth();
+        const gh = getGameHeight();
+
+        this.add.rectangle(gw / 2, gh / 2, gw, gh, 0x12121e);
         this.content = this.add.container(0, 0);
 
         createSceneHeader({
@@ -44,9 +48,10 @@ export class CollectionScene extends Scene {
     }
 
     private createTabs(): void {
-        const tabW = 110;
+        const port = isPortrait();
+        const tabW = port ? 100 : 110;
         const gap = 10;
-        const cx = GAME_WIDTH / 2;
+        const cx = getGameWidth() / 2;
         const y = 74 + 21;
 
         this.colTabBtn = new Button(this, cx - tabW / 2 - gap / 2, y, tabW, 36,

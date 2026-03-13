@@ -1,17 +1,14 @@
 import { Scene, GameObjects } from 'phaser';
-import { GAME_WIDTH, GAME_HEIGHT, GRADE_ORDER, GRADE, getGradeForChance, UI } from '../core/config';
-import { PETS, TOTAL_PETS, getPetsByGrade } from '../data/pets';
+import { GRADE_ORDER, GRADE, getGradeForChance, UI } from '../core/config';
+import { getGameWidth, getGameHeight, isPortrait } from '../core/orientation';
+import { PETS } from '../data/pets';
 import { PetCard } from './PetCard';
 import { Dropdown, DropdownOption } from './components/Dropdown';
 import { t } from '../data/locales';
 import { Grade } from '../types';
 
-const FILTER_Y = 95; // same height as tabs
+const FILTER_Y = 95;
 const GRID_TOP = 118;
-const GRID_H = GAME_HEIGHT - GRID_TOP;
-const COLS = 8;
-const CARD_SX = 123;
-const CARD_SY = 138;
 const DROPDOWN_W = 128;
 
 export interface AllTabResult {
@@ -25,18 +22,27 @@ export function buildAllTab(
     collection: Set<string>,
     newPetIds: Set<string>,
 ): AllTabResult {
+    const gw = getGameWidth();
+    const gh = getGameHeight();
+    const gridH = gh - GRID_TOP;
+    const port = isPortrait();
+
+    const cols = port ? 4 : 8;
+    const cardSX = port ? 131 : 123;
+    const cardSY = 138;
+
     let scrollOffset = 0;
     let maxScroll = 0;
     let gridContainer: GameObjects.Container;
 
     const maskGfx = scene.make.graphics({});
-    maskGfx.fillRect(0, GRID_TOP, GAME_WIDTH, GRID_H);
+    maskGfx.fillRect(0, GRID_TOP, gw, gridH);
 
     gridContainer = scene.add.container(0, 0);
     gridContainer.setMask(maskGfx.createGeometryMask());
     container.add(gridContainer);
 
-    // Dropdown options — grade name only, no counts
+    // Dropdown options
     const options: DropdownOption[] = [
         { value: 'all', label: t('filter_all') },
     ];
@@ -44,16 +50,14 @@ export function buildAllTab(
         options.push({ value: g, label: t(`grade_${g}`), color: GRADE[g].color });
     }
 
-    // Position: far right with generous margin so dropdown list doesn't clip offscreen
-    // Keep dropdown at scene level (not nested in container) to avoid interaction issues
-    const dropdownX = GAME_WIDTH - DROPDOWN_W - 8;
-    const dropdown = new Dropdown(scene, dropdownX, FILTER_Y - 15, DROPDOWN_W, options, 'all', (val) => {
+    const pillW = port ? 104 : DROPDOWN_W;
+    const dropdownX = gw - pillW - 8;
+    const dropdown = new Dropdown(scene, dropdownX, FILTER_Y - 15, pillW, options, 'all', (val) => {
         scrollOffset = 0;
         buildGrid(val as Grade | 'all');
-    });
+    }, port ? DROPDOWN_W : undefined);
     dropdown.setDepth(50);
 
-    // Grade label left of dropdown, same vertical center
     const gradeLabel = scene.add.text(dropdownX - 8, FILTER_Y, t('col_grade_filter') + ':', {
         fontFamily: UI.FONT_STROKE, fontSize: '13px', color: '#aaaaaa',
         stroke: '#000000', strokeThickness: 1,
@@ -63,21 +67,21 @@ export function buildAllTab(
     function buildGrid(filter: Grade | 'all') {
         gridContainer.removeAll(true);
         const pets = filter === 'all' ? PETS : PETS.filter(p => getGradeForChance(p.chance) === filter);
-        const gridW = COLS * CARD_SX;
-        const startX = GAME_WIDTH / 2 - gridW / 2 + CARD_SX / 2;
+        const gridW = cols * cardSX;
+        const startX = gw / 2 - gridW / 2 + cardSX / 2;
 
         pets.forEach((pet, i) => {
-            const col = i % COLS;
-            const row = Math.floor(i / COLS);
-            const x = startX + col * CARD_SX;
-            const y = GRID_TOP + CARD_SY / 2 + 10 + row * CARD_SY;
+            const col = i % cols;
+            const row = Math.floor(i / cols);
+            const x = startX + col * cardSX;
+            const y = GRID_TOP + cardSY / 2 + 10 + row * cardSY;
             const found = collection.has(pet.id);
             const card = new PetCard(scene, x, y, pet, found, found && newPetIds.has(pet.id));
             gridContainer.add(card);
         });
 
-        const rows = Math.ceil(pets.length / COLS);
-        maxScroll = Math.max(0, (CARD_SY / 2 + 10 + rows * CARD_SY) - GRID_H);
+        const rows = Math.ceil(pets.length / cols);
+        maxScroll = Math.max(0, (cardSY / 2 + 10 + rows * cardSY) - gridH);
         gridContainer.y = -scrollOffset;
     }
 
