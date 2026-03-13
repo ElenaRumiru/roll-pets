@@ -1,5 +1,6 @@
 import { Scene } from 'phaser';
-import { GAME_WIDTH, UI, DAILY_BONUS_CONFIG } from '../core/config';
+import { UI, DAILY_BONUS_CONFIG } from '../core/config';
+import { getGameWidth } from '../core/orientation';
 import { DailyBonusSystem } from '../systems/DailyBonusSystem';
 import { GameManager } from '../core/GameManager';
 import { t } from '../data/locales';
@@ -9,7 +10,6 @@ import { DailyBonusReward } from '../types';
 
 const CARD_W = 108, CARD_H = 100, CARD_GAP = 10, CARD_R = 12;
 const TRACK_H = 20, TRACK_R = 5;
-const DAY7_H = CARD_H * 2 + CARD_GAP;
 const BUFF_ICON: Record<string, string> = {
     lucky: 'luck_x2_lg', super: 'luck_x3_lg', epic: 'luck_x5_lg',
 };
@@ -19,24 +19,27 @@ const BUFF_CLR: Record<string, string> = {
 
 export { CARD_H, CARD_GAP };
 
-export function createCardGrid(scene: Scene, gridTop: number, db: DailyBonusSystem): void {
+export function createCardGrid(scene: Scene, gridTop: number, db: DailyBonusSystem,
+    cardHeight?: number): void {
+    const ch = cardHeight ?? CARD_H;
+    const day7h = ch * 2 + CARD_GAP;
     const gridW = CARD_W * 4 + CARD_GAP * 3;
-    const startX = GAME_WIDTH / 2 - gridW / 2;
+    const startX = getGameWidth() / 2 - gridW / 2;
 
     for (let i = 0; i < 7; i++) {
         let cx: number, cy: number, w: number, h: number;
         if (i < 3) {
             cx = startX + i * (CARD_W + CARD_GAP) + CARD_W / 2;
-            cy = gridTop + CARD_H / 2;
-            w = CARD_W; h = CARD_H;
+            cy = gridTop + ch / 2;
+            w = CARD_W; h = ch;
         } else if (i < 6) {
             cx = startX + (i - 3) * (CARD_W + CARD_GAP) + CARD_W / 2;
-            cy = gridTop + CARD_H + CARD_GAP + CARD_H / 2;
-            w = CARD_W; h = CARD_H;
+            cy = gridTop + ch + CARD_GAP + ch / 2;
+            w = CARD_W; h = ch;
         } else {
             cx = startX + 3 * (CARD_W + CARD_GAP) + CARD_W / 2;
-            cy = gridTop + DAY7_H / 2;
-            w = CARD_W; h = DAY7_H;
+            cy = gridTop + day7h / 2;
+            w = CARD_W; h = day7h;
         }
         drawCard(scene, cx, cy, w, h, i, db);
     }
@@ -139,12 +142,13 @@ function rewardText(r: DailyBonusReward): string {
     return `${r.count}x ${name}`;
 }
 
-export function createMilestoneTrack(scene: Scene, trackY: number, manager: GameManager): void {
+export function createMilestoneTrack(scene: Scene, trackY: number, manager: GameManager,
+    trackWidth?: number): void {
     const db = manager.dailyBonus;
     const cfg = DAILY_BONUS_CONFIG;
     const maxVal = cfg.monthCycleDays;
-    const trackW = CARD_W * 4 + CARD_GAP * 3;
-    const trackX = GAME_WIDTH / 2 - trackW / 2;
+    const trackW = trackWidth ?? (CARD_W * 4 + CARD_GAP * 3);
+    const trackX = getGameWidth() / 2 - trackW / 2;
     const barY = trackY + 2;
 
     // Triple outline (black → yellow → black)
