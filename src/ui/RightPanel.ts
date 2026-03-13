@@ -1,6 +1,7 @@
 import { GameObjects, Geom, Scene } from 'phaser';
 import { UI, AUTOROLL_TOGGLE } from '../core/config';
 import { getLayout } from '../core/layout';
+import { isPortrait } from '../core/orientation';
 import { BuffBadges } from './BuffBadges';
 import { BuffSystem } from '../systems/BuffSystem';
 import { t } from '../data/locales';
@@ -12,6 +13,7 @@ export class RightPanel extends GameObjects.Container {
     private rollWrap: GameObjects.Container;
     private rollBg: GameObjects.Image;
     private rollLabel: GameObjects.Text;
+    private rollSubLabel: GameObjects.Text | null = null;
     private badges: BuffBadges;
     private toggleImg: GameObjects.Image;
     private autorollEnabled = false;
@@ -68,10 +70,23 @@ export class RightPanel extends GameObjects.Container {
             stroke: '#000000',
             strokeThickness: 6,
             shadow: { offsetX: 2, offsetY: 2, color: '#000000', blur: 4, fill: true },
+            align: 'center',
         }).setOrigin(0.5);
-        fitText(this.rollLabel, rb.w - 25, parseInt(rb.fontSize));
+        fitText(this.rollLabel, rb.w - 40, parseInt(rb.fontSize));
         this.rollWrap.add(this.rollLabel);
 
+        // Portrait: small sub-label above main label for "AUTO" prefix
+        if (isPortrait()) {
+            this.rollSubLabel = scene.add.text(0, 0, '', {
+                fontFamily: UI.FONT_STROKE,
+                fontSize: `${Math.round(this.rollFontSize * 0.45)}px`,
+                color: '#ffffff',
+                stroke: '#000000',
+                strokeThickness: 4,
+                shadow: { offsetX: 1, offsetY: 1, color: '#000000', blur: 3, fill: true },
+            }).setOrigin(0.5).setVisible(false);
+            this.rollWrap.add(this.rollSubLabel);
+        }
 
         addButtonFeedback(scene, this.rollBg, { scaleTarget: this.rollWrap });
 
@@ -209,7 +224,18 @@ export class RightPanel extends GameObjects.Container {
     }
 
     private setRollLabel(text: string): void {
-        this.rollLabel.setText(text);
-        fitText(this.rollLabel, this.rollW - 25, this.rollFontSize);
+        const parts = text.split(' ');
+        // Portrait with sub-label: split "AUTO ROLL" → sub="AUTO", main="ROLL"
+        if (this.rollSubLabel && parts.length === 2) {
+            this.rollSubLabel.setText(parts[0]).setVisible(true);
+            this.rollLabel.setY(8);
+            this.rollSubLabel.setY(-24);
+            this.rollLabel.setText(parts[1]);
+        } else {
+            if (this.rollSubLabel) this.rollSubLabel.setVisible(false);
+            this.rollLabel.setY(-1);
+            this.rollLabel.setText(text);
+        }
+        fitText(this.rollLabel, this.rollW - 40, this.rollFontSize);
     }
 }
