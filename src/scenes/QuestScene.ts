@@ -32,15 +32,16 @@ export class QuestScene extends Scene {
         });
 
         // Layout: center content block vertically in portrait
-        const trackAreaH = 80, gapTC = 40, gapCT = 30, timerH = 20;
+        const trackAreaH = 80, gapTC = 40, timerH = 20;
         const cardsH = 3 * CARD_H + 2 * CARD_GAP;
-        const blockH = trackAreaH + gapTC + cardsH + gapCT + timerH;
         let mY: number, qY: number, tY: number;
         if (port) {
+            const gapCT = 50;
+            const blockH = trackAreaH + gapTC + cardsH + gapCT + timerH;
             const top = HEADER_H + Math.round((gh - HEADER_H - blockH) / 2);
             mY = top; qY = top + trackAreaH + gapTC; tY = qY + cardsH + gapCT;
         } else {
-            mY = 100; qY = 235; tY = gh - 30;
+            mY = 100; qY = 220; tY = gh - 30;
         }
 
         this.createMilestoneTrack(gw, mY, port);
