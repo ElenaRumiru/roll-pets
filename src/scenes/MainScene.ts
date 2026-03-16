@@ -411,7 +411,11 @@ export class MainScene extends Scene {
 
     private applyLevelUpSideEffects(data: LevelUpData): void {
         this.centerStage.setEggImage(data.eggKey);
-        this.bgImage.setTexture(data.bgKey);
+        const bgKey = isPortrait()
+            ? this.manager.getPortraitBgImageKey()
+            : data.bgKey;
+        const l = getLayout();
+        this.bgImage.setTexture(bgKey).setDisplaySize(l.gw, l.gh);
     }
 
     private applyRebirthSideEffects(): void {
@@ -419,7 +423,8 @@ export class MainScene extends Scene {
         const bgKey = isPortrait()
             ? this.manager.getPortraitBgImageKey()
             : this.manager.getBgImageKey();
-        this.bgImage.setTexture(bgKey);
+        const l = getLayout();
+        this.bgImage.setTexture(bgKey).setDisplaySize(l.gw, l.gh);
     }
 
     private dismissOverlayAndComplete(): void {

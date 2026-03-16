@@ -1,6 +1,7 @@
 import { GameObjects, Scene } from 'phaser';
 import { UI, LEVELUP_CONFIG } from '../core/config';
 import { getLayout } from '../core/layout';
+import { isPortrait } from '../core/orientation';
 import { LevelUpData } from '../types';
 import { AudioSystem } from '../systems/AudioSystem';
 import { getEggNameKey, getEggMinOdds } from '../data/eggs';
@@ -46,6 +47,7 @@ export class LevelUpOverlay {
         const l = getLayout();
         const CX = l.cx;
         const CY = l.cy;
+        const port = isPortrait();
 
         // Fullscreen dark blocker — oversized to avoid sub-pixel gaps
         const blocker = this.scene.add.rectangle(CX, CY, l.gw + 4, l.gh + 4, 0x000000, 0.75)
@@ -56,7 +58,7 @@ export class LevelUpOverlay {
         this.elements.push(container);
 
         // --- Double ring (top) ---
-        const ringY = -173;
+        const ringY = port ? -240 : -173;
         this.buildDoubleRing(container, data.level, ringY);
 
         // --- "LEVEL UP!" title ---
@@ -68,11 +70,11 @@ export class LevelUpOverlay {
         container.add(title);
 
         if (data.featureUnlock) {
-            this.buildFeatureUnlockVariant(container, blocker, data, titleY, onComplete);
+            this.buildFeatureUnlockVariant(container, blocker, data, titleY, port, onComplete);
         } else if (data.eggChanged) {
-            this.buildEggVariant(container, blocker, data, titleY, onComplete);
+            this.buildEggVariant(container, blocker, data, titleY, port, onComplete);
         } else {
-            this.buildCoinVariant(container, data, titleY, onComplete);
+            this.buildCoinVariant(container, data, titleY, port, onComplete);
         }
 
         this.scene.tweens.add({ targets: container, scale: 1, duration: 300, ease: 'Back.easeOut' });
@@ -102,9 +104,10 @@ export class LevelUpOverlay {
         blocker: GameObjects.Rectangle,
         data: LevelUpData,
         titleY: number,
+        port: boolean,
         onComplete: (chosenCoinAmount: number) => void,
     ): void {
-        let y = titleY + 35;
+        let y = titleY + (port ? 45 : 35);
 
         // Subtitle
         const subtitle = this.scene.add.text(0, y, t('levelup_new_egg_unlocked'), {
@@ -112,17 +115,17 @@ export class LevelUpOverlay {
             color: '#ffffff', stroke: '#000000', strokeThickness: UI.STROKE_MEDIUM,
         }).setOrigin(0.5);
         container.add(subtitle);
-        y += 27;
+        y += port ? 35 : 27;
 
         // Old egg → arrow → new egg
-        const eggY = y + 62;
+        const eggY = y + (port ? 80 : 62);
         const oldEgg = this.scene.add.image(-99, eggY, `${data.oldEggKey}_sm`).setDisplaySize(111, 111);
         container.add(oldEgg);
         const arrow = this.scene.add.image(0, eggY, 'ui_arrow').setDisplaySize(35, 35).setRotation(-Math.PI / 2);
         container.add(arrow);
         const newEgg = this.scene.add.image(99, eggY, `${data.eggKey}_sm`).setDisplaySize(111, 111);
         container.add(newEgg);
-        y = eggY + 72;
+        y = eggY + (port ? 90 : 72);
 
         // Egg name
         const eggName = this.scene.add.text(0, y, t(getEggNameKey(data.eggKey)), {
@@ -131,7 +134,7 @@ export class LevelUpOverlay {
         }).setOrigin(0.5);
         fitText(eggName, 300, 22);
         container.add(eggName);
-        y += 27;
+        y += port ? 35 : 27;
 
         // Egg characteristic
         const odds = getEggMinOdds(data.level);
@@ -140,7 +143,7 @@ export class LevelUpOverlay {
             color: '#aaaaaa', stroke: '#000000', strokeThickness: UI.STROKE_THIN,
         }).setOrigin(0.5);
         container.add(effect);
-        y += 27;
+        y += port ? 35 : 27;
 
         // Countdown
         let seconds = LEVELUP_CONFIG.eggCloseSeconds;
@@ -178,25 +181,26 @@ export class LevelUpOverlay {
         blocker: GameObjects.Rectangle,
         data: LevelUpData,
         titleY: number,
+        port: boolean,
         onComplete: (chosenCoinAmount: number) => void,
     ): void {
         const info = FEATURE_INFO[data.featureUnlock!];
-        let y = titleY + 35;
+        let y = titleY + (port ? 45 : 35);
 
         const subtitle = this.scene.add.text(0, y, t('feature_unlocked'), {
             fontFamily: UI.FONT_STROKE, fontSize: '18px',
             color: '#ffffff', stroke: '#000000', strokeThickness: UI.STROKE_MEDIUM,
         }).setOrigin(0.5);
         container.add(subtitle);
-        const afterSubtitle = y + 14;
+        const afterSubtitle = y + (port ? 20 : 14);
 
         // Icon dimensions (2x size)
         const src = this.scene.textures.get(info.iconKey).getSourceImage();
-        const iconW = 180;
+        const iconW = port ? 220 : 180;
         const iconH = Math.round(iconW * src.height / src.width);
 
         // Name position — leave room for icon + padding
-        const nameY = afterSubtitle + iconH + 30;
+        const nameY = afterSubtitle + iconH + (port ? 40 : 30);
 
         // Feature icon — centered between subtitle and name
         const iconY = (afterSubtitle + nameY) / 2;
@@ -209,7 +213,7 @@ export class LevelUpOverlay {
             color: '#ffc107', stroke: '#000000', strokeThickness: UI.STROKE_MEDIUM,
         }).setOrigin(0.5);
         container.add(name);
-        y = nameY + 25;
+        y = nameY + (port ? 32 : 25);
 
         // Description — same font as egg effect line
         const desc = this.scene.add.text(0, y, t(info.descKey), {
@@ -217,7 +221,7 @@ export class LevelUpOverlay {
             color: '#aaaaaa', stroke: '#000000', strokeThickness: UI.STROKE_THIN,
         }).setOrigin(0.5);
         container.add(desc);
-        y += 42;
+        y += port ? 55 : 42;
 
         // Countdown
         let seconds = LEVELUP_CONFIG.eggCloseSeconds;
@@ -249,12 +253,13 @@ export class LevelUpOverlay {
         container: GameObjects.Container,
         data: LevelUpData,
         titleY: number,
+        port: boolean,
         onComplete: (chosenCoinAmount: number) => void,
     ): void {
         const baseAmount = data.coinReward;
         const adAmount = baseAmount * LEVELUP_CONFIG.adCoinMultiplier;
 
-        let y = titleY + 59;
+        let y = titleY + (port ? 80 : 59);
 
         // Subtitle
         const subtitle = this.scene.add.text(0, y, t('levelup_rewards'), {
@@ -262,7 +267,7 @@ export class LevelUpOverlay {
             color: '#ffffff', stroke: '#000000', strokeThickness: UI.STROKE_MEDIUM,
         }).setOrigin(0.5);
         container.add(subtitle);
-        y += 32;
+        y += port ? 42 : 32;
 
         // Choice cards
         const cardsY = y;

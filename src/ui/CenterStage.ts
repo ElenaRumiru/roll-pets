@@ -70,31 +70,31 @@ export class CenterStage extends GameObjects.Container {
         const CX = this.cx;
         const CY = this.cy;
 
-        // Dark overlay
+        // Dark overlay — above UI (105+2=107 during autoroll)
         this.overlay = scene.add.rectangle(CX, CY, l.gw, l.gh, 0x000000, 0)
-            .setDepth(100);
+            .setDepth(110);
 
         // Egg container
-        this.eggContainer = scene.add.container(CX, CY).setAlpha(0).setDepth(101);
+        this.eggContainer = scene.add.container(CX, CY).setAlpha(0).setDepth(111);
         this.egg = scene.add.image(0, 0, 'egg_1').setDisplaySize(296, 296);
         this.eggContainer.add(this.egg);
 
         // Reveal elements (on top of overlay)
-        this.revealName = scene.add.text(CX, CY + 80, '', {
+        this.revealName = scene.add.text(CX, CY + 100, '', {
             fontFamily: UI.FONT_STROKE,
             fontSize: '27px',
             color: '#ffffff',
             stroke: '#000000',
             strokeThickness: UI.STROKE_THICK,
-        }).setOrigin(0.5).setAlpha(0).setDepth(103);
+        }).setOrigin(0.5).setAlpha(0).setDepth(113);
 
-        this.revealRarity = scene.add.text(CX, CY + 111, '', {
+        this.revealRarity = scene.add.text(CX, CY + 131, '', {
             fontFamily: UI.FONT_STROKE,
             fontSize: '25px',
             color: '#ffffff',
             stroke: '#000000',
             strokeThickness: UI.STROKE_THICK,
-        }).setOrigin(0.5).setAlpha(0).setDepth(103);
+        }).setOrigin(0.5).setAlpha(0).setDepth(113);
 
         this.newBadge = scene.add.text(CX, CY - 167, t('new_pet'), {
             fontFamily: UI.FONT_STROKE,
@@ -102,7 +102,7 @@ export class CenterStage extends GameObjects.Container {
             color: '#ffc107',
             stroke: '#000000',
             strokeThickness: UI.STROKE_THICK,
-        }).setOrigin(0.5).setAlpha(0).setDepth(103);
+        }).setOrigin(0.5).setAlpha(0).setDepth(113);
 
         // Rewards line: [EXP icon] +25  [COIN icon] +5 — single container, centered
         const expIcon = scene.add.image(0, 1, 'ui_exp_md');
@@ -115,8 +115,8 @@ export class CenterStage extends GameObjects.Container {
             fontFamily: UI.FONT_STROKE, fontSize: '20px',
             color: '#ffc107', stroke: '#000000', strokeThickness: UI.STROKE_MEDIUM,
         }).setOrigin(0, 0.5);
-        this.rewardsContainer = scene.add.container(CX, CY + 150,
-            [expIcon, expLabel, coinIcon, coinLabel]).setAlpha(0).setDepth(103);
+        this.rewardsContainer = scene.add.container(CX, CY + 170,
+            [expIcon, expLabel, coinIcon, coinLabel]).setAlpha(0).setDepth(113);
 
         scene.add.existing(this);
     }
@@ -269,7 +269,7 @@ export class CenterStage extends GameObjects.Container {
         // Pet image
         if (this.revealImage) { this.revealImage.destroy(); this.revealImage = null; }
         this.revealImage = scene.add.image(CX, CY - 31, result.pet.imageKey)
-            .setScale(0).setDepth(102);
+            .setScale(0).setDepth(112);
 
         scene.tweens.add({
             targets: this.revealImage,

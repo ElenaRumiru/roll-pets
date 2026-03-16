@@ -1,6 +1,7 @@
 import { GameObjects, Scene } from 'phaser';
 import { UI, LEVELUP_CONFIG } from '../core/config';
 import { getLayout } from '../core/layout';
+import { isPortrait } from '../core/orientation';
 import { LeaguePromotionData } from '../types';
 import { AudioSystem } from '../systems/AudioSystem';
 import { LEAGUES } from '../data/leaderboard';
@@ -40,6 +41,7 @@ export class LeaguePromotionOverlay {
         const l = getLayout();
         const CX = l.cx;
         const CY = l.cy;
+        const port = isPortrait();
 
         const league = LEAGUES.find(l => l.tier === data.tier)!;
         const baseAmount = data.coinReward;
@@ -53,14 +55,15 @@ export class LeaguePromotionOverlay {
         this.elements.push(container);
 
         // Rating icon
-        const iconY = -170;
+        const iconScale = port ? 1.2 : 1;
+        const iconY = port ? -240 : -170;
         const icon = this.scene.add.image(0, iconY, 'ui_rating');
         const aspectRatio = icon.width / icon.height;
-        icon.setDisplaySize(ICON_H * aspectRatio, ICON_H);
+        icon.setDisplaySize(ICON_H * aspectRatio * iconScale, ICON_H * iconScale);
         container.add(icon);
 
         // Title
-        const titleY = iconY + ICON_H / 2 + 26;
+        const titleY = iconY + ICON_H * iconScale / 2 + (port ? 30 : 26);
         const title = this.scene.add.text(0, titleY, t('league_promo_title'), {
             fontFamily: UI.FONT_STROKE, fontSize: '28px',
             color: league.colorHex, stroke: '#000000', strokeThickness: UI.STROKE_THICK,
@@ -69,7 +72,7 @@ export class LeaguePromotionOverlay {
         container.add(title);
 
         // Subtitle — league name
-        const subY = titleY + 35;
+        const subY = titleY + (port ? 45 : 35);
         const subText = t('league_promo_subtitle').replace('{league}', t(league.label));
         const subtitle = this.scene.add.text(0, subY, subText, {
             fontFamily: UI.FONT_STROKE, fontSize: '20px',
@@ -79,7 +82,7 @@ export class LeaguePromotionOverlay {
         container.add(subtitle);
 
         // Rewards subtitle
-        const rewardsY = subY + 29;
+        const rewardsY = subY + (port ? 38 : 29);
         const rewardsSub = this.scene.add.text(0, rewardsY, t('levelup_rewards'), {
             fontFamily: UI.FONT_STROKE, fontSize: '16px',
             color: '#aaaaaa', stroke: '#000000', strokeThickness: UI.STROKE_THIN,
@@ -87,7 +90,7 @@ export class LeaguePromotionOverlay {
         container.add(rewardsSub);
 
         // Choice cards
-        const cardsY = rewardsY + 22;
+        const cardsY = rewardsY + (port ? 30 : 22);
         const leftX = -CARD_GAP / 2 - CARD_W / 2;
         const rightX = CARD_GAP / 2 + CARD_W / 2;
 

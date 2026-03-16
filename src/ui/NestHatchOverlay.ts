@@ -1,6 +1,6 @@
 import { Scene, GameObjects } from 'phaser';
 import { GRADE, GRADE_HOLD_MS, UI, getOddsString } from '../core/config';
-import { getGameWidth, getGameHeight } from '../core/orientation';
+import { getGameWidth, getGameHeight, isPortrait } from '../core/orientation';
 import { RollResult } from '../types';
 import { AudioSystem, SfxKey } from '../systems/AudioSystem';
 import { t } from '../data/locales';
@@ -68,6 +68,7 @@ export class NestHatchOverlay {
         const scene = this.scene;
         const cx = getGameWidth() / 2;
         const cy = getGameHeight() / 2;
+        const port = isPortrait();
 
         // Grade-specific jackpot SFX — common uses old reveal, rest get escalating arpeggio
         if (result.grade === 'common') {
@@ -78,13 +79,14 @@ export class NestHatchOverlay {
         }
 
         // 5) Pet image
-        const petImg = scene.add.image(cx, cy - 31, result.pet.imageKey)
+        const petScale = port ? 1.0 : 0.86;
+        const petImg = scene.add.image(cx, cy - (port ? 50 : 31), result.pet.imageKey)
             .setScale(0).setDepth(502);
         this.objects.push(petImg);
-        scene.tweens.add({ targets: petImg, scale: 0.86, duration: 300, ease: 'Back.easeOut' });
+        scene.tweens.add({ targets: petImg, scale: petScale, duration: 300, ease: 'Back.easeOut' });
 
         // 6) Name
-        const name = scene.add.text(cx, cy + 80, t('pet_' + result.pet.id), {
+        const name = scene.add.text(cx, cy + (port ? 130 : 100), t('pet_' + result.pet.id), {
             fontFamily: UI.FONT_STROKE, fontSize: '27px', color: '#ffffff',
             stroke: '#000000', strokeThickness: UI.STROKE_THICK,
         }).setOrigin(0.5).setDepth(503);
@@ -92,7 +94,7 @@ export class NestHatchOverlay {
         this.objects.push(name);
 
         // 7) Odds
-        const odds = scene.add.text(cx, cy + 111, getOddsString(result.pet.chance), {
+        const odds = scene.add.text(cx, cy + (port ? 168 : 131), getOddsString(result.pet.chance), {
             fontFamily: UI.FONT_STROKE, fontSize: '25px', color: cfg.colorHex,
             stroke: cfg.outlineHex, strokeThickness: cfg.strokeThickness || UI.STROKE_MEDIUM,
         }).setOrigin(0.5).setDepth(503);
@@ -100,7 +102,7 @@ export class NestHatchOverlay {
 
         // 8) NEW badge
         if (result.isNew) {
-            const badge = scene.add.text(cx, cy - 167, t('new_pet'), {
+            const badge = scene.add.text(cx, cy - (port ? 220 : 167), t('new_pet'), {
                 fontFamily: UI.FONT_STROKE, fontSize: '32px', color: '#ffc107',
                 stroke: '#000000', strokeThickness: UI.STROKE_THICK,
             }).setOrigin(0.5).setScale(0).setDepth(503);
@@ -149,7 +151,8 @@ export class NestHatchOverlay {
         coinIcon.setX(cx + 21 / 2);   cx += 21 + gap;
         coinLabel.setX(cx);
 
-        return scene.add.container(getGameWidth() / 2, getGameHeight() / 2 + 150,
+        const rewardsY = getGameHeight() / 2 + (isPortrait() ? 215 : 170);
+        return scene.add.container(getGameWidth() / 2, rewardsY,
             [expIcon, expLabel, coinIcon, coinLabel]).setDepth(503);
     }
 

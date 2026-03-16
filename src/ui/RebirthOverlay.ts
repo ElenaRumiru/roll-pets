@@ -1,6 +1,7 @@
 import { GameObjects, Scene } from 'phaser';
 import { UI, REBIRTH_CONFIG } from '../core/config';
 import { getLayout } from '../core/layout';
+import { isPortrait } from '../core/orientation';
 import { RebirthData } from '../types';
 import { AudioSystem } from '../systems/AudioSystem';
 import { Button } from './components/Button';
@@ -26,6 +27,7 @@ export class RebirthOverlay {
         const l = getLayout();
         const CX = l.cx;
         const CY = l.cy;
+        const port = isPortrait();
 
         const blocker = this.scene.add.rectangle(CX, CY, l.gw + 4, l.gh + 4, 0x000000, 0.75)
             .setDepth(DEPTH).setInteractive();
@@ -35,16 +37,16 @@ export class RebirthOverlay {
         this.elements.push(container);
 
         // Rebirth icon
-        const iconY = -155;
+        const iconY = port ? -220 : -155;
         const icon = this.scene.add.image(0, iconY, 'ui_rebirth_md');
         const src = this.scene.textures.get('ui_rebirth_md').getSourceImage();
-        const iconH = 100;
+        const iconH = port ? 120 : 100;
         const iconW = Math.round(iconH * src.width / src.height);
         icon.setDisplaySize(iconW, iconH);
         container.add(icon);
 
         // Title
-        const titleY = iconY + iconH / 2 + 22;
+        const titleY = iconY + iconH / 2 + (port ? 28 : 22);
         const title = this.scene.add.text(0, titleY, t('rebirth_title'), {
             fontFamily: UI.FONT_STROKE, fontSize: '30px',
             color: REBIRTH_CONFIG.colorHex, stroke: '#000000', strokeThickness: UI.STROKE_THICK,
@@ -53,7 +55,7 @@ export class RebirthOverlay {
         container.add(title);
 
         // Subtitle
-        const subY = titleY + 35;
+        const subY = titleY + (port ? 45 : 35);
         const subtitle = this.scene.add.text(0, subY, t('rebirth_subtitle'), {
             fontFamily: UI.FONT_STROKE, fontSize: '18px',
             color: '#ffffff', stroke: '#000000', strokeThickness: UI.STROKE_MEDIUM,
@@ -62,7 +64,7 @@ export class RebirthOverlay {
         container.add(subtitle);
 
         // Multiplier
-        const multY = subY + 34;
+        const multY = subY + (port ? 44 : 34);
         const multText = t('rebirth_multiplier').replace('{n}', String(data.newMultiplier));
         const mult = this.scene.add.text(0, multY, multText, {
             fontFamily: UI.FONT_MAIN, fontSize: '36px',
@@ -71,7 +73,7 @@ export class RebirthOverlay {
         container.add(mult);
 
         // Description lines
-        const descY = multY + 40;
+        const descY = multY + (port ? 52 : 40);
         const resets = this.scene.add.text(0, descY, t('rebirth_resets'), {
             fontFamily: UI.FONT_BODY, fontSize: '14px',
             color: '#ff6666', stroke: '#000000', strokeThickness: 1,
@@ -85,8 +87,10 @@ export class RebirthOverlay {
         container.add(keeps);
 
         // ACCEPT button
-        const btnY = descY + 68;
-        const btn = new Button(this.scene, 0, btnY, 180, 44, t('rebirth_accept'), 0x78C828, () => {
+        const btnY = descY + (port ? 85 : 68);
+        const btnW = port ? 210 : 180;
+        const btnH = port ? 50 : 44;
+        const btn = new Button(this.scene, 0, btnY, btnW, btnH, t('rebirth_accept'), 0x78C828, () => {
             this.close(onClose);
         });
         btn.setDepth(0);

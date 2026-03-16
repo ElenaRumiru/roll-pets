@@ -1,6 +1,6 @@
 import { GameObjects, Scene } from 'phaser';
 import { UI, BUFF_CONFIG, QuestStepReward } from '../core/config';
-import { getGameWidth, getGameHeight } from '../core/orientation';
+import { getGameWidth, getGameHeight, isPortrait } from '../core/orientation';
 import { t } from '../data/locales';
 import { fitText } from './components/fitText';
 import {
@@ -29,17 +29,20 @@ export class QuestClaimPopup {
     ) {
         this.container = scene.add.container(0, 0).setDepth(1000);
 
+        const port = isPortrait();
+        const pw = port ? 370 : POPUP_W;
+        const ph = port ? 250 : POPUP_H;
         const cx = getGameWidth() / 2;
         const cy = getGameHeight() / 2;
-        const popLeft = cx - POPUP_W / 2;
-        const popTop = cy - POPUP_H / 2;
+        const popLeft = cx - pw / 2;
+        const popTop = cy - ph / 2;
 
         // Overlay — tap outside popup to dismiss
         const overlay = scene.add.rectangle(cx, cy, getGameWidth(), getGameHeight(), 0x000000, 0.7);
         overlay.setInteractive();
         overlay.on('pointerdown', (p: Phaser.Input.Pointer) => {
             const lx = p.x, ly = p.y;
-            if (lx < popLeft || lx > popLeft + POPUP_W || ly < popTop || ly > popTop + POPUP_H) {
+            if (lx < popLeft || lx > popLeft + pw || ly < popTop || ly > popTop + ph) {
                 this.dismiss();
             }
         });
@@ -48,11 +51,11 @@ export class QuestClaimPopup {
         // Popup background
         const popBg = scene.add.graphics();
         popBg.fillStyle(0x000000, 0.95);
-        popBg.fillRoundedRect(popLeft, popTop, POPUP_W, POPUP_H, 14);
+        popBg.fillRoundedRect(popLeft, popTop, pw, ph, 14);
         this.container.add(popBg);
 
         // Title
-        const titleY = popTop + 23;
+        const titleY = popTop + (port ? 28 : 23);
         const title = scene.add.text(cx, titleY, t('quest_complete'), {
             fontFamily: UI.FONT_STROKE, fontSize: '17px', color: '#ffffff',
             stroke: '#000000', strokeThickness: UI.STROKE_MEDIUM,
@@ -60,7 +63,7 @@ export class QuestClaimPopup {
         this.container.add(title);
 
         // Subtitle
-        const subY = titleY + 21;
+        const subY = titleY + (port ? 25 : 21);
         const sub = scene.add.text(cx, subY, t('quest_choose'), {
             fontFamily: UI.FONT_STROKE, fontSize: '14px', color: '#aaaaaa',
             stroke: '#000000', strokeThickness: 1,
@@ -74,7 +77,7 @@ export class QuestClaimPopup {
         const descColor = BUFF_CONFIG[buffKey].colorHex;
 
         // Cards area
-        const cardsY = subY + 15;
+        const cardsY = subY + (port ? 20 : 15);
         const leftX = cx - CARD_GAP / 2 - CARD_W / 2;
         const rightX = cx + CARD_GAP / 2 + CARD_W / 2;
 
