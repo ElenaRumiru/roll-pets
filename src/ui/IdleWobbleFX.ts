@@ -1,4 +1,5 @@
 import { Renderer, Game } from 'phaser';
+import { isPortrait } from '../core/orientation';
 
 const fragShader = `
 #ifdef GL_FRAGMENT_PRECISION_HIGH
@@ -9,6 +10,7 @@ precision mediump float;
 
 uniform sampler2D uMainSampler;
 uniform float uTime;
+uniform float uAmplitude;
 
 varying vec2 outTexCoord;
 
@@ -20,7 +22,7 @@ void main() {
     float factor = f * f * uv.y;
 
     // Horizontal sway — head rocks, feet planted
-    uv.x += sin(uTime * 2.8) * 0.0085 * factor;
+    uv.x += sin(uTime * 2.8) * uAmplitude * factor;
 
     gl_FragColor = texture2D(uMainSampler, uv);
 }
@@ -45,5 +47,7 @@ export class IdleWobbleFX extends Renderer.WebGL.Pipelines.PostFXPipeline {
     onPreRender(): void {
         const time = this.game.loop.time / 1000;
         this.set1f('uTime', time + this.phase);
+        // Portrait pets are smaller on screen → boost amplitude to match landscape visual
+        this.set1f('uAmplitude', isPortrait() ? 0.028 : 0.0085);
     }
 }
