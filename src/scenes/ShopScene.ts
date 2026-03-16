@@ -82,8 +82,9 @@ export class ShopScene extends Scene {
     }
 
     private createTimer(): void {
+        const timerSize = '18px';
         this.timerText = this.add.text(getGameWidth() / 2, getGameHeight() - 93, '', {
-            fontFamily: UI.FONT_BODY, fontSize: '14px', color: '#aaaaaa',
+            fontFamily: UI.FONT_BODY, fontSize: timerSize, color: '#aaaaaa',
         }).setOrigin(0.5);
         this.updateTimerText();
     }
@@ -133,11 +134,11 @@ export class ShopScene extends Scene {
             const blockBottom = cardsY + (rows - 1) * 240 + 135;
             const gap = 25;
             this.hintText.setY(cardTop - gap - 20);
-            this.timerText.setY(blockBottom + gap + 7);
-            this.refreshBtn.setY(blockBottom + 2 * gap + 14 + 26);
+            this.timerText.setY(blockBottom + gap + 20 + 7);
+            this.refreshBtn.setY(this.timerText.y + 35 + 26);
         } else {
             this.hintText.setY(TIMER_Y);
-            this.timerText.setY(gh - 93);
+            this.timerText.setY(gh - 108);
             this.refreshBtn.setY(gh - 50);
         }
     }
@@ -149,7 +150,7 @@ export class ShopScene extends Scene {
             const bottomArea = gh - 110;
             const rowH = 160 + 8 + 47; // card + gap + btn
             const contentH = 2 * rowH + 25; // 2 rows + gap
-            return topArea + (bottomArea - topArea - contentH) / 2 + 160 / 2;
+            return topArea + (bottomArea - topArea - contentH) / 2 + 160 / 2 - 50;
         }
         return 265;
     }
