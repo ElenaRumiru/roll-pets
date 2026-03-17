@@ -30,7 +30,7 @@ let lastShowTime = 0;
 let timer: ReturnType<typeof setTimeout> | null = null;
 
 function slotY(slot: number): number {
-    return getGameHeight() * 0.4 + slot * SLOT_H;
+    return getGameHeight() * 0.4 - 20 + slot * SLOT_H;
 }
 
 function removeToast(scene: Scene, toast: ActiveToast): void {
@@ -56,7 +56,7 @@ function displayToast(scene: Scene, message: string, type: ToastType): void {
 
     const text = scene.add.text(getGameWidth() / 2, y, message, {
         fontFamily: UI.FONT_STROKE,
-        fontSize: '14px',
+        fontSize: '18px',
         color: COLOR[type],
         stroke: '#000000',
         strokeThickness: UI.STROKE_MEDIUM,

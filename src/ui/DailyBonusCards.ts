@@ -92,10 +92,12 @@ function drawCard(scene: Scene, cx: number, cy: number, w: number, h: number,
         drawRewardIcon(scene, cx, iconY, iconSize, reward, 0.5);
         const check = scene.add.image(cx + iconSize / 3, cy - iconSize / 3, 'ui_ok_sm')
             .setDisplaySize(20, 20);
-        const targetScale = check.scale;
-        check.setScale(0);
-        scene.tweens.add({ targets: check, scale: targetScale,
-            duration: 350, ease: 'Back.easeOut' });
+        if (isToday) {
+            const targetScale = check.scale;
+            check.setScale(0);
+            scene.tweens.add({ targets: check, scale: targetScale,
+                duration: 350, ease: 'Back.easeOut' });
+        }
     } else if (isToday && !db.claimedToday) {
         drawRewardIcon(scene, cx, iconY, iconSize, reward, 1);
     } else {
@@ -195,9 +197,7 @@ function drawMilestoneGift(scene: Scene, x: number, y: number,
     const claimable = reached && !isClaimed;
 
     if (isClaimed) {
-        const check = scene.add.image(x, y, 'ui_ok_md').setDisplaySize(30, 30).setScale(0);
-        scene.tweens.add({ targets: check, scale: check.displayWidth / check.width,
-            duration: 350, ease: 'Back.easeOut' });
+        scene.add.image(x, y, 'ui_ok_md').setDisplaySize(30, 30);
     } else {
         const gift = scene.add.image(x, y, 'ui_gift_md').setDisplaySize(38, 38);
         if (!reached) gift.setTint(0xaaaaaa);

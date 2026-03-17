@@ -159,7 +159,7 @@ Call sites to update with icon:
 - `src/ui/LeaguePromotionOverlay.ts` — ad choice button
 - `src/ui/QuestClaimPopup.ts` — ad choice button
 
-**Result:** `ChoiceButtonConfig.iconKey` added to `ChoiceCard.ts`. `ui_ad_play` icon (18×18) rendered left of text. All 3 overlays pass `iconKey: 'ui_ad_play'` for AD buttons.
+**Result:** Replaced `▶` with 🎬 emoji in locale keys (`quest_watch` in en/ru/es) and BonusPanel. Removed `iconKey` sprite approach — emoji in text is simpler and consistent across all ad buttons.
 
 ---
 
@@ -219,6 +219,36 @@ if (isReturn) {
 The existing 40s cooldown in `interstitial.ts` prevents ad spam. Not every call shows an ad — Poki's system decides.
 
 **Result:** `showInterstitial(this)` called in `MainScene.create()` when `_gameplayStarted` is true (= sub-scene return). Timing guards in `interstitial.ts` handle cooldown.
+
+---
+
+### F7: Race condition — ESC during interstitial ad — MEDIUM — DONE
+
+**Problem:** If player presses ESC while interstitial ad is playing, `togglePause()` calls `gameplayStop()` a second time → consecutive duplicate SDK event.
+
+**Fix:** Added `adActive` flag in `interstitial.ts` + `isAdActive()` export. `togglePause()` in MainScene checks `isAdActive()` and returns early if ad is playing.
+
+**Result:** `interstitial.ts` sets `adActive = true` before ad, `false` in finally. `MainScene.togglePause()` guards with `if (isAdActive()) return;`.
+
+---
+
+### F8: ESC in sub-scenes returns to MainScene — MEDIUM — DONE
+
+**Problem:** ESC key only worked in MainScene. Sub-scenes (Shop, Collection, Nests, etc.) had no ESC handling.
+
+**Fix:** Added `scene.input.keyboard?.on('keydown-ESC', onBack)` inside `SceneHeader.ts`. All 7 sub-scenes automatically get ESC → back because they all use `createSceneHeader()`.
+
+**Result:** One line in `SceneHeader.ts:62`. All sub-scenes inherit ESC behavior.
+
+---
+
+### F9: Ad buttons — replaced ▶ with 🎬 emoji — LOW — DONE
+
+**Problem:** Ad buttons used `▶` Unicode triangle. Needed prominent video icon per Poki requirements.
+
+**Fix:** Changed `quest_watch` locale key from `"▶ WATCH"` to `"🎬 WATCH"` in en/ru/es. BonusPanel WATCH button also updated. Removed unused `iconKey` sprite approach from ChoiceCard.
+
+**Result:** All ad buttons now show 🎬 emoji. Consistent across all overlays and BonusPanel.
 
 ---
 

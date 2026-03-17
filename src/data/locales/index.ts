@@ -1,7 +1,14 @@
 import { en } from './en';
 import { ru } from './ru';
+import { pt } from './pt';
+import { es } from './es';
+import { tr } from './tr';
+import { de } from './de';
+import { fr } from './fr';
+import { id } from './id';
+import { nl } from './nl';
 
-const locales: Record<string, Record<string, string>> = { en, ru };
+const locales: Record<string, Record<string, string>> = { en, ru, pt, es, tr, de, fr, id, nl };
 
 let currentLang = 'en';
 

@@ -179,8 +179,11 @@ export class SettingsPanel extends GameObjects.Container {
         this.add(this.nicknameText);
     }
 
-    private readonly LANG_LABELS: Record<string, string> = { en: 'English', ru: 'Русский' };
-    private readonly LANG_ORDER = ['en', 'ru'];
+    private readonly LANG_LABELS: Record<string, string> = {
+        en: 'English', ru: 'Русский', pt: 'Português', es: 'Español',
+        tr: 'Türkçe', de: 'Deutsch', fr: 'Français', id: 'Indonesia', nl: 'Nederlands',
+    };
+    private readonly LANG_ORDER = ['en', 'ru', 'pt', 'es', 'tr', 'de', 'fr', 'id', 'nl'];
     private langBtnText!: GameObjects.Text;
     private langBtnBg!: GameObjects.Graphics;
     private langBtnX = 0;
@@ -240,9 +243,10 @@ export class SettingsPanel extends GameObjects.Container {
         if (this.langDropdown) { this.closeLangDropdown(); return; }
         this.drawLangBtn(true);
 
-        const itemH = 39;
-        const dropY = this.langBtnY + 14 + 4;
+        const itemH = 30;
+        const btnHalf = 17;
         const h = this.LANG_ORDER.length * itemH;
+        const dropY = this.langBtnY - btnHalf - h - 4;
 
         this.langDropdown = this.scene.add.container(0, 0);
 
@@ -263,7 +267,7 @@ export class SettingsPanel extends GameObjects.Container {
             ).setInteractive({ useHandCursor: true });
 
             const txt = this.scene.add.text(this.langBtnX + 15, iy, this.LANG_LABELS[lang], {
-                fontFamily: UI.FONT_STROKE, fontSize: '16px',
+                fontFamily: UI.FONT_STROKE, fontSize: '14px',
                 color: isActive ? '#00ff88' : '#cccccc',
                 stroke: '#000000', strokeThickness: 1,
             }).setOrigin(0, 0.5);
@@ -281,7 +285,7 @@ export class SettingsPanel extends GameObjects.Container {
 
             if (isActive) {
                 const check = this.scene.add.text(this.langBtnX + this.langBtnW - 20, iy, '\u2713', {
-                    fontFamily: UI.FONT_STROKE, fontSize: '17px', color: '#00ff88',
+                    fontFamily: UI.FONT_STROKE, fontSize: '15px', color: '#00ff88',
                     stroke: '#000000', strokeThickness: 1,
                 }).setOrigin(0.5, 0.5);
                 this.langDropdown.add(check);

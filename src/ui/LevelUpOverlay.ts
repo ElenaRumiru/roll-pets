@@ -289,7 +289,7 @@ export class LevelUpOverlay {
 
         // Ad card
         this.buildCoinCard(container, rightX, cardsY, `+${adAmount}`,
-            AD_COLOR, AD_DARK, t('quest_watch'), true, () => choose(adAmount), 'ui_ad_play');
+            AD_COLOR, AD_DARK, t('quest_watch'), true, () => choose(adAmount), 'ui_ad_sm');
 
         // Timer — updates the FREE button text with countdown
         this.timer = this.scene.time.addEvent({

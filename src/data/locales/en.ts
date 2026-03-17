@@ -187,7 +187,7 @@ export const en: Record<string, string> = {
     'quest_complete': 'Quest Complete!',
     'quest_choose': 'Choose reward:',
     'quest_free': 'FREE',
-    'quest_watch': '\u25B6 WATCH',
+    'quest_watch': 'WATCH',
     'quest_rolls': '{count} Roll',
     'quest_rolls_plural': '{count} Rolls',
 

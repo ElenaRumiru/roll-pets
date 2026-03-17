@@ -107,7 +107,7 @@ export class LeaguePromotionOverlay {
             FREE_COLOR, FREE_DARK, freeLabel, false, () => choose(baseAmount));
 
         const adBtn = this.buildCoinCard(container, rightX, cardsY, `+${formatCoins(adAmount)}`,
-            AD_COLOR, AD_DARK, t('quest_watch'), true, () => choose(adAmount), 'ui_ad_play');
+            AD_COLOR, AD_DARK, t('quest_watch'), true, () => choose(adAmount), 'ui_ad_sm');
 
         // Delay button interactivity to prevent accidental dismiss
         freeBtn.disableInteractive();

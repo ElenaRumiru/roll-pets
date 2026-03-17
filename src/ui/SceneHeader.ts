@@ -56,6 +56,9 @@ export function createSceneHeader(cfg: SceneHeaderConfig): SceneHeaderResult {
     coinDisplay.setDepth(d);
     if (coins !== undefined) coinDisplay.updateCoins(coins);
 
+    // ESC key → back (Poki requirement: ESC navigates back in sub-scenes)
+    scene.input.keyboard?.on('keydown-ESC', onBack);
+
     // Close button (×)
     const closeX = gw - 38;
     const closeBtn = scene.add.text(closeX, CLOSE_Y, '\u2715', {

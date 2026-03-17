@@ -109,12 +109,21 @@ export class BonusPanel extends GameObjects.Container {
         const btnBg = scene.add.graphics();
         this.draw3DButton(btnBg);
         this.btnWrap.add(btnBg);
-        const btnText = scene.add.text(0, -Math.floor(BTN_SHADOW / 2), `▶ ${t('buff_watch')}`, {
+        const ICN = 16;
+        const txOff = ICN / 2 + 1;
+        const btnText = scene.add.text(txOff, -Math.floor(BTN_SHADOW / 2), t('buff_watch'), {
             fontFamily: UI.FONT_STROKE, fontSize: '13px', color: '#ffffff',
             stroke: '#000000', strokeThickness: 2,
         }).setOrigin(0.5, 0.5);
-        fitText(btnText, BTN_W - 8, 13);
+        fitText(btnText, BTN_W - ICN - 10, 13);
         this.btnWrap.add(btnText);
+        if (scene.textures.exists('ui_ad_sm')) {
+            const adIcon = scene.add.image(
+                btnText.x - btnText.displayWidth / 2 - ICN / 2 - 2,
+                -Math.floor(BTN_SHADOW / 2), 'ui_ad_sm',
+            ).setDisplaySize(ICN, ICN);
+            this.btnWrap.add(adIcon);
+        }
         this.btnWrap.setSize(BTN_W, BTN_H + BTN_SHADOW);
         addShineEffect(scene, this.btnWrap, BTN_W, BTN_H, BTN_H / 2);
         this.btnWrap.setInteractive({ useHandCursor: true });

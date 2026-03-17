@@ -85,7 +85,11 @@ export function renderIncubatingSlot(
         btn.setEnabled(false);
     } else {
         btn = new Button(scene, x, layout.btnY, layout.btnW, layout.btnH,
-            `\u25B6 ${t('nests_speed_up')}`, 0x7B2FBE, onSpeedUp);
+            t('nests_speed_up'), 0x7B2FBE, onSpeedUp);
+        if (scene.textures.exists('ui_ad_sm')) {
+            const adIcon = scene.add.image(-layout.btnW / 2 + 18, -1, 'ui_ad_sm').setDisplaySize(18, 18);
+            btn.add(adIcon);
+        }
     }
     container.add(btn);
     applyScale(layout, c, btn);

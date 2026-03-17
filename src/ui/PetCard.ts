@@ -3,6 +3,7 @@ import { PetDef } from '../types';
 import { GRADE, getGradeForChance, getOddsString, UI } from '../core/config';
 import { t } from '../data/locales';
 import { fitText } from './components/fitText';
+import { getPetScale } from '../loading/PostProcess';
 
 const CARD_W = 109;
 const CARD_H = 123;
@@ -34,7 +35,8 @@ export class PetCard extends GameObjects.Container {
 
         // Pet image or question mark
         if (found && scene.textures.exists(pet.imageKey)) {
-            const img = scene.add.image(0, -17, pet.imageKey).setScale(0.37);
+            const img = scene.add.image(0, -17, pet.imageKey)
+                .setScale(getPetScale(scene.textures, pet.imageKey, 93));
             this.add(img);
 
             if (isNew) {

@@ -3,6 +3,7 @@ import { UI, GRADE, getGradeForChance, getOddsString } from '../core/config';
 import { getGameWidth } from '../core/orientation';
 import { PETS } from '../data/pets';
 import { Button } from './components/Button';
+import { getPetScale } from '../loading/PostProcess';
 import { fitText } from './components/fitText';
 import { t } from '../data/locales';
 import { ShopOffer, PetDef } from '../types';
@@ -81,7 +82,8 @@ function createOfferCard(
     c.add(bg);
 
     if (scene.textures.exists(pet.imageKey)) {
-        c.add(scene.add.image(0, -20, pet.imageKey).setScale(0.47));
+        c.add(scene.add.image(0, -20, pet.imageKey)
+            .setScale(getPetScale(scene.textures, pet.imageKey, 118)));
     }
 
     const name = scene.add.text(0, CARD_H / 2 - 37, t('pet_' + pet.id), {

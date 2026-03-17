@@ -172,6 +172,7 @@ export class BootScene extends Scene {
         trimToHeight(textures, 'ui_star_active_raw', 'ui_star_active', 28);
         trimToHeight(textures, 'ui_star_inactive_raw', 'ui_star_inactive', 28);
         trimAndDownscaleCoin(textures, 'ui_lock_raw', [{ key: 'ui_lock_md', size: 56 }]);
+        trimAndDownscaleCoin(textures, 'ui_ad_play', [{ key: 'ui_ad_sm', size: 36 }]);
     }
 
     private createProgressBar(cx: number, cy: number): void {

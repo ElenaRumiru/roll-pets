@@ -90,9 +90,9 @@ export function buildChoiceButton(
 
     const ICON_SZ = 18;
     const hasIcon = cfg.iconKey && scene.textures.exists(cfg.iconKey);
-    const textOffsetX = hasIcon ? ICON_SZ / 2 + 1 : 0;
+    const textX = hasIcon ? ICON_SZ / 2 + 1 : 0;
 
-    const text = scene.add.text(textOffsetX, -1, cfg.label, {
+    const text = scene.add.text(textX, -1, cfg.label, {
         fontFamily: UI.FONT_STROKE, fontSize: `${fontSize}px`,
         color: '#ffffff', stroke: '#000000', strokeThickness: stroke,
     }).setOrigin(0.5);

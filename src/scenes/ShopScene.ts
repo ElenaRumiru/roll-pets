@@ -62,7 +62,11 @@ export class ShopScene extends Scene {
             fontFamily: UI.FONT_MAIN, fontSize: '20px', color: '#666688', align: 'center',
         }).setOrigin(0.5).setVisible(false);
         this.refreshBtn = new Button(this, gw / 2, gh - 50, 222, 52,
-            `\u25B6 ${t('shop_refresh')}`, 0x7b42c9, () => this.onRefresh());
+            t('shop_refresh'), 0x7b42c9, () => this.onRefresh());
+        if (this.textures.exists('ui_ad_sm')) {
+            const adIcon = this.add.image(-90, -1, 'ui_ad_sm').setDisplaySize(20, 20);
+            this.refreshBtn.add(adIcon);
+        }
         const hintSize = isPortrait() ? '18px' : '14px';
         this.hintText = this.add.text(gw / 2, TIMER_Y, '', {
             fontFamily: UI.FONT_BODY, fontSize: hintSize, color: '#666688',
@@ -128,14 +132,16 @@ export class ShopScene extends Scene {
         const gh = getGameHeight();
         if (showPets && isPortrait()) {
             const cardsY = this.getCardsY();
-            const offers = this.manager.shop.getOffers();
-            const rows = Math.max(1, Math.ceil(offers.length / 3));
+            const rows = 2; // always layout as if 2 rows (standard 5-pet grid)
             const cardTop = cardsY - 80;
             const blockBottom = cardsY + (rows - 1) * 240 + 135;
             const gap = 25;
             this.hintText.setY(cardTop - gap - 20);
             this.timerText.setY(blockBottom + gap + 20 + 7);
             this.refreshBtn.setY(this.timerText.y + 35 + 26);
+            // Center empty text between where two card rows would be
+            const rowH = 160 + 8 + 47 + 25; // card + btn gap + btn + row gap
+            this.emptyText.setY(cardsY + rowH / 2);
         } else {
             this.hintText.setY(TIMER_Y);
             this.timerText.setY(gh - 108);

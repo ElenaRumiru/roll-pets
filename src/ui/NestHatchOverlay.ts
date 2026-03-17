@@ -5,6 +5,7 @@ import { RollResult } from '../types';
 import { AudioSystem, SfxKey } from '../systems/AudioSystem';
 import { t } from '../data/locales';
 import { fitText } from './components/fitText';
+import { getPetScale } from '../loading/PostProcess';
 
 export class NestHatchOverlay {
     private scene: Scene;
@@ -79,7 +80,8 @@ export class NestHatchOverlay {
         }
 
         // 5) Pet image
-        const petScale = port ? 1.0 : 0.86;
+        const petTargetPx = port ? 250 : 215;
+        const petScale = getPetScale(scene.textures, result.pet.imageKey, petTargetPx);
         const petImg = scene.add.image(cx, cy - (port ? 50 : 31), result.pet.imageKey)
             .setScale(0).setDepth(502);
         this.objects.push(petImg);

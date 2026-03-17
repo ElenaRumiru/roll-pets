@@ -27,7 +27,7 @@ import { PetThought } from '../ui/PetThought';
 import { PETS } from '../data/pets';
 import { PetDef, RollResult, LevelUpData, LeaguePromotionData, RebirthData } from '../types';
 import { PlatformSDK } from '../platform/PlatformSDK';
-import { showInterstitial } from '../platform/interstitial';
+import { showInterstitial, isAdActive } from '../platform/interstitial';
 import { AudioSystem } from '../systems/AudioSystem';
 import { t } from '../data/locales';
 import { showToast } from '../ui/components/Toast';
@@ -589,7 +589,7 @@ export class MainScene extends Scene {
     }
 
     private togglePause(): void {
-        if (this.settingsPanel.isVisible) return;
+        if (this.settingsPanel.isVisible || isAdActive()) return;
         this.isPaused = !this.isPaused;
         this.pauseOverlay.setVisible(this.isPaused);
         const sdk = this.registry.get('platformSDK') as PlatformSDK | undefined;

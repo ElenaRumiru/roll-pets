@@ -89,7 +89,7 @@ export class QuestClaimPopup {
         // Ad card
         this.createCard(scene, rightX, cardsY, cfg.adCount, buffKey, descKey, descColor,
             AD_COLOR, AD_DARK, t('quest_watch'),
-            () => { this.destroy(); onAd(); }, 'ui_ad_play');
+            () => { this.destroy(); onAd(); }, 'ui_ad_sm');
     }
 
     private createCard(

@@ -187,7 +187,7 @@ export const ru: Record<string, string> = {
     'quest_complete': 'Задание выполнено!',
     'quest_choose': 'Выбери награду:',
     'quest_free': 'БЕСПЛАТНО',
-    'quest_watch': '\u25B6 СМОТРЕТЬ',
+    'quest_watch': 'СМОТРЕТЬ',
     'quest_rolls': '{count} ролл',
     'quest_rolls_plural': '{count} ролла',
 

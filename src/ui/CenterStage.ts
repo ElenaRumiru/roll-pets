@@ -6,6 +6,7 @@ import { AudioSystem, SfxKey } from '../systems/AudioSystem';
 import { IdleWobbleFX } from './IdleWobbleFX';
 import { t } from '../data/locales';
 import { fitText } from './components/fitText';
+import { getPetScale } from '../loading/PostProcess';
 
 interface PedestalSlot {
     shadow: GameObjects.Graphics | null;
@@ -150,8 +151,9 @@ export class CenterStage extends GameObjects.Container {
             if (pet && this.scene.textures.exists(pet.imageKey)) {
                 const cfg = GRADE[getGradeForChance(pet.chance)];
 
+                const petTargetSize = Math.round(250 * pos.scale);
                 slot.image = this.scene.add.image(pos.x, pos.y + PET_OFFSET_Y, pet.imageKey)
-                    .setScale(pos.scale)
+                    .setScale(getPetScale(this.scene.textures, pet.imageKey, petTargetSize))
                     .setOrigin(0.5, 1);
                 slot.image.setPostPipeline(IdleWobbleFX);
                 const fx = slot.image.getPostPipeline(IdleWobbleFX) as IdleWobbleFX;
@@ -268,12 +270,13 @@ export class CenterStage extends GameObjects.Container {
 
         // Pet image
         if (this.revealImage) { this.revealImage.destroy(); this.revealImage = null; }
+        const revealScale = getPetScale(scene.textures, result.pet.imageKey, 215);
         this.revealImage = scene.add.image(CX, CY - 31, result.pet.imageKey)
             .setScale(0).setDepth(112);
 
         scene.tweens.add({
             targets: this.revealImage,
-            scale: 0.86,
+            scale: revealScale,
             duration: 300,
             ease: 'Back.easeOut',
         });

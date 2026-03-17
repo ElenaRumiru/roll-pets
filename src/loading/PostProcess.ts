@@ -2,6 +2,14 @@ import { Textures } from 'phaser';
 
 type TM = Textures.TextureManager;
 
+/** Get scale factor to display a pet texture at the desired pixel size */
+export function getPetScale(textures: TM, imageKey: string, targetSize: number): number {
+    if (!textures.exists(imageKey)) return 0;
+    const src = textures.get(imageKey).getSourceImage();
+    const maxDim = Math.max(src.width, src.height);
+    return maxDim > 0 ? targetSize / maxDim : 0;
+}
+
 /** Trim transparent pixels from source, then create multiple sized square textures */
 export function trimAndDownscaleCoin(
     textures: TM, srcKey: string, targets: { key: string; size: number }[],
@@ -133,8 +141,6 @@ export function downscaleTexture(
 export function downscalePet(textures: TM, imageKey: string): void {
     const TARGET = 250;
     const src = textures.get(imageKey).getSourceImage() as HTMLImageElement;
-    // Skip if already downscaled (canvas textures have smaller dimensions)
-    if (src.width <= TARGET && src.height <= TARGET) return;
     const ratio = Math.min(TARGET / src.width, TARGET / src.height, 1);
     const w = Math.round(src.width * ratio);
     const h = Math.round(src.height * ratio);

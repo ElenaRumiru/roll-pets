@@ -114,68 +114,58 @@ export class DeferredLoader {
                     scene.load.audio(a.key, a.path);
                 } else {
                     scene.load.image(a.key, a.path);
+                    // Per-file post-processing — runs immediately when each file is ready
+                    this.registerFileProcessor(scene, batch.type, a.key);
                 }
                 queued++;
             }
 
             if (queued === 0) {
-                this.postProcessBatch(batch);
                 resolve();
                 return;
             }
 
-            scene.load.once('complete', () => {
-                this.postProcessBatch(batch);
-                resolve();
-            });
+            scene.load.once('complete', () => resolve());
             scene.load.start();
         });
     }
 
-    private postProcessBatch(batch: Batch): void {
+    /** Register per-file post-processing for a single asset */
+    private registerFileProcessor(scene: Scene, type: string, key: string): void {
         const textures = this.game.textures;
-        for (const a of batch.assets) {
-            this.loading.delete(a.key);
-            this.processed.add(a.key);
-        }
+        scene.load.once(`filecomplete-image-${key}`, () => {
+            this.loading.delete(key);
+            this.processed.add(key);
 
-        switch (batch.type) {
-            case 'pets':
-                for (const a of batch.assets) {
-                    if (textures.exists(a.key)) downscalePet(textures, a.key);
-                    this.flushCallbacks(a.key);
-                }
-                break;
-            case 'eggs':
-                for (const a of batch.assets) {
-                    if (!textures.exists(a.key)) continue;
-                    const tier = parseInt(a.key.replace('egg_', ''));
+            switch (type) {
+                case 'pets':
+                    downscalePet(textures, key);
+                    this.flushCallbacks(key);
+                    break;
+                case 'eggs': {
+                    const tier = parseInt(key.replace('egg_', ''));
                     createEggSmall(textures, tier);
+                    break;
                 }
-                break;
-            case 'luckIcons':
-                for (const a of batch.assets) {
-                    if (!textures.exists(a.key)) continue;
-                    if (textures.exists(`${a.key}_lg`)) continue; // already processed
-                    const suffix = a.key.replace('luck_', '');
+                case 'luckIcons': {
+                    if (textures.exists(`${key}_lg`)) break;
+                    const suffix = key.replace('luck_', '');
                     if (PROCESSED_LUCK.includes(suffix)) {
-                        trimAndDownscaleCoin(textures, a.key, [
-                            { key: `${a.key}_lg`, size: 54 },
-                            { key: `${a.key}_md`, size: 28 },
-                            { key: `${a.key}_sm`, size: 16 },
+                        trimAndDownscaleCoin(textures, key, [
+                            { key: `${key}_lg`, size: 54 },
+                            { key: `${key}_md`, size: 28 },
+                            { key: `${key}_sm`, size: 16 },
                         ]);
                     }
+                    break;
                 }
-                break;
-            case 'collectionIcons':
-                for (const a of batch.assets) {
-                    if (!textures.exists(a.key)) continue;
-                    const name = a.key.replace('col_', '').replace('_raw', '');
+                case 'collectionIcons': {
+                    const name = key.replace('col_', '').replace('_raw', '');
                     processCollectionIcon(textures, name);
+                    break;
                 }
-                break;
-            // backgrounds + audio: no post-processing needed
-        }
+            }
+        });
     }
 
     private getScene(): Scene {
