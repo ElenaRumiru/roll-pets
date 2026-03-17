@@ -1,6 +1,6 @@
 import type { AudioSystem } from '../systems/AudioSystem';
 import type { PlatformSDK } from './PlatformSDK';
-import { withTimeout, AD_TIMEOUT_MS } from './adUtil';
+import { withTimeout, AD_TIMEOUT_MS, blockInput } from './adUtil';
 
 export class YandexAdapter implements PlatformSDK {
     private audio: AudioSystem | null = null;
@@ -20,6 +20,7 @@ export class YandexAdapter implements PlatformSDK {
     async showRewardedBreak(): Promise<boolean> {
         if (!this.ysdk) return false;
         this.audio?.pauseAll();
+        const unblock = blockInput();
         try {
             return await withTimeout(new Promise<boolean>((resolve) => {
                 let rewarded = false;
@@ -34,6 +35,7 @@ export class YandexAdapter implements PlatformSDK {
         } catch {
             return false;
         } finally {
+            unblock();
             this.audio?.resumeAll();
         }
     }
@@ -41,6 +43,7 @@ export class YandexAdapter implements PlatformSDK {
     async commercialBreak(): Promise<void> {
         if (!this.ysdk) return;
         this.audio?.pauseAll();
+        const unblock = blockInput();
         try {
             await withTimeout(new Promise<void>((resolve) => {
                 this.ysdk!.adv.showFullscreenAdv({
@@ -51,6 +54,6 @@ export class YandexAdapter implements PlatformSDK {
                 });
             }), AD_TIMEOUT_MS);
         } catch { /* timeout */ }
-        finally { this.audio?.resumeAll(); }
+        finally { unblock(); this.audio?.resumeAll(); }
     }
 }

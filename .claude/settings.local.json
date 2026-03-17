@@ -102,7 +102,10 @@
       "WebFetch(domain:gamemonetize.com)",
       "WebFetch(domain:gpxprj.blob.core.windows.net)",
       "WebFetch(domain:developers.addictinggames.com)",
-      "WebFetch(domain:itch.io)"
+      "WebFetch(domain:itch.io)",
+      "Bash(find 'C:\\\\Users\\\\ilyar\\\\Desktop\\\\PETS WEB' -type f \\\\\\(-iname *capybara* -o -iname *capy* \\\\\\))",
+      "Bash(powershell.exe -Command \"Copy-Item -Path ''public/assets/pets/0019_new.webp'' -Destination ''public/assets/pets/0019.webp'' -Force\")",
+      "Bash(cd:*)"
     ]
   }
 }

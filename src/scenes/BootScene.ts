@@ -92,9 +92,10 @@ export class BootScene extends Scene {
             downscalePet(textures, key);
         }
 
-        // Egg small variant for current tier
+        // Egg small variants for Phase 1 eggs
         const tier = getVisualTier(peek.level);
         createEggSmall(textures, tier);
+        if (tier !== 1) createEggSmall(textures, 1);
 
         // Shop icon
         downscaleTexture(textures, 'ui_shop', 'ui_shop_mid', 370, 247);

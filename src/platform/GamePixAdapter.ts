@@ -1,6 +1,6 @@
 import type { AudioSystem } from '../systems/AudioSystem';
 import type { PlatformSDK } from './PlatformSDK';
-import { withTimeout, AD_TIMEOUT_MS } from './adUtil';
+import { withTimeout, AD_TIMEOUT_MS, blockInput } from './adUtil';
 
 export class GamePixAdapter implements PlatformSDK {
     private audio: AudioSystem | null = null;
@@ -32,6 +32,7 @@ export class GamePixAdapter implements PlatformSDK {
 
     async showRewardedBreak(): Promise<boolean> {
         this.audio?.pauseAll();
+        const unblock = blockInput();
         try {
             return await withTimeout(new Promise<boolean>((resolve) => {
                 this.adResolve = resolve;
@@ -40,6 +41,7 @@ export class GamePixAdapter implements PlatformSDK {
         } catch {
             return false;
         } finally {
+            unblock();
             this.adResolve = null;
             this.audio?.resumeAll();
         }
@@ -47,6 +49,7 @@ export class GamePixAdapter implements PlatformSDK {
 
     async commercialBreak(): Promise<void> {
         this.audio?.pauseAll();
+        const unblock = blockInput();
         try {
             await withTimeout(new Promise<void>((resolve) => {
                 this.adResolve = () => resolve() as unknown as boolean;
@@ -54,6 +57,7 @@ export class GamePixAdapter implements PlatformSDK {
             }), AD_TIMEOUT_MS);
         } catch { /* timeout */ }
         finally {
+            unblock();
             this.adResolve = null;
             this.audio?.resumeAll();
         }

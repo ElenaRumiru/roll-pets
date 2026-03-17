@@ -54,8 +54,11 @@ export class RollCoordinator {
             this.emitCollectionEvents(result.pet.id);
         }
 
-        // Gate on pet texture availability — ensure sprite is loaded before animation
+        // Pause Phase 2 loading during roll animation to avoid WebGL conflicts
         const loader = this.deps.getDeferredLoader?.();
+        if (loader) loader.pause();
+
+        // Gate on pet texture availability — ensure sprite is loaded before animation
         if (loader && !loader.isReady(result.pet.imageKey)) {
             loader.ensurePet(result.pet.imageKey).then(() => {
                 this.emitRollComplete(result, coinsBefore, leagueBefore, prog);

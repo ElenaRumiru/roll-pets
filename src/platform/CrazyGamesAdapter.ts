@@ -1,6 +1,6 @@
 import type { AudioSystem } from '../systems/AudioSystem';
 import type { PlatformSDK } from './PlatformSDK';
-import { withTimeout, AD_TIMEOUT_MS } from './adUtil';
+import { withTimeout, AD_TIMEOUT_MS, blockInput } from './adUtil';
 
 export class CrazyGamesAdapter implements PlatformSDK {
     private audio: AudioSystem | null = null;
@@ -18,10 +18,10 @@ export class CrazyGamesAdapter implements PlatformSDK {
 
     async showRewardedBreak(): Promise<boolean> {
         this.audio?.pauseAll();
+        const unblock = blockInput();
         try {
             return await withTimeout(new Promise<boolean>((resolve) => {
                 CrazyGames.SDK.ad.requestAd('rewarded', {
-                    adStarted: () => { /* already muted */ },
                     adFinished: () => resolve(true),
                     adError: () => resolve(false),
                 });
@@ -29,12 +29,14 @@ export class CrazyGamesAdapter implements PlatformSDK {
         } catch {
             return false;
         } finally {
+            unblock();
             this.audio?.resumeAll();
         }
     }
 
     async commercialBreak(): Promise<void> {
         this.audio?.pauseAll();
+        const unblock = blockInput();
         try {
             await withTimeout(new Promise<void>((resolve) => {
                 CrazyGames.SDK.ad.requestAd('midgame', {
@@ -43,6 +45,6 @@ export class CrazyGamesAdapter implements PlatformSDK {
                 });
             }), AD_TIMEOUT_MS);
         } catch { /* timeout */ }
-        finally { this.audio?.resumeAll(); }
+        finally { unblock(); this.audio?.resumeAll(); }
     }
 }

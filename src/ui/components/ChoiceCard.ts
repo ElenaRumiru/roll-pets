@@ -59,6 +59,8 @@ export interface ChoiceButtonConfig {
     shine?: boolean;
     fontSize?: number;
     strokeThickness?: number;
+    /** Optional icon texture key displayed left of the label */
+    iconKey?: string;
 }
 
 export function buildChoiceButton(
@@ -86,12 +88,24 @@ export function buildChoiceButton(
     bg.strokeRoundedRect(-BTN_W / 2, -BTN_H / 2, BTN_W, BTN_H, BTN_R);
     wrap.add(bg);
 
-    const text = scene.add.text(0, -1, cfg.label, {
+    const ICON_SZ = 18;
+    const hasIcon = cfg.iconKey && scene.textures.exists(cfg.iconKey);
+    const textOffsetX = hasIcon ? ICON_SZ / 2 + 1 : 0;
+
+    const text = scene.add.text(textOffsetX, -1, cfg.label, {
         fontFamily: UI.FONT_STROKE, fontSize: `${fontSize}px`,
         color: '#ffffff', stroke: '#000000', strokeThickness: stroke,
     }).setOrigin(0.5);
-    fitText(text, BTN_W - 10, fontSize);
+    fitText(text, BTN_W - (hasIcon ? ICON_SZ + 8 : 10), fontSize);
     wrap.add(text);
+
+    if (hasIcon) {
+        const icon = scene.add.image(
+            text.x - text.displayWidth / 2 - ICON_SZ / 2 - 2, -1,
+            cfg.iconKey!,
+        ).setDisplaySize(ICON_SZ, ICON_SZ);
+        wrap.add(icon);
+    }
 
     wrap.setSize(BTN_W, BTN_H + BTN_SHADOW);
     if (cfg.shine !== false) addShineEffect(scene, wrap, BTN_W, BTN_H, BTN_R);

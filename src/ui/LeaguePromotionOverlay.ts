@@ -107,7 +107,7 @@ export class LeaguePromotionOverlay {
             FREE_COLOR, FREE_DARK, freeLabel, false, () => choose(baseAmount));
 
         const adBtn = this.buildCoinCard(container, rightX, cardsY, `+${formatCoins(adAmount)}`,
-            AD_COLOR, AD_DARK, t('quest_watch'), true, () => choose(adAmount));
+            AD_COLOR, AD_DARK, t('quest_watch'), true, () => choose(adAmount), 'ui_ad_play');
 
         // Delay button interactivity to prevent accidental dismiss
         freeBtn.disableInteractive();
@@ -138,7 +138,7 @@ export class LeaguePromotionOverlay {
         amountStr: string,
         btnColor: number, btnDark: number,
         btnLabel: string, showBest: boolean,
-        onClick: () => void,
+        onClick: () => void, iconKey?: string,
     ): GameObjects.Container {
         drawCardBg(this.scene, container, cx, topY, CARD_W, CARD_H, CARD_R);
 
@@ -156,7 +156,7 @@ export class LeaguePromotionOverlay {
         if (showBest) drawBadgeRibbon(this.scene, container, cx, topY, '+300%');
 
         const { wrap, text } = buildChoiceButton(this.scene, container, cx, topY + CARD_H - BTN_H / 2 - 12, {
-            color: btnColor, dark: btnDark, label: btnLabel, onClick,
+            color: btnColor, dark: btnDark, label: btnLabel, onClick, iconKey,
         });
         if (!showBest) this.freeBtnText = text;
         return wrap;

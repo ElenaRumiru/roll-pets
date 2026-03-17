@@ -41,6 +41,6 @@ export async function createAdapter(): Promise<PlatformSDK> {
         }
     } catch (err) {
         console.warn('[SDK] Init failed, falling back to NullAdapter', err);
-        return new NullAdapter();
+        return new NullAdapter(true);
     }
 }

@@ -45,8 +45,9 @@ export function getPhase1Assets(level: number, topPetKeys: string[]): {
         // Current background + portrait
         { key: `bg_${tier}`, path: `assets/backgrounds/location_${tier}.webp` },
         { key: `bg_p_${pTier}`, path: `assets/backgrounds/portrait/location_${pTier}.webp` },
-        // Current egg
+        // Current egg + egg_1 (always needed — CenterStage constructor hardcodes it)
         { key: `egg_${tier}`, path: `assets/eggs/egg_${tier}.png` },
+        ...(tier !== 1 ? [{ key: 'egg_1', path: 'assets/eggs/egg_1.png' }] : []),
         // Core UI
         { key: 'ui_roll', path: 'assets/ui/roll.png' },
         { key: 'ui_roll_portrait_raw', path: 'assets/ui/roll_mini_square.png' },
@@ -141,7 +142,7 @@ export function getPhase2Assets(level: number, phase1Keys: Set<string>): {
     const eggs: AssetEntry[] = [];
     for (let i = 1; i <= TOTAL_EGGS; i++) {
         const key = `egg_${i}`;
-        if (i === tier) continue; // already loaded in Phase 1
+        if (i === tier || i === 1) continue; // already loaded in Phase 1
         eggs.push({ key, path: `assets/eggs/egg_${i}.png` });
     }
 

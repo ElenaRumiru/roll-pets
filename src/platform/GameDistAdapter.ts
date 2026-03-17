@@ -1,6 +1,6 @@
 import type { AudioSystem } from '../systems/AudioSystem';
 import type { PlatformSDK } from './PlatformSDK';
-import { withTimeout, AD_TIMEOUT_MS } from './adUtil';
+import { withTimeout, AD_TIMEOUT_MS, blockInput } from './adUtil';
 
 export class GameDistAdapter implements PlatformSDK {
     private audio: AudioSystem | null = null;
@@ -8,8 +8,6 @@ export class GameDistAdapter implements PlatformSDK {
 
     async init(): Promise<void> {
         if (typeof gdsdk === 'undefined') throw new Error('GD SDK not loaded');
-        /* GD SDK fires events via the GD_OPTIONS.onEvent callback set in index-gamedist.html.
-           We listen on window for forwarded custom events. */
         window.addEventListener('gdsdk-resume', () => {
             this.audio?.resumeAll();
             if (this.resumeResolve) { this.resumeResolve(); this.resumeResolve = null; }
@@ -27,6 +25,7 @@ export class GameDistAdapter implements PlatformSDK {
 
     async showRewardedBreak(): Promise<boolean> {
         this.audio?.pauseAll();
+        const unblock = blockInput();
         try {
             await withTimeout(new Promise<void>((resolve) => {
                 this.resumeResolve = resolve;
@@ -36,18 +35,20 @@ export class GameDistAdapter implements PlatformSDK {
         } catch {
             return false;
         } finally {
+            unblock();
             this.audio?.resumeAll();
         }
     }
 
     async commercialBreak(): Promise<void> {
         this.audio?.pauseAll();
+        const unblock = blockInput();
         try {
             await withTimeout(new Promise<void>((resolve) => {
                 this.resumeResolve = resolve;
                 gdsdk!.showAd();
             }), AD_TIMEOUT_MS);
         } catch { /* timeout */ }
-        finally { this.audio?.resumeAll(); }
+        finally { unblock(); this.audio?.resumeAll(); }
     }
 }

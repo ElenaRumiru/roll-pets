@@ -89,14 +89,14 @@ export class QuestClaimPopup {
         // Ad card
         this.createCard(scene, rightX, cardsY, cfg.adCount, buffKey, descKey, descColor,
             AD_COLOR, AD_DARK, t('quest_watch'),
-            () => { this.destroy(); onAd(); });
+            () => { this.destroy(); onAd(); }, 'ui_ad_play');
     }
 
     private createCard(
         scene: Scene, cx: number, topY: number,
         count: number, buffKey: string, descKey: string, descColor: string,
         btnColor: number, btnDark: number, btnLabel: string,
-        onClick: () => void,
+        onClick: () => void, iconKey?: string,
     ): void {
         drawCardBg(scene, this.container, cx, topY, CARD_W, CARD_H, CARD_R);
 
@@ -118,7 +118,7 @@ export class QuestClaimPopup {
 
         buildChoiceButton(scene, this.container, cx, topY + CARD_H - BTN_H / 2 - 10, {
             color: btnColor, dark: btnDark, label: btnLabel, onClick,
-            shine: false, fontSize: 13, strokeThickness: 2,
+            shine: false, fontSize: 13, strokeThickness: 2, iconKey,
         });
     }
 

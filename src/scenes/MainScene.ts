@@ -76,6 +76,20 @@ export class MainScene extends Scene {
         deferredLoader.setScene(this);
         deferredLoader.startBackground(this.manager.progression.level);
 
+        // F1: Signal gameplayStart on first user input (Poki requirement)
+        const sdk = this.registry.get('platformSDK') as PlatformSDK | undefined;
+        if (sdk && !this.registry.get('_gameplayStarted')) {
+            this.input.once('pointerdown', () => {
+                this.registry.set('_gameplayStarted', true);
+                sdk.gameplayStart();
+            });
+        }
+
+        // F6: commercialBreak on sub-scene return (natural ad break point)
+        if (this.registry.get('_gameplayStarted')) {
+            showInterstitial(this);
+        }
+
         // Show nickname prompt if needed (non-blocking, overlay on top of game)
         const nickname = this.manager.save.getNickname();
         if (!nickname) {
@@ -452,6 +466,9 @@ export class MainScene extends Scene {
         this.manager.finishRoll();
         this.rightPanel.setRolling(false);
         this.refreshUI();
+        // Resume Phase 2 background loading after roll animation
+        const loader = this.registry.get('deferredLoader') as DeferredLoader;
+        loader.resume();
     }
 
     private onBuffActivated(buff: string): void {
@@ -575,8 +592,14 @@ export class MainScene extends Scene {
         if (this.settingsPanel.isVisible) return;
         this.isPaused = !this.isPaused;
         this.pauseOverlay.setVisible(this.isPaused);
-        if (this.isPaused) this.audio.pauseAll();
-        else this.audio.resumeAll();
+        const sdk = this.registry.get('platformSDK') as PlatformSDK | undefined;
+        if (this.isPaused) {
+            this.audio.pauseAll();
+            sdk?.gameplayStop();
+        } else {
+            this.audio.resumeAll();
+            sdk?.gameplayStart();
+        }
     }
 
     private getTopPets(): PetDef[] {

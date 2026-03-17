@@ -13,8 +13,15 @@ export class DeferredLoader {
     private loading = new Set<string>();
     private pendingCallbacks = new Map<string, Array<() => void>>();
     private activeScene: Scene | null = null;
+    private paused = false;
 
     constructor(private game: Game) {}
+
+    /** Pause background loading (call during roll animation) */
+    pause(): void { this.paused = true; }
+
+    /** Resume background loading */
+    resume(): void { this.paused = false; }
 
     /** Set the active scene (call from each scene's create) */
     setScene(scene: Scene): void {
@@ -62,13 +69,17 @@ export class DeferredLoader {
 
         const p2 = getPhase2Assets(playerLevel, phase1Keys);
 
+        const petBatches = this.splitPetBatches(p2.pets);
+        // Load first pet batch, then collection icons early (needed for CollectionScene),
+        // then remaining pets and other assets
         this.chainBatches([
-            ...this.splitPetBatches(p2.pets),
+            ...(petBatches.length > 0 ? [petBatches[0]] : []),
+            { type: 'collectionIcons', assets: p2.collectionIcons },
+            ...petBatches.slice(1),
             { type: 'audio', assets: p2.gradeSfx },
             { type: 'eggs', assets: p2.eggs },
             { type: 'backgrounds', assets: p2.backgrounds },
             { type: 'luckIcons', assets: p2.luckIcons },
-            { type: 'collectionIcons', assets: p2.collectionIcons },
         ]);
     }
 
@@ -83,6 +94,8 @@ export class DeferredLoader {
     private async chainBatches(batches: Batch[]): Promise<void> {
         for (const batch of batches) {
             if (batch.assets.length === 0) continue;
+            // Wait while paused (roll animation in progress)
+            while (this.paused) await this.delay(100);
             await this.loadBatch(batch);
             await this.delay(BATCH_DELAY);
         }

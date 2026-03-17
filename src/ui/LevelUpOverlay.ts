@@ -289,7 +289,7 @@ export class LevelUpOverlay {
 
         // Ad card
         this.buildCoinCard(container, rightX, cardsY, `+${adAmount}`,
-            AD_COLOR, AD_DARK, t('quest_watch'), true, () => choose(adAmount));
+            AD_COLOR, AD_DARK, t('quest_watch'), true, () => choose(adAmount), 'ui_ad_play');
 
         // Timer — updates the FREE button text with countdown
         this.timer = this.scene.time.addEvent({
@@ -311,7 +311,7 @@ export class LevelUpOverlay {
         amountStr: string,
         btnColor: number, btnDark: number,
         btnLabel: string, showBest: boolean,
-        onClick: () => void,
+        onClick: () => void, iconKey?: string,
     ): void {
         drawCardBg(this.scene, container, cx, topY, CARD_W, CARD_H, CARD_R);
 
@@ -329,7 +329,7 @@ export class LevelUpOverlay {
 
         // Button
         const { text } = buildChoiceButton(this.scene, container, cx, topY + CARD_H - BTN_H / 2 - 12, {
-            color: btnColor, dark: btnDark, label: btnLabel, onClick,
+            color: btnColor, dark: btnDark, label: btnLabel, onClick, iconKey,
         });
         if (!showBest) this.freeBtnText = text;
     }
