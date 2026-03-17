@@ -6,6 +6,7 @@ import { t } from '../data/locales';
 import { fitText } from './components/fitText';
 import { addButtonFeedback } from './components/buttonFeedback';
 import { addShineEffect } from './components/shineEffect';
+import { addAdIcon } from './components/ChoiceCard';
 
 const CARD_H = 90, CARD_GAP = 12, CARD_R = 14;
 const BAR_H = 20, BAR_R = BAR_H / 2, BAR_COLOR = 0xffc107;
@@ -137,7 +138,7 @@ function addRewards(
             fontFamily: UI.FONT_STROKE, fontSize: '10px', color: buffClr,
             stroke: '#000000', strokeThickness: 1,
         }).setOrigin(0.5));
-        addBtn(scene, ct, colX, miniTop + 54, label, clr, drk, L.mbtnW, () => onClaim(type, ad));
+        addBtn(scene, ct, colX, miniTop + 54, label, clr, drk, L.mbtnW, () => onClaim(type, ad), ad);
     };
     addCol(fX, cfg.freeCount, t('quest_claim'), 0x78C828, 0x4E8A18, false);
     addCol(aX, cfg.adCount, t('quest_watch'), 0x7B2FBE, 0x4A1A72, true);
@@ -146,6 +147,7 @@ function addRewards(
 function addBtn(
     scene: Scene, ct: GameObjects.Container, cx: number, cy: number,
     label: string, clr: number, drk: number, bw: number, onClick: () => void,
+    isAd = false,
 ): void {
     const wrap = scene.add.container(cx, cy), g = scene.add.graphics();
     const hh = MBTN_H / 2;
@@ -161,6 +163,7 @@ function addBtn(
     }).setOrigin(0.5);
     fitText(txt, bw - 10, 12); wrap.add(txt);
     wrap.setSize(bw, MBTN_H + 2);
+    if (isAd) addAdIcon(scene, wrap);
     addShineEffect(scene, wrap, bw, MBTN_H, MBTN_R);
     wrap.setInteractive({ useHandCursor: true }).on('pointerdown', onClick);
     addButtonFeedback(scene, wrap); ct.add(wrap);

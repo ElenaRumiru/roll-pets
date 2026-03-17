@@ -88,7 +88,7 @@ export function buildChoiceButton(
     bg.strokeRoundedRect(-BTN_W / 2, -BTN_H / 2, BTN_W, BTN_H, BTN_R);
     wrap.add(bg);
 
-    const ICON_SZ = 18;
+    const ICON_SZ = Math.round(BTN_H * 0.55);
     const hasIcon = cfg.iconKey && scene.textures.exists(cfg.iconKey);
     const textX = hasIcon ? ICON_SZ / 2 + 1 : 0;
 
@@ -114,4 +114,24 @@ export function buildChoiceButton(
     addButtonFeedback(scene, wrap);
 
     return { wrap, text };
+}
+
+/**
+ * Add ad icon sprite left of the Text child inside any Container (Button, etc.).
+ * Icon size auto-scales to ~55% of container height.
+ * Shifts text right to make room, positions icon relative to text.
+ */
+export function addAdIcon(
+    scene: Scene, container: GameObjects.Container,
+): void {
+    if (!scene.textures.exists('ui_ad_sm')) return;
+    const txt = container.list.find(c => c.type === 'Text') as GameObjects.Text | undefined;
+    if (!txt) return;
+    const sz = Math.round(container.height * 0.55);
+    const half = sz / 2;
+    txt.setX(txt.x + half + 1);
+    const icon = scene.add.image(
+        txt.x - txt.displayWidth / 2 - half - 2, txt.y, 'ui_ad_sm',
+    ).setDisplaySize(sz, sz);
+    container.add(icon);
 }

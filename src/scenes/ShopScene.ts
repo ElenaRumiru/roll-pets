@@ -12,6 +12,7 @@ import { getEggNameKey } from '../data/eggs';
 import { showInterstitial } from '../platform/interstitial';
 import { createSceneHeader } from '../ui/SceneHeader';
 import { CoinDisplay } from '../ui/CoinDisplay';
+import { addAdIcon } from '../ui/components/ChoiceCard';
 
 const HEADER_H = 74;
 const TAB_Y = HEADER_H + 25;
@@ -63,10 +64,7 @@ export class ShopScene extends Scene {
         }).setOrigin(0.5).setVisible(false);
         this.refreshBtn = new Button(this, gw / 2, gh - 50, 222, 52,
             t('shop_refresh'), 0x7b42c9, () => this.onRefresh());
-        if (this.textures.exists('ui_ad_sm')) {
-            const adIcon = this.add.image(-90, -1, 'ui_ad_sm').setDisplaySize(20, 20);
-            this.refreshBtn.add(adIcon);
-        }
+        addAdIcon(this, this.refreshBtn);
         const hintSize = isPortrait() ? '18px' : '14px';
         this.hintText = this.add.text(gw / 2, TIMER_Y, '', {
             fontFamily: UI.FONT_BODY, fontSize: hintSize, color: '#666688',
