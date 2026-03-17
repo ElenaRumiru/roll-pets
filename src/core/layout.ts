@@ -114,9 +114,9 @@ const PORTRAIT: MainLayout = {
     cy: PORTRAIT_H / 2,
 
     pedestal: {
-        first:  { x: 285, y: 590, scale: 0.64 },
-        second: { x: 149, y: 620, scale: 0.52 },
-        third:  { x: 424, y: 639, scale: 0.46 },
+        first:  { x: 293, y: 595, scale: 0.64 },
+        second: { x: 147, y: 634, scale: 0.52 },
+        third:  { x: 432, y: 659, scale: 0.46 },
     },
 
     rollBtn: { x: 290, y: 969, w: 140, h: 140, texture: 'ui_roll_portrait', fontSize: '35px' },

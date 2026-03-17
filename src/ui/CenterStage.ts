@@ -147,7 +147,7 @@ export class CenterStage extends GameObjects.Container {
                 slot.image = null;
             }
 
-            if (pet) {
+            if (pet && this.scene.textures.exists(pet.imageKey)) {
                 const cfg = GRADE[getGradeForChance(pet.chance)];
 
                 slot.image = this.scene.add.image(pos.x, pos.y + PET_OFFSET_Y, pet.imageKey)

@@ -80,7 +80,9 @@ function createOfferCard(
         { tl: r - 1, tr: r - 1, bl: 0, br: 0 });
     c.add(bg);
 
-    c.add(scene.add.image(0, -20, pet.imageKey).setScale(0.47));
+    if (scene.textures.exists(pet.imageKey)) {
+        c.add(scene.add.image(0, -20, pet.imageKey).setScale(0.47));
+    }
 
     const name = scene.add.text(0, CARD_H / 2 - 37, t('pet_' + pet.id), {
         fontFamily: UI.FONT_STROKE, fontSize: '17px', color: '#ffffff',

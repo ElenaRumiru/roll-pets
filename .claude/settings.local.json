@@ -96,7 +96,13 @@
       "Bash(start \"\" \"http://localhost:3001/figma-mockup.html#figmacapture=0a0735c0-8a41-4655-b30c-c9b353251b24&figmaendpoint=https%3A%2F%2Fmcp.figma.com%2Fmcp%2Fcapture%2F0a0735c0-8a41-4655-b30c-c9b353251b24%2Fsubmit&figmadelay=3000\")",
       "mcp__figma__get_design_context",
       "WebFetch(domain:rexrainbow.github.io)",
-      "WebFetch(domain:docs.phaser.io)"
+      "WebFetch(domain:docs.phaser.io)",
+      "WebFetch(domain:acc.gamedistribution.com)",
+      "WebFetch(domain:yandex.com)",
+      "WebFetch(domain:gamemonetize.com)",
+      "WebFetch(domain:gpxprj.blob.core.windows.net)",
+      "WebFetch(domain:developers.addictinggames.com)",
+      "WebFetch(domain:itch.io)"
     ]
   }
 }

@@ -1,4 +1,5 @@
 import StartGame from './game/main';
+import { createAdapter } from './platform/createAdapter';
 
 document.addEventListener('DOMContentLoaded', async () => {
     await Promise.all([
@@ -6,5 +7,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.fonts.load('500 16px "Rubik"'),
         document.fonts.load('300 16px "Rubik Light"'),
     ]);
-    StartGame('game-container');
+
+    const sdk = await createAdapter();
+    const game = StartGame('game-container');
+    game.registry.set('platformSDK', sdk);
 });

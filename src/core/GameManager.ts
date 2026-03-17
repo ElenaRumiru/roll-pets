@@ -15,6 +15,7 @@ import { getBgImageKey, getPortraitBgImageKey } from '../data/backgrounds';
 import { RollResult, RebirthData, DailyBonusReward } from '../types';
 import { RollCoordinator } from './RollCoordinator';
 import { EconomyCoordinator } from './EconomyCoordinator';
+import type { DeferredLoader } from '../loading/DeferredLoader';
 
 export class GameManager {
     rng: RNGSystem;
@@ -31,6 +32,7 @@ export class GameManager {
     private econCoord: EconomyCoordinator;
     private questResetTimer = 0;
     private onlineTimeAccum = 0;
+    private _deferredLoader: DeferredLoader | null = null;
 
     constructor() {
         this.save = new SaveSystem();
@@ -73,6 +75,7 @@ export class GameManager {
             ...deps,
             persistSave: (r?: RollResult) => this.persistSave(r),
             onRebirthReset: () => this.resetProgressionForRebirth(),
+            getDeferredLoader: () => this._deferredLoader,
         });
         this.econCoord = new EconomyCoordinator({
             ...deps, shop: this.shop, dailyBonus: this.dailyBonus,
@@ -134,6 +137,7 @@ export class GameManager {
     placeNestEgg(slotIndex: number, tier: number): boolean { return this.econCoord.placeNestEgg(slotIndex, tier); }
     boostNestSlot(index: number): boolean { return this.econCoord.boostNestSlot(index); }
 
+    setDeferredLoader(loader: DeferredLoader): void { this._deferredLoader = loader; }
     getRebirthCount(): number { return this.save.getData().rebirthCount; }
     getRebirthMultiplier(): number { return this.buffs.getRebirthMultiplier(); }
     getEggImageKey() { return getEggImageKey(this.progression.level); }

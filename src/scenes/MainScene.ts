@@ -32,6 +32,7 @@ import { AudioSystem } from '../systems/AudioSystem';
 import { t } from '../data/locales';
 import { showToast } from '../ui/components/Toast';
 import { OverlayQueue } from '../ui/OverlayQueue';
+import { DeferredLoader } from '../loading/DeferredLoader';
 
 export class MainScene extends Scene {
     private manager!: GameManager;
@@ -69,6 +70,11 @@ export class MainScene extends Scene {
     create(): void {
         this.manager = this.registry.get('gameManager') as GameManager;
         this.buildUI();
+
+        // Start Phase 2 background asset loading
+        const deferredLoader = this.registry.get('deferredLoader') as DeferredLoader;
+        deferredLoader.setScene(this);
+        deferredLoader.startBackground(this.manager.progression.level);
 
         // Show nickname prompt if needed (non-blocking, overlay on top of game)
         const nickname = this.manager.save.getNickname();

@@ -13,6 +13,7 @@ import { getBgImageKey } from '../data/backgrounds';
 import { getLeagueForChance } from '../data/leaderboard';
 import { PETS } from '../data/pets';
 import { RollResult, LevelUpData, LeaguePromotionData, RebirthData } from '../types';
+import type { DeferredLoader } from '../loading/DeferredLoader';
 
 export interface RollDeps {
     rng: RNGSystem;
@@ -24,6 +25,7 @@ export interface RollDeps {
     collectionTracker: CollectionTracker;
     persistSave: (result?: RollResult) => void;
     onRebirthReset: () => void;
+    getDeferredLoader?: () => DeferredLoader | null;
 }
 
 export class RollCoordinator {
@@ -52,6 +54,21 @@ export class RollCoordinator {
             this.emitCollectionEvents(result.pet.id);
         }
 
+        // Gate on pet texture availability — ensure sprite is loaded before animation
+        const loader = this.deps.getDeferredLoader?.();
+        if (loader && !loader.isReady(result.pet.imageKey)) {
+            loader.ensurePet(result.pet.imageKey).then(() => {
+                this.emitRollComplete(result, coinsBefore, leagueBefore, prog);
+            });
+        } else {
+            this.emitRollComplete(result, coinsBefore, leagueBefore, prog);
+        }
+    }
+
+    private emitRollComplete(
+        result: RollResult, coinsBefore: number,
+        leagueBefore: { tier: string }, prog: ProgressionSystem,
+    ): void {
         EventBus.emit('roll-complete', result);
         EventBus.emit('buffs-changed');
 

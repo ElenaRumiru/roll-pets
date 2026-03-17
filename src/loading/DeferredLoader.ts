@@ -1,0 +1,192 @@
+import { Game, Scene } from 'phaser';
+import { getPhase2Assets, PROCESSED_LUCK } from './AssetRegistry';
+import {
+    downscalePet, createEggSmall, processCollectionIcon,
+    trimAndDownscaleCoin,
+} from './PostProcess';
+
+const BATCH_DELAY = 100; // ms pause between batches to avoid frame drops
+const PET_BATCH_SIZE = 30;
+
+export class DeferredLoader {
+    private processed = new Set<string>();
+    private loading = new Set<string>();
+    private pendingCallbacks = new Map<string, Array<() => void>>();
+    private activeScene: Scene | null = null;
+
+    constructor(private game: Game) {}
+
+    /** Set the active scene (call from each scene's create) */
+    setScene(scene: Scene): void {
+        this.activeScene = scene;
+    }
+
+    /** Check if a texture is loaded and post-processed */
+    isReady(key: string): boolean {
+        return this.game.textures.exists(key) && !this.loading.has(key);
+    }
+
+    /** Load a single pet sprite on-demand, returns Promise */
+    ensurePet(imageKey: string): Promise<void> {
+        if (this.isReady(imageKey)) return Promise.resolve();
+
+        return new Promise(resolve => {
+            if (this.loading.has(imageKey)) {
+                const cbs = this.pendingCallbacks.get(imageKey) ?? [];
+                cbs.push(resolve);
+                this.pendingCallbacks.set(imageKey, cbs);
+                return;
+            }
+
+            this.loading.add(imageKey);
+            const scene = this.getScene();
+            const filename = imageKey.replace('pet_', '');
+            scene.load.image(imageKey, `assets/pets/${filename}.webp`);
+            scene.load.once(`filecomplete-image-${imageKey}`, () => {
+                downscalePet(this.game.textures, imageKey);
+                this.loading.delete(imageKey);
+                this.processed.add(imageKey);
+                resolve();
+                this.flushCallbacks(imageKey);
+            });
+            scene.load.start();
+        });
+    }
+
+    /** Start Phase 2 background loading */
+    startBackground(playerLevel: number): void {
+        const phase1Keys = new Set<string>();
+        for (const key of this.game.textures.getTextureKeys()) {
+            phase1Keys.add(key);
+        }
+
+        const p2 = getPhase2Assets(playerLevel, phase1Keys);
+
+        this.chainBatches([
+            ...this.splitPetBatches(p2.pets),
+            { type: 'audio', assets: p2.gradeSfx },
+            { type: 'eggs', assets: p2.eggs },
+            { type: 'backgrounds', assets: p2.backgrounds },
+            { type: 'luckIcons', assets: p2.luckIcons },
+            { type: 'collectionIcons', assets: p2.collectionIcons },
+        ]);
+    }
+
+    private splitPetBatches(pets: { key: string; path: string }[]): Batch[] {
+        const batches: Batch[] = [];
+        for (let i = 0; i < pets.length; i += PET_BATCH_SIZE) {
+            batches.push({ type: 'pets', assets: pets.slice(i, i + PET_BATCH_SIZE) });
+        }
+        return batches;
+    }
+
+    private async chainBatches(batches: Batch[]): Promise<void> {
+        for (const batch of batches) {
+            if (batch.assets.length === 0) continue;
+            await this.loadBatch(batch);
+            await this.delay(BATCH_DELAY);
+        }
+    }
+
+    private loadBatch(batch: Batch): Promise<void> {
+        return new Promise(resolve => {
+            const scene = this.getScene();
+            const textures = this.game.textures;
+            let queued = 0;
+
+            for (const a of batch.assets) {
+                if (textures.exists(a.key) || this.loading.has(a.key)) continue;
+                this.loading.add(a.key);
+                if (batch.type === 'audio') {
+                    scene.load.audio(a.key, a.path);
+                } else {
+                    scene.load.image(a.key, a.path);
+                }
+                queued++;
+            }
+
+            if (queued === 0) {
+                this.postProcessBatch(batch);
+                resolve();
+                return;
+            }
+
+            scene.load.once('complete', () => {
+                this.postProcessBatch(batch);
+                resolve();
+            });
+            scene.load.start();
+        });
+    }
+
+    private postProcessBatch(batch: Batch): void {
+        const textures = this.game.textures;
+        for (const a of batch.assets) {
+            this.loading.delete(a.key);
+            this.processed.add(a.key);
+        }
+
+        switch (batch.type) {
+            case 'pets':
+                for (const a of batch.assets) {
+                    if (textures.exists(a.key)) downscalePet(textures, a.key);
+                    this.flushCallbacks(a.key);
+                }
+                break;
+            case 'eggs':
+                for (const a of batch.assets) {
+                    if (!textures.exists(a.key)) continue;
+                    const tier = parseInt(a.key.replace('egg_', ''));
+                    createEggSmall(textures, tier);
+                }
+                break;
+            case 'luckIcons':
+                for (const a of batch.assets) {
+                    if (!textures.exists(a.key)) continue;
+                    if (textures.exists(`${a.key}_lg`)) continue; // already processed
+                    const suffix = a.key.replace('luck_', '');
+                    if (PROCESSED_LUCK.includes(suffix)) {
+                        trimAndDownscaleCoin(textures, a.key, [
+                            { key: `${a.key}_lg`, size: 54 },
+                            { key: `${a.key}_md`, size: 28 },
+                            { key: `${a.key}_sm`, size: 16 },
+                        ]);
+                    }
+                }
+                break;
+            case 'collectionIcons':
+                for (const a of batch.assets) {
+                    if (!textures.exists(a.key)) continue;
+                    const name = a.key.replace('col_', '').replace('_raw', '');
+                    processCollectionIcon(textures, name);
+                }
+                break;
+            // backgrounds + audio: no post-processing needed
+        }
+    }
+
+    private getScene(): Scene {
+        // Prefer first currently active scene (survives scene transitions)
+        const scenes = this.game.scene.getScenes(true);
+        if (scenes.length > 0) return scenes[0];
+        // Fallback to stored reference (set during create())
+        return this.activeScene!;
+    }
+
+    private flushCallbacks(key: string): void {
+        const cbs = this.pendingCallbacks.get(key);
+        if (cbs) {
+            this.pendingCallbacks.delete(key);
+            for (const cb of cbs) cb();
+        }
+    }
+
+    private delay(ms: number): Promise<void> {
+        return new Promise(r => setTimeout(r, ms));
+    }
+}
+
+interface Batch {
+    type: 'pets' | 'audio' | 'eggs' | 'backgrounds' | 'luckIcons' | 'collectionIcons';
+    assets: { key: string; path: string }[];
+}

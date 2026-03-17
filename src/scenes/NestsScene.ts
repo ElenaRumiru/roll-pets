@@ -201,10 +201,18 @@ export class NestsScene extends Scene {
         const eggKey = slot.eggTier ? `egg_${slot.eggTier}` : 'egg_1';
         const result = this.manager.hatchNest(slotIndex);
         if (!result) return;
-        new NestHatchOverlay(this).play(result, eggKey, async () => {
-            this.refreshSlots();
-            await showInterstitial(this);
-        });
+        const loader = this.registry.get('deferredLoader') as import('../loading/DeferredLoader').DeferredLoader | undefined;
+        const showHatch = () => {
+            new NestHatchOverlay(this).play(result, eggKey, async () => {
+                this.refreshSlots();
+                await showInterstitial(this);
+            });
+        };
+        if (loader && !this.textures.exists(result.pet.imageKey)) {
+            loader.ensurePet(result.pet.imageKey).then(showHatch);
+        } else {
+            showHatch();
+        }
     }
 
     private onSpeedUp(index: number): void {

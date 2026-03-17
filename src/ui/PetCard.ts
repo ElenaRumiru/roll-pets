@@ -33,7 +33,7 @@ export class PetCard extends GameObjects.Container {
         this.add(bg);
 
         // Pet image or question mark
-        if (found) {
+        if (found && scene.textures.exists(pet.imageKey)) {
             const img = scene.add.image(0, -17, pet.imageKey).setScale(0.37);
             this.add(img);
 
