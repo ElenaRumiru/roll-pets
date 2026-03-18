@@ -182,8 +182,9 @@ export class SettingsPanel extends GameObjects.Container {
     private readonly LANG_LABELS: Record<string, string> = {
         en: 'English', ru: 'Русский', pt: 'Português', es: 'Español',
         tr: 'Türkçe', de: 'Deutsch', fr: 'Français', id: 'Indonesia', nl: 'Nederlands',
+        ja: '日本語', ko: '한국어', pl: 'Polski', it: 'Italiano',
     };
-    private readonly LANG_ORDER = ['en', 'ru', 'pt', 'es', 'tr', 'de', 'fr', 'id', 'nl'];
+    private readonly LANG_ORDER = ['en', 'ru', 'pt', 'es', 'tr', 'de', 'fr', 'id', 'nl', 'ja', 'ko', 'pl', 'it'];
     private langBtnText!: GameObjects.Text;
     private langBtnBg!: GameObjects.Graphics;
     private langBtnX = 0;
@@ -243,7 +244,7 @@ export class SettingsPanel extends GameObjects.Container {
         if (this.langDropdown) { this.closeLangDropdown(); return; }
         this.drawLangBtn(true);
 
-        const itemH = 30;
+        const itemH = 28;
         const btnHalf = 17;
         const h = this.LANG_ORDER.length * itemH;
         const dropY = this.langBtnY - btnHalf - h - 4;
