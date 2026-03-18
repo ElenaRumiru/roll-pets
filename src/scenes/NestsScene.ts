@@ -10,6 +10,7 @@ import { showToast } from '../ui/components/Toast';
 import { showInterstitial } from '../platform/interstitial';
 import { createSceneHeader } from '../ui/SceneHeader';
 import { CoinDisplay } from '../ui/CoinDisplay';
+import { EventBus } from '../core/EventBus';
 
 const SLOT_W = 200;
 const SLOT_H = 250;
@@ -42,6 +43,12 @@ export class NestsScene extends Scene {
         this.coinDisplay = hdr.coinDisplay;
         this.refreshSlots();
         this.createHint();
+        EventBus.on('assets-loaded', this.onAssetsLoaded, this);
+        this.events.on('shutdown', () => EventBus.off('assets-loaded', this.onAssetsLoaded, this));
+    }
+
+    private onAssetsLoaded(type: string): void {
+        if (type === 'eggs') this.refreshSlots();
     }
 
     private createHint(): void {

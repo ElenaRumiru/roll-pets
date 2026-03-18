@@ -8,6 +8,7 @@ import { addShineEffect } from '../ui/components/shineEffect';
 import { showToast } from '../ui/components/Toast';
 import { createCardGrid, createMilestoneTrack, CARD_H, CARD_GAP } from '../ui/DailyBonusCards';
 import { createSceneHeader } from '../ui/SceneHeader';
+import { EventBus } from '../core/EventBus';
 
 const GRID_W = 108 * 4 + 10 * 3; // CARD_W * 4 + CARD_GAP * 3
 const PORT_CARD_H = 130; // taller cards in portrait (landscape: 100)
@@ -71,6 +72,12 @@ export class DailyBonusScene extends Scene {
         this.claimY = this.timerAboveBtnY + (port ? 65 : 42);
         this.createClaimButton();
         this.createTimer();
+        EventBus.on('assets-loaded', this.onAssetsLoaded, this);
+        this.events.on('shutdown', () => EventBus.off('assets-loaded', this.onAssetsLoaded, this));
+    }
+
+    private onAssetsLoaded(type: string): void {
+        if (type === 'eggs') this.scene.restart();
     }
 
     private createClaimButton(): void {

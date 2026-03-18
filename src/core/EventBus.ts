@@ -27,6 +27,7 @@ export interface GameEventMap {
     'collection-claimed':      [collectionId: string];
     'nests-changed':           [];
     'nickname-changed':        [nickname: string];
+    'assets-loaded':           [batchType: string];
 }
 
 // ── Typed facade over Phaser's EventEmitter ──

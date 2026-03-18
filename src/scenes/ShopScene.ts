@@ -13,6 +13,7 @@ import { showInterstitial } from '../platform/interstitial';
 import { createSceneHeader } from '../ui/SceneHeader';
 import { CoinDisplay } from '../ui/CoinDisplay';
 import { addAdIcon } from '../ui/components/ChoiceCard';
+import { EventBus } from '../core/EventBus';
 
 const HEADER_H = 74;
 const TAB_Y = HEADER_H + 25;
@@ -70,6 +71,13 @@ export class ShopScene extends Scene {
             fontFamily: UI.FONT_BODY, fontSize: hintSize, color: '#666688',
         }).setOrigin(0.5);
         this.switchTab(this.activeTab);
+        EventBus.on('assets-loaded', this.onAssetsLoaded, this);
+        this.events.on('shutdown', () => EventBus.off('assets-loaded', this.onAssetsLoaded, this));
+    }
+
+    private onAssetsLoaded(type: string): void {
+        if (type === 'eggs' && this.activeTab === 'eggs') this.switchTab('eggs');
+        if (type === 'pets' && this.activeTab === 'pets') this.switchTab('pets');
     }
 
     private createTabs(): void {

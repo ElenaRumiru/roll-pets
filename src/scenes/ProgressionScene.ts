@@ -6,6 +6,7 @@ import { t } from '../data/locales';
 import { GameManager } from '../core/GameManager';
 import { fitText } from '../ui/components/fitText';
 import { createSceneHeader } from '../ui/SceneHeader';
+import { EventBus } from '../core/EventBus';
 
 const HEADER_H = 74;
 const TRACK_H = 12;
@@ -55,6 +56,19 @@ export class ProgressionScene extends Scene {
         });
         this.setupScroll();
         this.setInitialScroll(milestones, playerLevel);
+        EventBus.on('assets-loaded', this.onAssetsLoaded, this);
+        this.events.on('shutdown', () => EventBus.off('assets-loaded', this.onAssetsLoaded, this));
+    }
+
+    private onAssetsLoaded(type: string): void {
+        if (type === 'eggs') {
+            const saved = this.scrollOffset;
+            this.trackContainer.removeAll(true);
+            const level = this.manager.progression.level;
+            this.buildTrack(getMilestones(level, this.manager.getRebirthCount()), level);
+            this.scrollOffset = saved;
+            this.clampScroll();
+        }
     }
 
     private buildTrack(milestones: Milestone[], playerLevel: number): void {

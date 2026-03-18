@@ -231,6 +231,7 @@ export class MainScene extends Scene {
         EventBus.on('daily-bonus-changed', this.onDailyBonusChanged, this);
         EventBus.on('collections-changed', this.onCollectionsChanged, this);
         EventBus.on('collection-claimed', () => this.refreshUI(), this);
+        EventBus.on('assets-loaded', this.onAssetsLoaded, this);
         this.events.on('shutdown', this.shutdown, this);
 
         // Pause overlay
@@ -511,6 +512,10 @@ export class MainScene extends Scene {
         if (!this.manager.isRolling) this.refreshUI();
     }
 
+    private onAssetsLoaded(type: string): void {
+        if (type === 'eggs') this.centerStage.setEggImage(this.manager.getEggImageKey());
+    }
+
     private handleQuestClaim(type: 'roll' | 'grade' | 'online'): void {
         if (this.questPopup) return;
         const reward = this.manager.quests.getReward(type);
@@ -676,5 +681,6 @@ export class MainScene extends Scene {
         EventBus.off('daily-bonus-changed', this.onDailyBonusChanged, this);
         EventBus.off('collections-changed', this.onCollectionsChanged, this);
         EventBus.off('collection-claimed');
+        EventBus.off('assets-loaded', this.onAssetsLoaded, this);
     }
 }

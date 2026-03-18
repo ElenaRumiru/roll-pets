@@ -4,6 +4,7 @@ import {
     downscalePet, createEggSmall, processCollectionIcon,
     trimAndDownscaleCoin,
 } from './PostProcess';
+import { EventBus } from '../core/EventBus';
 
 const BATCH_DELAY = 100; // ms pause between batches to avoid frame drops
 const PET_BATCH_SIZE = 30;
@@ -94,9 +95,16 @@ export class DeferredLoader {
     private async chainBatches(batches: Batch[]): Promise<void> {
         for (const batch of batches) {
             if (batch.assets.length === 0) continue;
-            // Wait while paused (roll animation in progress)
             while (this.paused) await this.delay(100);
             await this.loadBatch(batch);
+            // Re-queue assets interrupted by scene shutdown
+            const remaining = batch.assets.filter(a =>
+                !this.game.textures.exists(a.key) && !this.loading.has(a.key));
+            if (remaining.length > 0) {
+                await this.delay(BATCH_DELAY);
+                await this.loadBatch({ type: batch.type, assets: remaining });
+            }
+            EventBus.emit('assets-loaded', batch.type);
             await this.delay(BATCH_DELAY);
         }
     }
@@ -106,26 +114,35 @@ export class DeferredLoader {
             const scene = this.getScene();
             const textures = this.game.textures;
             let queued = 0;
+            const batchKeys: string[] = [];
 
             for (const a of batch.assets) {
                 if (textures.exists(a.key) || this.loading.has(a.key)) continue;
                 this.loading.add(a.key);
+                batchKeys.push(a.key);
                 if (batch.type === 'audio') {
                     scene.load.audio(a.key, a.path);
                 } else {
                     scene.load.image(a.key, a.path);
-                    // Per-file post-processing — runs immediately when each file is ready
                     this.registerFileProcessor(scene, batch.type, a.key);
                 }
                 queued++;
             }
 
-            if (queued === 0) {
-                resolve();
-                return;
-            }
+            if (queued === 0) { resolve(); return; }
 
-            scene.load.once('complete', () => resolve());
+            let resolved = false;
+            const done = () => {
+                if (resolved) return;
+                resolved = true;
+                scene.load.off('complete', done);
+                scene.events.off('shutdown', done);
+                for (const k of batchKeys) this.loading.delete(k);
+                resolve();
+            };
+
+            scene.load.once('complete', done);
+            scene.events.once('shutdown', done);
             scene.load.start();
         });
     }

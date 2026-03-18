@@ -10,6 +10,7 @@ import { buildDetailView } from '../ui/CollectionDetail';
 import { t } from '../data/locales';
 import { showInterstitial } from '../platform/interstitial';
 import { createSceneHeader } from '../ui/SceneHeader';
+import { EventBus } from '../core/EventBus';
 
 type CollTab = 'collections' | 'all';
 
@@ -45,6 +46,12 @@ export class CollectionScene extends Scene {
         });
         this.createTabs();
         this.switchTab(this.activeTab);
+        EventBus.on('assets-loaded', this.onAssetsLoaded, this);
+        this.events.on('shutdown', () => EventBus.off('assets-loaded', this.onAssetsLoaded, this));
+    }
+
+    private onAssetsLoaded(type: string): void {
+        if (type === 'collectionIcons' || type === 'pets') this.switchTab(this.activeTab);
     }
 
     private createTabs(): void {
