@@ -7,7 +7,6 @@ import { NestHatchOverlay } from '../ui/NestHatchOverlay';
 import { renderEmptySlot, renderIncubatingSlot, renderReadySlot, renderLockedSlot, SlotLayout } from '../ui/NestSlotCard';
 import { t } from '../data/locales';
 import { showToast } from '../ui/components/Toast';
-import { showInterstitial } from '../platform/interstitial';
 import { createSceneHeader } from '../ui/SceneHeader';
 import { CoinDisplay } from '../ui/CoinDisplay';
 import { EventBus } from '../core/EventBus';
@@ -210,9 +209,8 @@ export class NestsScene extends Scene {
         if (!result) return;
         const loader = this.registry.get('deferredLoader') as import('../loading/DeferredLoader').DeferredLoader | undefined;
         const showHatch = () => {
-            new NestHatchOverlay(this).play(result, eggKey, async () => {
+            new NestHatchOverlay(this).play(result, eggKey, () => {
                 this.refreshSlots();
-                await showInterstitial(this);
             });
         };
         if (loader && !this.textures.exists(result.pet.imageKey)) {

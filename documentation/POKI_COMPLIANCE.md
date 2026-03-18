@@ -1,6 +1,7 @@
 # Poki Compliance Audit — PETS ROLL
 
-**Date:** 2026-03-17
+**Date:** 2026-03-18 (updated)
+**Previous audit:** 2026-03-17
 **Sources:** [Requirements](https://sdk.poki.com/new-requirements.html) | [HTML5 SDK](https://sdk.poki.com/html5.html) | [Poki Inspector](https://sdk.poki.com/poki-inspector.html)
 
 ---
@@ -20,8 +21,8 @@
 | 9 | **SDK init failure = non-blocking** | PASS | `src/platform/createAdapter.ts` catch → NullAdapter fallback, game continues |
 | 10 | **`gameLoadingFinished()` called** | PASS | `src/scenes/BootScene.ts:141` — after asset load + post-processing |
 | 11 | **Audio muted during ads** | PASS | `PokiAdapter.ts` — `pauseAll()` before ad, `resumeAll()` in `finally` block |
-| 12 | **No double SDK events** | PASS | `interstitial.ts` atomic: `gameplayStop()` → `commercialBreak()` → `gameplayStart()` |
-| 13 | **Interstitial ads integrated** | PASS | 6 call sites via `showInterstitial()`: MainScene×3, ShopScene×2, CollectionScene×1, NestsScene×1 |
+| 12 | **No double SDK events** | PASS | `interstitial.ts` `gameplayActive` state tracker prevents consecutive duplicate calls |
+| 13 | **Interstitial ads integrated** | PASS | 3 mid-gameplay via `showInterstitial()` (MainScene), scene-return via `showSceneReturnBreak()` |
 | 14 | **Rewarded failure → no ad reward** | PASS | All 7 call sites: `showRewardedBreak()` returns `false` → free amount or nothing |
 | 15 | **FREE/Ad buttons shown simultaneously** | PASS | `ChoiceCard.ts` side-by-side layout in overlays |
 | 16 | **FREE button green, Ad button not green** | PASS | `FREE_COLOR = 0x78C828` (green), `AD_COLOR = 0x7B2FBE` (purple) |
@@ -30,7 +31,10 @@
 | 19 | **Localization available** | PASS | EN + RU via `t('key')` from `data/locales/` |
 | 20 | **Initial download < 8MB** | PASS | Phase 1 lazy loading: ~2-3MB (UI + top 3 pets + current bg/egg + audio). See "Lazy Loading" section |
 | 21 | **No debug code in production** | PASS | Terser 2-pass minification, `noEmit: true`, no console.log in game code |
-| 22 | **`showInterstitial()` timing guards** | PASS | `interstitial.ts` — 120s session guard + 40s cooldown |
+| 22 | **`showInterstitial()` timing guards** | PASS | `interstitial.ts` — 120s session guard (no internal cooldown — Poki manages frequency) |
+| 23 | **`gameplayStop()` on sub-scene entry** | PASS | `MainScene.navigateToScene()` — all 7 sub-scene transitions call `gameplayStop()` |
+| 24 | **`gameplayStart()` guaranteed on return** | PASS | `showSceneReturnBreak()` — ALWAYS calls `gameplayStart()` regardless of ad shown |
+| 25 | **No internal ad timers** | PASS | Removed 40s cooldown; only 2-min session guard (Poki policy) remains |
 
 ---
 
@@ -252,6 +256,62 @@ The existing 40s cooldown in `interstitial.ts` prevents ad spam. Not every call 
 
 ---
 
+### F10: Missing `gameplayStop()` on sub-scene entry — CRITICAL — DONE
+
+**Requirement:** "gameplayStop() must fire on any gameplay interruption (pause, menu open)" ([new-requirements.html](https://sdk.poki.com/new-requirements.html))
+
+**Problem:** 7 sub-scene transitions in MainScene (TopBar, Leaderboard, Collection, Nests, Shop, DailyBonus, QuestPanel) never called `gameplayStop()`. Player leaves gameplay but Poki thinks they're still playing.
+
+**Fix:** Extracted `navigateToScene(sceneKey)` helper in MainScene that calls `sdk.gameplayStop()` + `markGameplayStopped()` before `scene.start()`. All 7 transition callbacks now use this helper. State tracked via `gameplayActive` flag in `interstitial.ts` to prevent consecutive duplicate calls.
+
+**Result:** All sub-scene transitions call `gameplayStop()`. State tracker prevents double-stop.
+
+---
+
+### F11: Internal 40s ad cooldown violates Poki rules — HIGH — DONE
+
+**Requirement:** "Do not implement internal ad timers - rely on Poki's system to manage ad frequency" ([new-requirements.html](https://sdk.poki.com/new-requirements.html))
+
+**Problem:** `interstitial.ts` had `COOLDOWN_MS = 40_000` — a self-imposed timer overriding Poki's frequency management.
+
+**Fix:** Removed `COOLDOWN_MS` and `lastInterstitialMs` from `interstitial.ts`. Kept `MIN_SESSION_MS = 120_000` (2-min session guard) as it's documented Poki policy in CLAUDE.md.
+
+**Result:** No internal ad timers. Poki's system manages frequency.
+
+---
+
+### F12: `gameplayStart()` not guaranteed on sub-scene return — HIGH — DONE
+
+**Problem:** `MainScene.create()` called `showInterstitial()` on sub-scene return. If guards rejected (cooldown/timing), it returned `false` without calling `gameplayStart()`. Player was back in gameplay but Poki didn't know.
+
+**Fix:** Added `showSceneReturnBreak(scene)` — a new Pattern B in `interstitial.ts` that ALWAYS calls `gameplayStart()` at the end, regardless of whether an ad was shown. `MainScene.create()` now uses this instead of `showInterstitial()`.
+
+**Result:** `gameplayStart()` is always called on return to MainScene.
+
+---
+
+### F13: Double `gameplayStop` in sub-scenes — HIGH — DONE
+
+**Problem:** Sub-scene interstitials (ShopScene after pet/egg buy, NestsScene after hatch, CollectionScene after claim) called `showInterstitial()` which internally called `gameplayStop()`. With F10 fix adding `gameplayStop()` on sub-scene entry, this created consecutive `gameplayStop()` calls — violating "Cannot fire consecutively".
+
+**Fix:** Removed all `showInterstitial()` calls from sub-scenes (ShopScene×2, NestsScene×1, CollectionScene×1). Ads now fire only on return to MainScene via `showSceneReturnBreak()`. This also fixes F14.
+
+**Result:** No more interstitials mid-menu. Clean lifecycle: `gameplayStop()` on entry → `commercialBreak()` + `gameplayStart()` on return.
+
+---
+
+### F14: `commercialBreak` in sub-scenes contradicts placement rule — MEDIUM — DONE
+
+**Requirement:** "commercialBreak() must fire only when exiting a pause and heading back into gameplay" ([new-requirements.html](https://sdk.poki.com/new-requirements.html))
+
+**Problem:** `commercialBreak()` fired mid-shop (after pet/egg purchase), mid-nests (after hatch), and mid-collection (after claim). These are menu actions, not "heading back into gameplay".
+
+**Fix:** Resolved by F13 — removed sub-scene interstitials. Ads now fire at the natural break point: returning from sub-scene to MainScene.
+
+**Result:** All `commercialBreak()` calls now occur at correct moments: sub-scene return, every 50 rolls, autoroll toggle, dream buff claim.
+
+---
+
 ## Lazy Loading Status
 
 Two-phase asset loading is implemented and working:
@@ -284,6 +344,11 @@ Before uploading `dist/poki/` to [Poki Inspector](https://inspector.poki.dev/):
 - [ ] **F4 fixed:** Video icon visible on WATCH/Ad buttons
 - [ ] **F5 fixed:** NullAdapter fallback returns `false` for rewarded (no free ad rewards)
 - [ ] **F6 fixed:** `commercialBreak()` fires on sub-scene return
+- [ ] **F10 fixed:** `gameplayStop()` fires on all 7 sub-scene transitions
+- [ ] **F11 fixed:** No internal ad cooldown timer (Poki manages frequency)
+- [ ] **F12 fixed:** `gameplayStart()` always fires on return to MainScene
+- [ ] **F13 fixed:** No interstitials in sub-scenes (no double gameplayStop)
+- [ ] **F14 fixed:** `commercialBreak()` only at natural break points
 - [ ] Build with `npm run build:poki`
 - [ ] Verify `dist/poki/index-poki.html` contains Poki SDK script tag
 - [ ] Upload to Poki Inspector
@@ -307,7 +372,7 @@ Before uploading `dist/poki/` to [Poki Inspector](https://inspector.poki.dev/):
 
 [MainScene loads, player sees game]
   → (player clicks ROLL or any element)
-  → gameplayStart()                    ← FIRST INPUT
+  → gameplayStart()                    ← FIRST INPUT (once per session)
 
 [During gameplay]
   → (ESC pressed)
@@ -315,20 +380,30 @@ Before uploading `dist/poki/` to [Poki Inspector](https://inspector.poki.dev/):
   → (ESC again to unpause)
   → gameplayStart()
 
-[Interstitial ad triggers (every 50 rolls / on scene return)]
+[Mid-gameplay interstitial (Pattern A: every 50 rolls / autoroll toggle / dream buff)]
   → gameplayStop()
   → commercialBreak()                  ← may or may not show ad
   → gameplayStart()
+
+[Sub-scene navigation (Pattern B)]
+  → (player opens Collection/Shop/Nests/etc.)
+  → gameplayStop()                     ← navigateToScene() helper
+  → (player browses, buys, claims, etc.)
+  → (player clicks Back)
+  → commercialBreak()                  ← showSceneReturnBreak()
+  → gameplayStart()                    ← ALWAYS fires, even if no ad shown
 
 [Rewarded ad (buff/coins/quest)]
   → (player clicks WATCH button)
   → rewardedBreak()                    ← returns true/false
   → (reward granted only if true)
-
-[Sub-scene navigation]
-  → (player opens Collection)
-  → gameplayStop()                     ← optional, good practice
-  → (player returns to MainScene)
-  → commercialBreak()                  ← natural break point
-  → gameplayStart()
 ```
+
+### Two Interstitial Patterns
+
+| Pattern | Function | When | gameplayStop | gameplayStart |
+|---------|----------|------|-------------|---------------|
+| **A: Mid-gameplay** | `showInterstitial()` | Every 50 rolls, autoroll toggle, dream buff | Yes (before ad) | Yes (after ad) |
+| **B: Scene return** | `showSceneReturnBreak()` | Returning from sub-scene to MainScene | No (already stopped) | **Always** (even if no ad) |
+
+State tracked via `gameplayActive` flag in `interstitial.ts` — prevents consecutive duplicate SDK events.

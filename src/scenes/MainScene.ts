@@ -27,7 +27,7 @@ import { PetThought } from '../ui/PetThought';
 import { PETS } from '../data/pets';
 import { PetDef, RollResult, LevelUpData, LeaguePromotionData, RebirthData } from '../types';
 import { PlatformSDK } from '../platform/PlatformSDK';
-import { showInterstitial, isAdActive } from '../platform/interstitial';
+import { showInterstitial, showSceneReturnBreak, isAdActive, isGameplayActive, markGameplayStarted, markGameplayStopped } from '../platform/interstitial';
 import { AudioSystem } from '../systems/AudioSystem';
 import { t } from '../data/locales';
 import { showToast } from '../ui/components/Toast';
@@ -82,12 +82,13 @@ export class MainScene extends Scene {
             this.input.once('pointerdown', () => {
                 this.registry.set('_gameplayStarted', true);
                 sdk.gameplayStart();
+                markGameplayStarted();
             });
         }
 
-        // F6: commercialBreak on sub-scene return (natural ad break point)
+        // F6+F10: commercialBreak on sub-scene return, ALWAYS resume gameplayStart
         if (this.registry.get('_gameplayStarted')) {
-            showInterstitial(this);
+            showSceneReturnBreak(this);
         }
 
         // Show nickname prompt if needed (non-blocking, overlay on top of game)
@@ -123,18 +124,8 @@ export class MainScene extends Scene {
         }
 
         // UI components
-        this.topBar = new TopBar(this, () => {
-            this.manager.buffs.stopAutoroll();
-            this.manager.isRolling = false;
-            this.manager.saveState();
-            this.scene.start('ProgressionScene');
-        });
-        this.leaderboard = new Leaderboard(this, () => {
-            this.manager.buffs.stopAutoroll();
-            this.manager.isRolling = false;
-            this.manager.saveState();
-            this.scene.start('LeaderboardScene');
-        });
+        this.topBar = new TopBar(this, () => this.navigateToScene('ProgressionScene'));
+        this.leaderboard = new Leaderboard(this, () => this.navigateToScene('LeaderboardScene'));
         this.centerStage = new CenterStage(this);
         this.petThought = new PetThought(this, () => this.handleThoughtClaim());
         this.levelUpOverlay = new LevelUpOverlay(this, this.centerStage.getOverlay());
@@ -150,44 +141,19 @@ export class MainScene extends Scene {
         );
         this.rightPanel.setLocked(this.manager.progression.level < AUTOROLL_TOGGLE.unlockLevel);
 
-        this.collectionBtn = new CollectionButton(this, () => {
-            this.manager.buffs.stopAutoroll();
-            this.manager.isRolling = false;
-            this.manager.saveState();
-            this.scene.start('CollectionScene');
-        });
+        this.collectionBtn = new CollectionButton(this, () => this.navigateToScene('CollectionScene'));
 
         const nestsLocked = this.manager.progression.level < NEST_CONFIG.unlockLevel;
-        this.nestsBtn = new NestsButton(this, nestsLocked, () => {
-            this.manager.buffs.stopAutoroll();
-            this.manager.isRolling = false;
-            this.manager.saveState();
-            this.scene.start('NestsScene');
-        });
+        this.nestsBtn = new NestsButton(this, nestsLocked, () => this.navigateToScene('NestsScene'));
 
-        this.shopBtn = new ShopButton(this, () => {
-            this.manager.buffs.stopAutoroll();
-            this.manager.isRolling = false;
-            this.manager.saveState();
-            this.scene.start('ShopScene');
-        });
+        this.shopBtn = new ShopButton(this, () => this.navigateToScene('ShopScene'));
 
-        this.dailyBonusBtn = new DailyBonusButton(this, () => {
-            this.manager.buffs.stopAutoroll();
-            this.manager.isRolling = false;
-            this.manager.saveState();
-            this.scene.start('DailyBonusScene');
-        });
+        this.dailyBonusBtn = new DailyBonusButton(this, () => this.navigateToScene('DailyBonusScene'));
 
         this.bonusPanel = new BonusPanel(this, (type: string) => this.handleBuffRequest(type));
         this.questPanel = new QuestPanel(this,
             (type: 'roll' | 'grade' | 'online') => this.handleQuestClaim(type),
-            () => {
-                this.manager.buffs.stopAutoroll();
-                this.manager.isRolling = false;
-                this.manager.saveState();
-                this.scene.start('QuestScene');
-            },
+            () => this.navigateToScene('QuestScene'),
         );
 
         // Position quest panel + bonus panel + leaderboard from layout
@@ -331,6 +297,18 @@ export class MainScene extends Scene {
                 if (success) EventBus.emit('buff-requested', type);
             });
         }
+    }
+
+    private navigateToScene(sceneKey: string): void {
+        this.manager.buffs.stopAutoroll();
+        this.manager.isRolling = false;
+        this.manager.saveState();
+        const sdk = this.registry.get('platformSDK') as PlatformSDK | undefined;
+        if (sdk && isGameplayActive()) {
+            sdk.gameplayStop();
+            markGameplayStopped();
+        }
+        this.scene.start(sceneKey);
     }
 
     private onRollRequested(): void {
@@ -600,10 +578,16 @@ export class MainScene extends Scene {
         const sdk = this.registry.get('platformSDK') as PlatformSDK | undefined;
         if (this.isPaused) {
             this.audio.pauseAll();
-            sdk?.gameplayStop();
+            if (sdk && isGameplayActive()) {
+                sdk.gameplayStop();
+                markGameplayStopped();
+            }
         } else {
             this.audio.resumeAll();
-            sdk?.gameplayStart();
+            if (sdk && !isGameplayActive()) {
+                sdk.gameplayStart();
+                markGameplayStarted();
+            }
         }
     }
 

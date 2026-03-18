@@ -9,7 +9,6 @@ import { t } from '../data/locales';
 import { getEggTierConfig } from '../data/eggTiers';
 import { showToast } from '../ui/components/Toast';
 import { getEggNameKey } from '../data/eggs';
-import { showInterstitial } from '../platform/interstitial';
 import { createSceneHeader } from '../ui/SceneHeader';
 import { CoinDisplay } from '../ui/CoinDisplay';
 import { addAdIcon } from '../ui/components/ChoiceCard';
@@ -208,18 +207,17 @@ export class ShopScene extends Scene {
         }
     }
 
-    private async onBuy(petId: string, canAfford: boolean): Promise<void> {
+    private onBuy(petId: string, canAfford: boolean): void {
         if (!canAfford) { showToast(this, t('shop_no_coins'), 'error'); return; }
         const offer = this.manager.shop.getOffers().find(o => o.petId === petId);
         const success = this.manager.purchasePet(petId);
         if (!success) { showToast(this, t('shop_no_coins'), 'error'); return; }
         if (offer) this.coinDisplay?.showFloatingSpend(offer.price, this);
         this.coinDisplay?.updateCoins(this.manager.progression.coins);
-        await showInterstitial(this);
         this.switchTab('pets');
     }
 
-    private async onBuyEgg(tier: number): Promise<void> {
+    private onBuyEgg(tier: number): void {
         const cfg = getEggTierConfig(tier);
         const success = this.manager.purchaseEgg(tier, cfg.price);
         if (!success) { showToast(this, t('shop_no_coins'), 'error'); return; }
@@ -227,7 +225,6 @@ export class ShopScene extends Scene {
         this.coinDisplay?.updateCoins(this.manager.progression.coins);
         const nameKey = getEggNameKey(`egg_${tier}`);
         showToast(this, t('toast_received', { count: 1, item: t(nameKey) }), 'info');
-        await showInterstitial(this);
         this.switchTab('eggs');
     }
 

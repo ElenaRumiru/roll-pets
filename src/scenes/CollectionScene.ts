@@ -8,7 +8,6 @@ import { buildAllTab } from '../ui/CollectionAllTab';
 import { buildCollectionCards } from '../ui/CollectionCardsGrid';
 import { buildDetailView } from '../ui/CollectionDetail';
 import { t } from '../data/locales';
-import { showInterstitial } from '../platform/interstitial';
 import { createSceneHeader } from '../ui/SceneHeader';
 import { EventBus } from '../core/EventBus';
 
@@ -158,9 +157,8 @@ export class CollectionScene extends Scene {
         this.switchTab('collections');
     }
 
-    private async handleClaim(collId: string): Promise<void> {
+    private handleClaim(collId: string): void {
         if (this.manager.claimCollection(collId)) {
-            await showInterstitial(this);
             this.showDetail(collId);
         }
     }
