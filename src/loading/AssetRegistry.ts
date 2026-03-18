@@ -97,7 +97,7 @@ export function getPhase1Assets(level: number, topPetKeys: string[]): {
     }
 
     const audio: AssetEntry[] = [
-        { key: 'bgm', path: 'assets/audio/bgm.mp3' },
+        { key: 'bgm', path: 'assets/audio/bgm.ogg' },
         { key: 'sfx_click', path: 'assets/audio/sfx_click.mp3' },
         { key: 'sfx_wobble', path: 'assets/audio/sfx_wobble.mp3' },
         { key: 'sfx_reveal', path: 'assets/audio/sfx_reveal.mp3' },
