@@ -105,7 +105,11 @@
       "WebFetch(domain:itch.io)",
       "Bash(find 'C:\\\\Users\\\\ilyar\\\\Desktop\\\\PETS WEB' -type f \\\\\\(-iname *capybara* -o -iname *capy* \\\\\\))",
       "Bash(powershell.exe -Command \"Copy-Item -Path ''public/assets/pets/0019_new.webp'' -Destination ''public/assets/pets/0019.webp'' -Force\")",
-      "Bash(cd:*)"
+      "Bash(cd:*)",
+      "Bash(cp public/assets/ui/illustration.png public/assets/ui/illustration_original.png)",
+      "Bash(cp public/assets/ui/roll_mini_square.png public/assets/ui/roll_mini_square_original.png)",
+      "Bash(npx sharp-cli:*)",
+      "Bash(ffprobe -hide_banner public/assets/audio/bgm.mp3)"
     ]
   }
 }
