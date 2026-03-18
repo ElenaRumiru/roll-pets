@@ -1,7 +1,7 @@
 # Poki Compliance Audit — PETS ROLL
 
-**Date:** 2026-03-18 (updated)
-**Previous audit:** 2026-03-17
+**Date:** 2026-03-18 (full re-audit)
+**Previous audit:** 2026-03-17 (F1-F16), 2026-03-18 (N1-N3)
 **Sources:** [Requirements](https://sdk.poki.com/new-requirements.html) | [HTML5 SDK](https://sdk.poki.com/html5.html) | [Poki Inspector](https://sdk.poki.com/poki-inspector.html)
 
 ---
@@ -29,7 +29,7 @@
 | 17 | **FREE button same size as Ad button** | PASS | Both use `BTN_W=111, BTN_H=35` from `ChoiceCard.ts` |
 | 18 | **Progress saving** | PASS | `SaveSystem.ts` — auto-save to localStorage with hash validation |
 | 19 | **Localization available** | PASS | EN + RU via `t('key')` from `data/locales/` |
-| 20 | **Initial download < 8MB** | PASS | Phase 1 lazy loading: ~2-3MB (UI + top 3 pets + current bg/egg + audio). See "Lazy Loading" section |
+| 20 | **Initial download < 8MB** | PASS | Phase 1 ~6 MB after N3 image optimization. See "Lazy Loading" section |
 | 21 | **No debug code in production** | PASS | Terser 2-pass minification, `noEmit: true`, no console.log in game code |
 | 22 | **`showInterstitial()` timing guards** | PASS | `interstitial.ts` — 120s session guard (no internal cooldown — Poki manages frequency) |
 | 23 | **`gameplayStop()` on sub-scene entry** | PASS | `MainScene.navigateToScene()` — all 7 sub-scene transitions call `gameplayStop()` |
@@ -334,6 +334,59 @@ The existing 40s cooldown in `interstitial.ts` prevents ad spam. Not every call 
 
 ---
 
+### N1: Missing global Space/Arrow/Wheel prevention — HIGH — DONE
+
+**Requirement:** Poki SDK docs ([html5.html](https://sdk.poki.com/html5.html)) explicitly require global `preventDefault` on Space, Arrow keys, and wheel — always active, not just during ads.
+
+**Problem:** `preventDefault` only ran during ads (`blockInput()` in `adUtil.ts`). Outside ads, Space/Arrow keys could trigger browser scroll behavior in Poki's iframe embed.
+
+**Fix:** Added global listeners in `src/main.ts` inside `DOMContentLoaded`:
+```typescript
+window.addEventListener('keydown', (e) => {
+    if (['ArrowDown', 'ArrowUp', 'ArrowLeft', 'ArrowRight', ' '].includes(e.key)) {
+        e.preventDefault();
+    }
+});
+window.addEventListener('wheel', (e) => e.preventDefault(), { passive: false });
+```
+
+**Result:** `src/main.ts:5-11`. Global prevention always active.
+
+---
+
+### N2: Missing `touch-action` CSS on canvas — LOW — DONE
+
+**Problem:** No `touch-action: none` on canvas element. Mobile browsers could interpret touch gestures as scrolling, zooming, or pull-to-refresh.
+
+**Fix:** Added to `public/style.css`:
+```css
+canvas { touch-action: none; user-select: none; -webkit-user-select: none; }
+```
+
+**Result:** `public/style.css:58-62`. Canvas blocks all browser touch interpretation.
+
+---
+
+### N3: Phase 1 download exceeded 8 MB target — HIGH — DONE
+
+**Requirement:** "Target an initial download size under 8 MB" ([new-requirements.html](https://sdk.poki.com/new-requirements.html))
+
+**Problem:** Two source PNGs at 1536×1024 resolution loaded in Phase 1 but displayed at much smaller sizes:
+- `illustration.png` = 2.6 MB → displayed at 420px width (BootScene splash)
+- `roll_mini_square.png` = 2.1 MB → trimmed to 300×80px (portrait roll button)
+
+Total Phase 1 was ~10.4 MB (exceeded 8 MB limit).
+
+**Fix:** Pre-optimized source images using sharp-cli:
+- `illustration.png`: 1536×1024 → 512×341 = **196 KB** (saved 2.4 MB)
+- `roll_mini_square.png`: 1536×1024 → 400×267 = **68 KB** (saved 2.0 MB)
+
+No code changes needed — BootScene already downscales in `create()`.
+
+**Result:** Phase 1 now ~6 MB (UI 1.78 + Audio 2.48 + JS 1.47 + other 0.4). Well within 8 MB limit.
+
+---
+
 ## Lazy Loading Status
 
 Two-phase asset loading is implemented and working:
@@ -341,7 +394,7 @@ Two-phase asset loading is implemented and working:
 | | Phase 1 (BootScene) | Phase 2 (Background) |
 |---|---|---|
 | **When** | Before game starts | After MainScene creates |
-| **Size** | ~2-3 MB | ~25+ MB |
+| **Size** | ~6 MB (after N3 optimization) | ~19 MB |
 | **Content** | UI icons, top 3 pets, current bg/egg, core SFX, BGM | Remaining 184 pets, 16 eggs, 32 backgrounds, grade SFX, luck icons, collection icons |
 | **Blocking?** | Yes (progress bar shown) | No (silent background) |
 | **Batching** | N/A | 30-pet batches, 100ms delay |
@@ -373,6 +426,9 @@ Before uploading `dist/poki/` to [Poki Inspector](https://inspector.poki.dev/):
 - [ ] **F14 fixed:** `commercialBreak()` only at natural break points
 - [ ] **F15 fixed:** Unpause calls `commercialBreak()` before `gameplayStart()`
 - [ ] **F16 fixed:** Orientation restart doesn't fire unwanted `commercialBreak`
+- [ ] **N1 fixed:** Global Space/Arrow/Wheel `preventDefault` always active
+- [ ] **N2 fixed:** `touch-action: none` on canvas
+- [ ] **N3 fixed:** Phase 1 images optimized (illustration 196K, roll_mini_square 68K)
 - [ ] Build with `npm run build:poki`
 - [ ] Verify `dist/poki/index-poki.html` contains Poki SDK script tag
 - [ ] Upload to Poki Inspector
