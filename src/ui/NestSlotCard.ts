@@ -69,7 +69,9 @@ export function renderIncubatingSlot(
     bg.strokeRoundedRect(-SLOT_W / 2, -SLOT_H / 2, SLOT_W, SLOT_H, CARD_R);
     c.add(bg);
     c.add(scene.add.image(0, NEST_Y, 'ui_nest_mid').setDisplaySize(NEST_W, nestHeight(scene)));
-    if (slot.eggTier) c.add(scene.add.image(0, EGG_Y, `egg_${slot.eggTier}_sm`).setDisplaySize(EGG_SIZE, EGG_SIZE));
+    if (slot.eggTier && scene.textures.exists(`egg_${slot.eggTier}_sm`)) {
+        c.add(scene.add.image(0, EGG_Y, `egg_${slot.eggTier}_sm`).setDisplaySize(EGG_SIZE, EGG_SIZE));
+    }
     const timerText = scene.add.text(0, TIMER_Y,
         formatTime(nests.getTimeRemainingMs(index)), {
             fontFamily: UI.FONT_STROKE, fontSize: '18px', color: '#ffffff',
@@ -116,7 +118,7 @@ export function renderReadySlot(
     bg.strokeRoundedRect(-SLOT_W / 2, -SLOT_H / 2, SLOT_W, SLOT_H, CARD_R);
     c.add(bg);
     c.add(scene.add.image(0, NEST_Y, 'ui_nest_mid').setDisplaySize(NEST_W, nestHeight(scene)));
-    if (slot.eggTier) {
+    if (slot.eggTier && scene.textures.exists(`egg_${slot.eggTier}_sm`)) {
         const eggImg = scene.add.image(0, EGG_Y, `egg_${slot.eggTier}_sm`)
             .setDisplaySize(EGG_SIZE, EGG_SIZE);
         c.add(eggImg);

@@ -32,8 +32,10 @@ export class NestHatchOverlay {
 
         // 2) Egg container
         const eggContainer = scene.add.container(cx, cy).setAlpha(0).setDepth(501);
-        const egg = scene.add.image(0, 0, eggKey).setDisplaySize(296, 296);
-        eggContainer.add(egg);
+        if (scene.textures.exists(eggKey)) {
+            const egg = scene.add.image(0, 0, eggKey).setDisplaySize(296, 296);
+            eggContainer.add(egg);
+        }
         this.objects.push(eggContainer);
 
         scene.tweens.add({

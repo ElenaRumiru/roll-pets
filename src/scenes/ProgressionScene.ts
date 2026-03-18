@@ -210,7 +210,7 @@ export class ProgressionScene extends Scene {
             const icon = this.add.image(x, y, fInfo.iconKey).setDisplaySize(iconW, iconH);
             if (!reached) this.applyGrayscale(icon);
             this.trackContainer.add(icon);
-        } else if (isEgg && m.eggKey) {
+        } else if (isEgg && m.eggKey && this.textures.exists(`${m.eggKey}_sm`)) {
             const eggSize = r * 1.7;
             const icon = this.add.image(x, y, `${m.eggKey}_sm`).setDisplaySize(eggSize, eggSize);
             if (!reached) this.applyGrayscale(icon);

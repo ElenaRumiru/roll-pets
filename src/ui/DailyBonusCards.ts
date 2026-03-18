@@ -120,8 +120,10 @@ function drawCard(scene: Scene, cx: number, cy: number, w: number, h: number,
 function drawRewardIcon(scene: Scene, cx: number, cy: number,
     size: number, reward: DailyBonusReward, alpha: number): void {
     if (reward.type === 'egg' && reward.eggTier) {
+        const eggTex = `egg_${reward.eggTier}_sm`;
+        if (!scene.textures.exists(eggTex)) return;
         const eggSize = Math.round(size * 1.3);
-        scene.add.image(cx, cy, `egg_${reward.eggTier}_sm`)
+        scene.add.image(cx, cy, eggTex)
             .setDisplaySize(eggSize, eggSize).setAlpha(alpha);
     } else if (reward.type === 'buff' && reward.buffType) {
         scene.add.image(cx, cy, BUFF_ICON[reward.buffType] || 'ui_x2simple_mid')

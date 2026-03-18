@@ -119,12 +119,16 @@ export class LevelUpOverlay {
 
         // Old egg → arrow → new egg
         const eggY = y + (port ? 80 : 62);
-        const oldEgg = this.scene.add.image(-99, eggY, `${data.oldEggKey}_sm`).setDisplaySize(111, 111);
-        container.add(oldEgg);
+        const oldEggTex = `${data.oldEggKey}_sm`;
+        if (this.scene.textures.exists(oldEggTex)) {
+            container.add(this.scene.add.image(-99, eggY, oldEggTex).setDisplaySize(111, 111));
+        }
         const arrow = this.scene.add.image(0, eggY, 'ui_arrow').setDisplaySize(35, 35).setRotation(-Math.PI / 2);
         container.add(arrow);
-        const newEgg = this.scene.add.image(99, eggY, `${data.eggKey}_sm`).setDisplaySize(111, 111);
-        container.add(newEgg);
+        const newEggTex = `${data.eggKey}_sm`;
+        if (this.scene.textures.exists(newEggTex)) {
+            container.add(this.scene.add.image(99, eggY, newEggTex).setDisplaySize(111, 111));
+        }
         y = eggY + (port ? 90 : 72);
 
         // Egg name

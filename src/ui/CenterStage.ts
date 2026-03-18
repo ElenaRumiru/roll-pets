@@ -127,7 +127,7 @@ export class CenterStage extends GameObjects.Container {
     }
 
     setEggImage(key: string): void {
-        this.egg.setTexture(key);
+        if (this.scene.textures.exists(key)) this.egg.setTexture(key);
     }
 
     updatePedestals(topPets: PetDef[]): void {

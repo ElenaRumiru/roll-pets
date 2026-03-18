@@ -75,9 +75,9 @@ export class DeferredLoader {
         this.chainBatches([
             ...(petBatches.length > 0 ? [petBatches[0]] : []),
             { type: 'collectionIcons', assets: p2.collectionIcons },
+            { type: 'eggs', assets: p2.eggs },
             ...petBatches.slice(1),
             { type: 'audio', assets: p2.gradeSfx },
-            { type: 'eggs', assets: p2.eggs },
             { type: 'backgrounds', assets: p2.backgrounds },
             { type: 'luckIcons', assets: p2.luckIcons },
         ]);

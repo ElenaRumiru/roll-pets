@@ -146,7 +146,10 @@ function renderEggCard(
     c.add(bg);
 
     if (unlocked) {
-        c.add(scene.add.image(0, -22, `egg_${tier}_sm`).setDisplaySize(115, 115));
+        const eggTex = `egg_${tier}_sm`;
+        if (scene.textures.exists(eggTex)) {
+            c.add(scene.add.image(0, -22, eggTex).setDisplaySize(115, 115));
+        }
 
         const nameKey = getEggNameKey(`egg_${tier}`);
         c.add(scene.add.text(0, CARD_H / 2 - 47, t(nameKey), {
