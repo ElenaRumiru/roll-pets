@@ -112,7 +112,21 @@
       "Bash(ffprobe -hide_banner public/assets/audio/bgm.mp3)",
       "Bash(do grep:*)",
       "Bash(sed -i \"s/''thought_min'': ''min''/''thought_min'': ''m''/g; s/''thought_min'': ''Min''/''thought_min'': ''m''/g; s/''thought_min'': ''dk''/''thought_min'': ''m''/g; s/''thought_min'': ''mnt''/''thought_min'': ''m''/g\" pt.ts es.ts de.ts fr.ts id.ts nl.ts pl.ts it.ts tr.ts)",
-      "Bash(sed -i \"s/''thought_sec'': ''Sek''/''thought_sec'': ''s''/g; s/''thought_sec'': ''sn''/''thought_sec'': ''s''/g; s/''thought_sec'': ''dtk''/''thought_sec'': ''s''/g\" de.ts tr.ts id.ts)"
+      "Bash(sed -i \"s/''thought_sec'': ''Sek''/''thought_sec'': ''s''/g; s/''thought_sec'': ''sn''/''thought_sec'': ''s''/g; s/''thought_sec'': ''dtk''/''thought_sec'': ''s''/g\" de.ts tr.ts id.ts)",
+      "Bash(mv NewPets/ _archive/)",
+      "Bash(mv \"UI materials/\" _archive/)",
+      "Bash(mv collections/ _archive/)",
+      "Bash(mv documentation/ _archive/)",
+      "Bash(mv eggs/ _archive/)",
+      "Bash(cp -r collections/ _archive/collections/)",
+      "Bash(cp -r documentation/ _archive/documentation/)",
+      "Bash(cp -r scripts/ _archive/scripts/)",
+      "Bash(cp -r backgrounds/ _archive/backgrounds/)",
+      "Bash(mv public/assets/ui/roll_old_backup.png _archive/public_unused/)",
+      "Bash(mv public/assets/ui/arrow_original.webp _archive/public_unused/)",
+      "Bash(mv public/assets/ui/button_black_outline_shadow_width130.png _archive/public_unused/)",
+      "Bash(mv public/assets/bg_1.jpg _archive/public_unused/)",
+      "Bash(mv public/assets/backgrounds/portrait/location_3.webp.tmp _archive/public_unused/)"
     ]
   }
 }
