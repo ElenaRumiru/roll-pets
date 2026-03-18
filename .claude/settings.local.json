@@ -109,7 +109,10 @@
       "Bash(cp public/assets/ui/illustration.png public/assets/ui/illustration_original.png)",
       "Bash(cp public/assets/ui/roll_mini_square.png public/assets/ui/roll_mini_square_original.png)",
       "Bash(npx sharp-cli:*)",
-      "Bash(ffprobe -hide_banner public/assets/audio/bgm.mp3)"
+      "Bash(ffprobe -hide_banner public/assets/audio/bgm.mp3)",
+      "Bash(do grep:*)",
+      "Bash(sed -i \"s/''thought_min'': ''min''/''thought_min'': ''m''/g; s/''thought_min'': ''Min''/''thought_min'': ''m''/g; s/''thought_min'': ''dk''/''thought_min'': ''m''/g; s/''thought_min'': ''mnt''/''thought_min'': ''m''/g\" pt.ts es.ts de.ts fr.ts id.ts nl.ts pl.ts it.ts tr.ts)",
+      "Bash(sed -i \"s/''thought_sec'': ''Sek''/''thought_sec'': ''s''/g; s/''thought_sec'': ''sn''/''thought_sec'': ''s''/g; s/''thought_sec'': ''dtk''/''thought_sec'': ''s''/g\" de.ts tr.ts id.ts)"
     ]
   }
 }
