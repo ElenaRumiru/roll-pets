@@ -114,7 +114,7 @@ export class BonusPanel extends GameObjects.Container {
             fontFamily: UI.FONT_STROKE, fontSize: '13px', color: '#ffffff',
             stroke: '#000000', strokeThickness: 2,
         }).setOrigin(0.5, 0.5);
-        fitText(btnText, BTN_W - 8, 13);
+        fitText(btnText, BTN_W - 26, 13);
         this.btnWrap.add(btnText);
         this.btnWrap.setSize(BTN_W, BTN_H + BTN_SHADOW);
         addAdIcon(scene, this.btnWrap);
