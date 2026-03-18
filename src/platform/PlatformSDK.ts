@@ -9,4 +9,5 @@ export interface PlatformSDK {
     showRewardedBreak(): Promise<boolean>;
     commercialBreak(): Promise<void>;
     reportLoadingProgress(percent: number): void;
+    setGame(game: Phaser.Game): void;
 }

@@ -23,6 +23,7 @@ export class GameMonetizeAdapter implements PlatformSDK {
     gameplayStart(): void { /* no lifecycle API */ }
     gameplayStop(): void { /* no lifecycle API */ }
     reportLoadingProgress(): void { /* no progress API */ }
+    setGame(_game: Phaser.Game): void { /* no-op */ }
 
     async showRewardedBreak(): Promise<boolean> {
         this.audio?.pauseAll();

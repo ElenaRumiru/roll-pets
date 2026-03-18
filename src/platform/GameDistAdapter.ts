@@ -22,6 +22,7 @@ export class GameDistAdapter implements PlatformSDK {
     gameplayStart(): void { /* GD uses event-based lifecycle */ }
     gameplayStop(): void { /* GD uses event-based lifecycle */ }
     reportLoadingProgress(): void { /* no progress API */ }
+    setGame(_game: Phaser.Game): void { /* no-op */ }
 
     async showRewardedBreak(): Promise<boolean> {
         this.audio?.pauseAll();

@@ -13,4 +13,5 @@ export class NullAdapter implements PlatformSDK {
     async showRewardedBreak(): Promise<boolean> { return !this.isFallback; }
     async commercialBreak(): Promise<void> { /* no-op */ }
     reportLoadingProgress(_p: number): void { /* no-op */ }
+    setGame(_game: Phaser.Game): void { /* no-op */ }
 }

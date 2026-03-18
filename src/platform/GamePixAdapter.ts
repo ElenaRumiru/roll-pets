@@ -18,6 +18,7 @@ export class GamePixAdapter implements PlatformSDK {
     }
 
     setAudio(audio: AudioSystem): void { this.audio = audio; }
+    setGame(_game: Phaser.Game): void { /* no-op */ }
 
     gameLoadingFinished(): void {
         GamePix!.game.gameLoaded(() => { /* ready */ });

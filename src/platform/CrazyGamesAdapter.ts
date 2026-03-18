@@ -15,6 +15,7 @@ export class CrazyGamesAdapter implements PlatformSDK {
     gameplayStart(): void { CrazyGames.SDK.game.gameplayStart(); }
     gameplayStop(): void { CrazyGames.SDK.game.gameplayStop(); }
     reportLoadingProgress(): void { /* no progress API */ }
+    setGame(_game: Phaser.Game): void { /* no-op */ }
 
     async showRewardedBreak(): Promise<boolean> {
         this.audio?.pauseAll();

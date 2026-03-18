@@ -16,6 +16,7 @@ export class YandexAdapter implements PlatformSDK {
     gameplayStart(): void { /* Yandex has no gameplay lifecycle */ }
     gameplayStop(): void { /* Yandex has no gameplay lifecycle */ }
     reportLoadingProgress(): void { /* no progress API */ }
+    setGame(_game: Phaser.Game): void { /* no-op */ }
 
     async showRewardedBreak(): Promise<boolean> {
         if (!this.ysdk) return false;
