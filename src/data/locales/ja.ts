@@ -295,6 +295,9 @@ export const ja: Record<string, string> = {
     'tip_dream': '次のロールの確率がx100アップ',
     'buff_desc_dream': 'x100 確率',
     'thought_claim': '受取',
+    'thought_in': '',
+    'thought_min': '分',
+    'thought_sec': '秒',
 
     // Buff descriptions
     'buff_desc_lucky': 'x2 確率',

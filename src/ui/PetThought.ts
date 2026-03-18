@@ -167,10 +167,13 @@ export class PetThought extends GameObjects.Container {
         const totalSec = Math.ceil(this.timer / 1000);
         const min = Math.floor(totalSec / 60);
         const sec = totalSec % 60;
+        const m = t('thought_min');
+        const s = t('thought_sec');
+        const pre = t('thought_in');
         const timeStr = min > 0
-            ? `${min}m ${String(sec).padStart(2, '0')}s`
-            : `${sec}s`;
-        this.timerText.setText(`in ${timeStr}`);
+            ? `${min}${m} ${String(sec).padStart(2, '0')}${s}`
+            : `${sec}${s}`;
+        this.timerText.setText(pre ? `${pre} ${timeStr}` : timeStr);
         fitText(this.timerText, CONTENT_W, 15);
     }
 

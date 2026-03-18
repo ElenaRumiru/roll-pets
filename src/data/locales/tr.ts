@@ -295,6 +295,9 @@ export const tr: Record<string, string> = {
     'tip_dream': 'Sonraki çevirmede şansı x100 artırır',
     'buff_desc_dream': 'x100 şans',
     'thought_claim': 'AL',
+    'thought_in': '',
+    'thought_min': 'm',
+    'thought_sec': 's',
 
     // Buff descriptions
     'buff_desc_lucky': 'x2 şans',

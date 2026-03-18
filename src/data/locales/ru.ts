@@ -295,6 +295,9 @@ export const ru: Record<string, string> = {
     'tip_dream': 'Повышает шанс в 100 раз для следующего ролла',
     'buff_desc_dream': 'x100 шанс',
     'thought_claim': 'ЗАБРАТЬ',
+    'thought_in': 'через',
+    'thought_min': 'м',
+    'thought_sec': 'с',
 
     // Buff descriptions
     'buff_desc_lucky': 'x2 шанс',

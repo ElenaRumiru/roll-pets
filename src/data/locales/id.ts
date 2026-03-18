@@ -295,6 +295,9 @@ export const id: Record<string, string> = {
     'tip_dream': 'Meningkatkan peluang x100 untuk putaran berikutnya',
     'buff_desc_dream': 'x100 peluang',
     'thought_claim': 'AMBIL',
+    'thought_in': '',
+    'thought_min': 'm',
+    'thought_sec': 's',
 
     // Buff descriptions
     'buff_desc_lucky': 'x2 peluang',

@@ -295,6 +295,9 @@ export const de: Record<string, string> = {
     'tip_dream': 'Erhöht die Chance x100 beim nächsten Drehen',
     'buff_desc_dream': 'x100 Chance',
     'thought_claim': 'ABHOLEN',
+    'thought_in': 'in',
+    'thought_min': 'm',
+    'thought_sec': 's',
 
     // Buff descriptions
     'buff_desc_lucky': 'x2 Chance',

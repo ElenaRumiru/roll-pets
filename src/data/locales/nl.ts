@@ -295,6 +295,9 @@ export const nl: Record<string, string> = {
     'tip_dream': 'Verhoogt de kans x100 bij de volgende draai',
     'buff_desc_dream': 'x100 kans',
     'thought_claim': 'OPHALEN',
+    'thought_in': 'over',
+    'thought_min': 'm',
+    'thought_sec': 's',
 
     // Buff descriptions
     'buff_desc_lucky': 'x2 kans',

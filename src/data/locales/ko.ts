@@ -295,6 +295,9 @@ export const ko: Record<string, string> = {
     'tip_dream': '다음 뽑기 확률 x100 증가',
     'buff_desc_dream': 'x100 확률',
     'thought_claim': '받기',
+    'thought_in': '',
+    'thought_min': '분',
+    'thought_sec': '초',
 
     // Buff descriptions
     'buff_desc_lucky': 'x2 확률',
