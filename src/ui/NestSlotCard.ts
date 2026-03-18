@@ -3,6 +3,8 @@ import { UI, NEST_CONFIG } from '../core/config';
 import { NestSlot } from '../types';
 import { NestSystem } from '../systems/NestSystem';
 import { Button } from './components/Button';
+import { fitText } from './components/fitText';
+import { addAdIcon } from './components/ChoiceCard';
 import { t } from '../data/locales';
 import { formatCoins } from '../core/formatCoins';
 
@@ -88,10 +90,9 @@ export function renderIncubatingSlot(
     } else {
         btn = new Button(scene, x, layout.btnY, layout.btnW, layout.btnH,
             t('nests_speed_up'), 0x7B2FBE, onSpeedUp);
-        if (scene.textures.exists('ui_ad_sm')) {
-            const adIcon = scene.add.image(-layout.btnW / 2 + 18, -1, 'ui_ad_sm').setDisplaySize(18, 18);
-            btn.add(adIcon);
-        }
+        addAdIcon(scene, btn);
+        const lbl = btn.list.find(c => c.type === 'Text') as Phaser.GameObjects.Text | undefined;
+        if (lbl) fitText(lbl, layout.btnW - 26, Math.max(12, Math.floor(layout.btnH * 0.38)));
     }
     container.add(btn);
     applyScale(layout, c, btn);
