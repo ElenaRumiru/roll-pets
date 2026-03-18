@@ -312,6 +312,28 @@ The existing 40s cooldown in `interstitial.ts` prevents ad spam. Not every call 
 
 ---
 
+### F15: Unpause calls `gameplayStart()` without `commercialBreak()` — MEDIUM — DONE
+
+**Requirement:** "Before every gameplayStart(), i.e. whenever the user has shown an intent to continue playing" ([html5.html](https://sdk.poki.com/html5.html)), "commercialBreak() must fire only when exiting a pause and heading back into gameplay" ([new-requirements.html](https://sdk.poki.com/new-requirements.html))
+
+**Problem:** `togglePause()` unpause path called `sdk.gameplayStart()` directly without `commercialBreak()` first. This is exactly the scenario Poki describes: "exiting a pause and heading back into gameplay".
+
+**Fix:** Made `togglePause()` async. Replaced direct `gameplayStart()` call with `showSceneReturnBreak(this)` which handles `commercialBreak() → gameplayStart()`. Poki's system decides whether to actually show an ad.
+
+**Result:** `MainScene.ts:574` — unpause branch now uses `await showSceneReturnBreak(this)` followed by `audio.resumeAll()`.
+
+---
+
+### F16: Orientation restart fires unwanted `commercialBreak` — LOW — DONE
+
+**Problem:** `MainScene.create()` called `showSceneReturnBreak()` whenever `_gameplayStarted` was true. On orientation change (scene restart without sub-scene navigation), gameplay was still active — `showSceneReturnBreak` fired `commercialBreak` without prior `gameplayStop()`.
+
+**Fix:** Added `!isGameplayActive()` guard: `if (this.registry.get('_gameplayStarted') && !isGameplayActive())`. On orientation restart, gameplay is still active → skip. On sub-scene return (where `navigateToScene` called `gameplayStop`), gameplay is stopped → fire ad + resume.
+
+**Result:** `MainScene.ts:90` — orientation restarts no longer trigger unwanted commercial breaks.
+
+---
+
 ## Lazy Loading Status
 
 Two-phase asset loading is implemented and working:
@@ -349,6 +371,8 @@ Before uploading `dist/poki/` to [Poki Inspector](https://inspector.poki.dev/):
 - [ ] **F12 fixed:** `gameplayStart()` always fires on return to MainScene
 - [ ] **F13 fixed:** No interstitials in sub-scenes (no double gameplayStop)
 - [ ] **F14 fixed:** `commercialBreak()` only at natural break points
+- [ ] **F15 fixed:** Unpause calls `commercialBreak()` before `gameplayStart()`
+- [ ] **F16 fixed:** Orientation restart doesn't fire unwanted `commercialBreak`
 - [ ] Build with `npm run build:poki`
 - [ ] Verify `dist/poki/index-poki.html` contains Poki SDK script tag
 - [ ] Upload to Poki Inspector

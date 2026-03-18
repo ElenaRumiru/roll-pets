@@ -87,7 +87,8 @@ export class MainScene extends Scene {
         }
 
         // F6+F10: commercialBreak on sub-scene return, ALWAYS resume gameplayStart
-        if (this.registry.get('_gameplayStarted')) {
+        // F16: guard against orientation restart (gameplay still active → skip)
+        if (this.registry.get('_gameplayStarted') && !isGameplayActive()) {
             showSceneReturnBreak(this);
         }
 
@@ -571,7 +572,7 @@ export class MainScene extends Scene {
         return container;
     }
 
-    private togglePause(): void {
+    private async togglePause(): Promise<void> {
         if (this.settingsPanel.isVisible || isAdActive()) return;
         this.isPaused = !this.isPaused;
         this.pauseOverlay.setVisible(this.isPaused);
@@ -583,11 +584,11 @@ export class MainScene extends Scene {
                 markGameplayStopped();
             }
         } else {
-            this.audio.resumeAll();
+            // F15: commercialBreak before gameplayStart (Poki: "before every gameplayStart")
             if (sdk && !isGameplayActive()) {
-                sdk.gameplayStart();
-                markGameplayStarted();
+                await showSceneReturnBreak(this);
             }
+            this.audio.resumeAll();
         }
     }
 
