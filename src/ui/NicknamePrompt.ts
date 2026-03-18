@@ -1,5 +1,15 @@
 import { t } from '../data/locales';
 
+const BAD_WORDS = [
+    'fuck','shit','ass','bitch','damn','dick','cock','pussy','cunt',
+    'nigger','nigga','faggot','retard','whore','slut','bastard',
+    'penis','vagina','porn','anal','rape','nazi','hitler',
+    'сука','блять','бляд','хуй','хуе','пизд','ебат','ёбан','еблан',
+    'мудак','пидор','пидар','шлюх','залуп','гандон',
+];
+const BAD_RE = new RegExp(BAD_WORDS.join('|'), 'i');
+function containsProfanity(s: string): boolean { return BAD_RE.test(s); }
+
 export class NicknamePrompt {
     private overlay: HTMLDivElement;
     private inputPlugin: Phaser.Input.InputPlugin | null;
@@ -68,7 +78,8 @@ export class NicknamePrompt {
         document.body.appendChild(this.overlay);
 
         const submit = () => {
-            const name = input.value.trim() || t('default_nickname');
+            let name = input.value.trim() || t('default_nickname');
+            if (containsProfanity(name)) name = t('default_nickname');
             this.destroy();
             onSubmit(name);
         };

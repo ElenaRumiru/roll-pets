@@ -5,8 +5,8 @@ declare const PokiSDK: {
     gameLoadingFinished(): void;
     gameplayStart(): void;
     gameplayStop(): void;
-    rewardedBreak(): Promise<boolean>;
-    commercialBreak(): Promise<void>;
+    rewardedBreak(onStart?: () => void): Promise<boolean>;
+    commercialBreak(onStart?: () => void): Promise<void>;
 };
 
 declare namespace CrazyGames {

@@ -17,12 +17,25 @@ const indexMap = {
 
 const inputHtml = indexMap[platform] || 'index.html';
 
+import { rename, access } from 'fs/promises';
+
+const outDir = platform === 'dev' ? 'dist' : `dist/${platform}`;
+
 const phasermsg = () => ({
     name: 'phasermsg',
     buildStart() {
         process.stdout.write(`Building for ${platform}...\n`);
     },
-    buildEnd() {
+    async closeBundle() {
+        // Rename platform-specific HTML to index.html so Inspector/portals find it
+        if (inputHtml !== 'index.html') {
+            const src = resolve(outDir, inputHtml);
+            const dst = resolve(outDir, 'index.html');
+            try {
+                await access(src);
+                await rename(src, dst);
+            } catch { /* already index.html or missing */ }
+        }
         const line = "---------------------------------------------------------";
         const msg = `❤️❤️❤️ Tell us about your game! - games@phaser.io ❤️❤️❤️`;
         process.stdout.write(`${line}\n${msg}\n${line}\n`);

@@ -126,7 +126,11 @@
       "Bash(mv public/assets/ui/arrow_original.webp _archive/public_unused/)",
       "Bash(mv public/assets/ui/button_black_outline_shadow_width130.png _archive/public_unused/)",
       "Bash(mv public/assets/bg_1.jpg _archive/public_unused/)",
-      "Bash(mv public/assets/backgrounds/portrait/location_3.webp.tmp _archive/public_unused/)"
+      "Bash(mv public/assets/backgrounds/portrait/location_3.webp.tmp _archive/public_unused/)",
+      "Bash(rm -rf dist/poki)",
+      "Bash(npm run:*)",
+      "WebFetch(domain:game-cdn.poki.com)",
+      "WebFetch(domain:inspector.poki.dev)"
     ]
   }
 }
