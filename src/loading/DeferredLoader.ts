@@ -74,11 +74,11 @@ export class DeferredLoader {
         // Load first pet batch, then collection icons early (needed for CollectionScene),
         // then remaining pets and other assets
         this.chainBatches([
+            { type: 'audio', assets: p2.gradeSfx },
             ...(petBatches.length > 0 ? [petBatches[0]] : []),
             { type: 'collectionIcons', assets: p2.collectionIcons },
             { type: 'eggs', assets: p2.eggs },
             ...petBatches.slice(1),
-            { type: 'audio', assets: p2.gradeSfx },
             { type: 'backgrounds', assets: p2.backgrounds },
             { type: 'luckIcons', assets: p2.luckIcons },
         ]);

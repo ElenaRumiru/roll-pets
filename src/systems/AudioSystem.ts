@@ -41,7 +41,8 @@ export class AudioSystem {
 
     playSfx(key: SfxKey, volumeScale = 1): void {
         if (!this._sfxOn || this._sfxVolume <= 0) return;
-        this.sound.play(key, { volume: this._sfxVolume * volumeScale });
+        const actual = this.sound.game.cache.audio.exists(key) ? key : 'sfx_reveal';
+        this.sound.play(actual, { volume: this._sfxVolume * volumeScale });
     }
 
     // --- Music ---
