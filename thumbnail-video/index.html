@@ -79,7 +79,9 @@
 
 const W = 1080, H = 1080;
 const canvas = document.getElementById('c');
-const ctx = canvas.getContext('2d');
+let ctx = canvas.getContext('2d');
+ctx.imageSmoothingEnabled = true;
+ctx.imageSmoothingQuality = 'high';
 const FPS = 60;
 
 // --- Asset paths (relative to server root) ---
@@ -89,7 +91,7 @@ const ASSETS = {
   roll:      ASSET_BASE + 'ui/roll.png',
   rollSquare:ASSET_BASE + 'ui/roll_mini_square.png',
   eggCommon: ASSET_BASE + 'eggs/egg_1.png',
-  eggLeg:    ASSET_BASE + 'eggs/egg_17.png',
+  eggLeg:    ASSET_BASE + 'eggs/egg_14.png',
   petCat:    ASSET_BASE + 'pets/0020.webp',
   petPhoenix:ASSET_BASE + 'pets/0017.webp',
   petCorgi:  ASSET_BASE + 'pets/0130.webp',
@@ -411,13 +413,16 @@ let flashAlpha = 0;
 let loopPauseFrames = 0;
 
 // Scene durations in frames (60fps)
+// New order:
+// 1 = pet burst (was 5)
+// 2 = buff drag + click (was 3)
+// 3 = legendary hatch phoenix (was 4)
+// 4 = album (was 6)
 const SCENE_DUR = {
-  1: 36,    // 0.6s — click ROLL
-  2: 90,    // 1.5s — common hatch (hamster)
-  3: 100,   // 1.67s — buff drag onto roll + click
-  4: 180,   // 3.0s — legendary hatch (phoenix)
-  5: 90,    // 1.5s — pet burst
-  6: 90,    // 1.5s — album
+  1: 90,    // 1.5s — pet burst
+  2: 100,   // 1.67s — buff drag onto roll + click
+  3: 180,   // 3.0s — legendary hatch (phoenix)
+  4: 90,    // 1.5s — album
 };
 
 // --- Scene 4 pet launch data (5 up + 5 down = 10 total) ---
@@ -579,7 +584,7 @@ function renderScene3() {
   drawBg();
 
   const cx = W / 2, cy = H / 2;
-  const dur = SCENE_DUR[3];
+  const dur = SCENE_DUR[2]; // buff is now scene 2
   const t = sceneFrame / dur;
 
   const icon = imgs.luckx100;
@@ -714,7 +719,7 @@ function renderScene3() {
 
 function renderScene4() {
   const cx = W / 2, cy = H / 2;
-  const dur = SCENE_DUR[4];
+  const dur = SCENE_DUR[3]; // phoenix is now scene 3
   const t = sceneFrame / dur;
 
   // Phase timings — egg appears immediately (click was in scene 3)
@@ -942,7 +947,7 @@ function renderScene5() {
 
   const cx = W / 2;
   const btnY = H / 2; // centered
-  const dur = SCENE_DUR[5];
+  const dur = SCENE_DUR[1]; // pet burst is now scene 1
   const t = sceneFrame / dur;
 
   // 10 taps total (5 up + 5 down)
@@ -1030,7 +1035,7 @@ function renderScene5() {
 }
 
 function renderScene6() {
-  const dur = SCENE_DUR[6];
+  const dur = SCENE_DUR[4]; // album is now scene 4
   const t = sceneFrame / dur;
 
   // Album with diagonal pan (swipe transition handled by system)
@@ -1050,7 +1055,7 @@ function drawAlbum(t) {
   ctx.fillRect(0, 0, W, H);
 
   // Album image with slight angle and diagonal pan
-  const panX = 600 - t * 1200;
+  const panX = 350 - t * 700;
   const panY = 0;
 
   ctx.save();
@@ -1058,7 +1063,7 @@ function drawAlbum(t) {
   ctx.rotate(-0.08); // slight tilt
 
   // Draw album scaled to fill + margin
-  const scale = 3.2;
+  const scale = 2.0;
   const aw = album.naturalWidth * scale;
   const ah = album.naturalHeight * scale;
   ctx.drawImage(album, -aw / 2, -ah / 2, aw, ah);
@@ -1078,7 +1083,7 @@ let swipeFrame = 0;
 let swipeActive = false;
 let prevSceneCanvas = null;
 
-const SWIPE_SCENES = new Set([4, 5, 6]);
+const SWIPE_SCENES = new Set([2, 4]); // after pet burst→buff, after phoenix→album
 
 function captureCurrentFrame() {
   if (!prevSceneCanvas) {
@@ -1135,12 +1140,10 @@ function tick() {
 
   // Render current scene
   switch (scene) {
-    case 1: renderScene1(); break;
-    case 2: renderScene2(); break;
-    case 3: renderScene3(); break;
-    case 4: renderScene4(); break;
-    case 5: renderScene5(); break;
-    case 6: renderScene6(); break;
+    case 1: renderScene5(); break;  // pet burst
+    case 2: renderScene3(); break;  // buff drag + click
+    case 3: renderScene4(); break;  // legendary hatch
+    case 4: renderScene6(); break;  // album
     case 0:
       // Loop pause — black fade
       ctx.fillStyle = '#0a0a14';
@@ -1163,7 +1166,7 @@ function tick() {
   }
 
   // Advance scene
-  if (scene >= 1 && scene <= 6) {
+  if (scene >= 1 && scene <= 4) {
     sceneFrame++;
     if (sceneFrame >= SCENE_DUR[scene]) {
       const nextScene = scene + 1;
@@ -1185,7 +1188,7 @@ function tick() {
         swipeActive = true;
         swipeFrame = 0;
       }
-      if (scene > 6) {
+      if (scene > 4) {
         scene = 0; // enter loop pause
         loopPauseFrames = 0;
       }

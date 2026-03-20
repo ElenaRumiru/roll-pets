@@ -134,7 +134,8 @@
       "WebFetch(domain:about.poki.com)",
       "WebFetch(domain:app.poki.dev)",
       "WebFetch(domain:multigamedev.blogspot.com)",
-      "WebFetch(domain:kuyimobile.substack.com)"
+      "WebFetch(domain:kuyimobile.substack.com)",
+      "Bash(identify \"C:/Users/ilyar/Desktop/PETS WEB/thumbnails/3.webp\")"
     ]
   }
 }
