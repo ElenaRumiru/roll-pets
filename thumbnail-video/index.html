@@ -70,7 +70,7 @@
 </div>
 
 <canvas id="c" width="1080" height="1080"></canvas>
-<button id="rec-btn">Record .webm</button>
+<button id="rec-btn">Record .mp4</button>
 
 <script>
 // ============================================================
@@ -1145,11 +1145,30 @@ function tick() {
     case 3: renderScene4(); break;  // legendary hatch
     case 4: renderScene6(); break;  // album
     case 0:
-      // Loop pause — black fade
-      ctx.fillStyle = '#0a0a14';
-      ctx.fillRect(0, 0, W, H);
+      // Loop transition — white flash then restart
       loopPauseFrames++;
-      if (loopPauseFrames >= 12) { // 0.2s
+
+      // Stop recording on first frame of loop (white flash = end of video)
+      if (loopPauseFrames === 1 && mediaRecorder && mediaRecorder.state === 'recording') {
+        // Render one white frame as the ending
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, W, H);
+        mediaRecorder.stop();
+        break;
+      }
+
+      // Render first frame of scene 1 underneath
+      renderScene5();
+      // White flash fading out
+      const loopT = loopPauseFrames / 10;
+      if (loopT <= 1) {
+        ctx.save();
+        ctx.globalAlpha = 1 - easeOutCubic(loopT);
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, W, H);
+        ctx.restore();
+      }
+      if (loopPauseFrames >= 10) {
         resetAnimation();
       }
       break;
@@ -1219,10 +1238,25 @@ recBtn.addEventListener('click', (e) => {
   resetAnimation();
 
   const stream = canvas.captureStream(60);
-  const mimeType = MediaRecorder.isTypeSupported('video/webm;codecs=vp9')
-    ? 'video/webm;codecs=vp9'
-    : 'video/webm';
-  mediaRecorder = new MediaRecorder(stream, { mimeType, videoBitsPerSecond: 8000000 });
+
+  // Try mp4 first (Chrome 130+), fallback to webm
+  let mimeType, fileExt;
+  if (MediaRecorder.isTypeSupported('video/mp4;codecs=avc1')) {
+    mimeType = 'video/mp4;codecs=avc1';
+    fileExt = 'mp4';
+  } else if (MediaRecorder.isTypeSupported('video/mp4')) {
+    mimeType = 'video/mp4';
+    fileExt = 'mp4';
+  } else if (MediaRecorder.isTypeSupported('video/webm;codecs=vp9')) {
+    mimeType = 'video/webm;codecs=vp9';
+    fileExt = 'webm';
+  } else {
+    mimeType = 'video/webm';
+    fileExt = 'webm';
+  }
+
+  console.log('Recording with mimeType:', mimeType);
+  mediaRecorder = new MediaRecorder(stream, { mimeType, videoBitsPerSecond: 12000000 });
 
   mediaRecorder.ondataavailable = (e) => {
     if (e.data.size > 0) recordedChunks.push(e.data);
@@ -1233,24 +1267,18 @@ recBtn.addEventListener('click', (e) => {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'pets-roll-thumbnail.webm';
+    a.download = `pets-roll-thumbnail.${fileExt}`;
     a.click();
     URL.revokeObjectURL(url);
-    recBtn.textContent = 'Record .webm';
+    recBtn.textContent = `Record .${fileExt}`;
     recBtn.classList.remove('recording');
   };
 
   mediaRecorder.start();
-  recBtn.textContent = 'Stop Recording';
+  recBtn.textContent = 'Recording...';
   recBtn.classList.add('recording');
 
-  // Auto-stop after one full loop + pause
-  const totalFrames = Object.values(SCENE_DUR).reduce((a, b) => a + b, 0) + 12;
-  setTimeout(() => {
-    if (mediaRecorder && mediaRecorder.state === 'recording') {
-      mediaRecorder.stop();
-    }
-  }, (totalFrames / FPS) * 1000 + 200);
+  // Auto-stop is handled in scene 0 (white flash = end)
 });
 
 // --- Start ---
