@@ -72,8 +72,9 @@ export class DailyBonusButton extends GameObjects.Container {
         scene.add.existing(this);
     }
 
-    updateBadge(hasReward: boolean): void {
+    updateBadge(hasReward: boolean, pendingCount = 0): void {
         this.badgeGfx.setVisible(hasReward);
+        this.badgeText.setText(pendingCount > 1 ? String(pendingCount) : '!');
         this.badgeText.setVisible(hasReward);
     }
 }

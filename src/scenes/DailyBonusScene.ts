@@ -34,7 +34,6 @@ export class DailyBonusScene extends Scene {
         let hintSize: string, trackW: number | undefined;
 
         if (port) {
-            // Center content block vertically with generous gaps
             const headerH = 74;
             const portDay7H = PORT_CARD_H * 2 + CARD_GAP;
             const hintH = 20, gapHT = 42, trackAreaH = 55, gapTG = 40;
@@ -81,8 +80,12 @@ export class DailyBonusScene extends Scene {
     }
 
     private createClaimButton(): void {
-        const canClaim = !this.manager.dailyBonus.claimedToday;
-        const label = canClaim ? t('daily_bonus_claim') : t('daily_bonus_claimed');
+        const db = this.manager.dailyBonus;
+        const canClaim = db.hasPending;
+        const pending = db.pendingDays;
+        const label = canClaim
+            ? (pending > 1 ? `${t('daily_bonus_claim')} (${pending})` : t('daily_bonus_claim'))
+            : t('daily_bonus_claimed');
         const clr = canClaim ? FREE_CLR : 0x555566;
         const drk = canClaim ? FREE_DRK : 0x333344;
         const bw = 180, bh = 44, br = bh / 2;
@@ -113,8 +116,8 @@ export class DailyBonusScene extends Scene {
             addShineEffect(this, wrap, bw, bh, br);
             wrap.setInteractive({ useHandCursor: true });
             wrap.on('pointerdown', () => {
-                const reward = this.manager.claimDailyBonus();
-                if (reward) {
+                const rewards = this.manager.claimDailyBonus();
+                for (const reward of rewards) {
                     if (reward.type === 'egg' && reward.eggTier) {
                         const eggName = t(`egg_tier_${reward.eggTier}`);
                         showToast(this, t('toast_received', { count: reward.count, item: eggName }), 'info');

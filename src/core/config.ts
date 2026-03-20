@@ -293,10 +293,9 @@ export const DAILY_BONUS_CONFIG = {
 
 export function getDefaultDailyBonusState(): DailyBonusState {
     return {
-        totalLogins: 0,
-        weekDay: 0,
+        totalClaimedDays: 0,
+        pendingDays: 0,
         lastLoginDate: '',
-        claimedToday: false,
         monthMilestonesClaimed: [false, false, false, false],
     };
 }

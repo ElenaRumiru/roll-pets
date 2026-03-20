@@ -2,6 +2,8 @@ import { DailyBonusState, DailyBonusReward } from '../types';
 import { DAILY_BONUS_CONFIG, getDefaultDailyBonusState } from '../core/config';
 import { getTodayUTC, getSecondsUntilReset } from '../core/DateUtils';
 
+export type CardState = 'claimed' | 'pending' | 'future';
+
 export class DailyBonusSystem {
     private state: DailyBonusState;
 
@@ -17,68 +19,75 @@ export class DailyBonusSystem {
         this.checkNewDay();
     }
 
-    /** Returns true if a new day was detected and counters advanced */
+    /** Returns true if a new day was detected and pending counter advanced */
     checkNewDay(): boolean {
         const today = getTodayUTC();
         if (this.state.lastLoginDate === today) return false;
-
-        const isFirstEver = this.state.lastLoginDate === '';
         this.state.lastLoginDate = today;
-        this.state.claimedToday = false;
-
-        if (isFirstEver) {
-            this.state.weekDay = 0;
-        } else {
-            this.state.weekDay = (this.state.weekDay + 1) % 7;
-        }
+        this.state.pendingDays++;
         return true;
     }
 
-    getTodayReward(): DailyBonusReward {
-        return { ...DAILY_BONUS_CONFIG.weeklyRewards[this.state.weekDay] };
+    /** Claim all pending days at once. Returns array of rewards (empty if nothing to claim). */
+    claimAll(): DailyBonusReward[] {
+        if (this.state.pendingDays <= 0) return [];
+        const rewards: DailyBonusReward[] = [];
+        const maxDays = DAILY_BONUS_CONFIG.monthCycleDays;
+
+        for (let i = 0; i < this.state.pendingDays; i++) {
+            const dayIdx = (this.state.totalClaimedDays + i) % 7;
+            rewards.push({ ...DAILY_BONUS_CONFIG.weeklyRewards[dayIdx] });
+        }
+
+        this.state.totalClaimedDays += this.state.pendingDays;
+        this.state.pendingDays = 0;
+
+        if (this.state.totalClaimedDays > maxDays) {
+            this.state.totalClaimedDays -= maxDays;
+            this.state.monthMilestonesClaimed = [false, false, false, false];
+        }
+
+        return rewards;
     }
 
     getRewardForDay(dayIndex: number): DailyBonusReward {
         return { ...DAILY_BONUS_CONFIG.weeklyRewards[dayIndex] };
     }
 
-    claimDaily(): DailyBonusReward | null {
-        if (this.state.claimedToday) return null;
-        this.state.claimedToday = true;
-        const reward = this.getTodayReward();
+    /** Card state for the 7-day card grid */
+    getCardState(dayIdx: number): CardState {
+        const weekPos = this.state.totalClaimedDays % 7;
+        const pendingInView = Math.min(this.state.pendingDays, 7 - weekPos);
 
-        this.state.totalLogins++;
-        if (this.state.totalLogins > DAILY_BONUS_CONFIG.monthCycleDays) {
-            this.state.totalLogins = 1;
-            this.state.weekDay = 0;
-            this.state.monthMilestonesClaimed = [false, false, false, false];
-        }
-
-        return reward;
+        if (dayIdx < weekPos) return 'claimed';
+        if (dayIdx >= weekPos && dayIdx < weekPos + pendingInView) return 'pending';
+        return 'future';
     }
 
     claimMonthlyMilestone(index: number): number {
         const cfg = DAILY_BONUS_CONFIG;
         if (index < 0 || index >= cfg.milestoneThresholds.length) return 0;
-        if (this.state.totalLogins < cfg.milestoneThresholds[index]) return 0;
+        if (this.state.totalClaimedDays < cfg.milestoneThresholds[index]) return 0;
         if (this.state.monthMilestonesClaimed[index]) return 0;
         this.state.monthMilestonesClaimed[index] = true;
         return cfg.milestoneRewards[index];
     }
 
     hasUnclaimedReward(): boolean {
-        if (!this.state.claimedToday) return true;
+        if (this.state.pendingDays > 0) return true;
         const cfg = DAILY_BONUS_CONFIG;
         for (let i = 0; i < cfg.milestoneThresholds.length; i++) {
-            if (this.state.totalLogins >= cfg.milestoneThresholds[i]
+            if (this.state.totalClaimedDays >= cfg.milestoneThresholds[i]
                 && !this.state.monthMilestonesClaimed[i]) return true;
         }
         return false;
     }
 
-    get totalLogins(): number { return this.state.totalLogins; }
-    get weekDay(): number { return this.state.weekDay; }
-    get claimedToday(): boolean { return this.state.claimedToday; }
+    get totalClaimedDays(): number { return this.state.totalClaimedDays; }
+    get totalLogins(): number { return this.state.totalClaimedDays; }
+    get weekDay(): number { return this.state.totalClaimedDays % 7; }
+    get pendingDays(): number { return this.state.pendingDays; }
+    get hasPending(): boolean { return this.state.pendingDays > 0; }
     get monthMilestonesClaimed(): readonly boolean[] { return this.state.monthMilestonesClaimed; }
 
     getSecondsUntilReset(): number {
@@ -91,5 +100,4 @@ export class DailyBonusSystem {
             monthMilestonesClaimed: [...this.state.monthMilestonesClaimed],
         };
     }
-
 }

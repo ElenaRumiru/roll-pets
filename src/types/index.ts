@@ -149,10 +149,9 @@ export interface DailyBonusReward {
 }
 
 export interface DailyBonusState {
-    totalLogins: number;
-    weekDay: number;
+    totalClaimedDays: number;
+    pendingDays: number;
     lastLoginDate: string;
-    claimedToday: boolean;
     monthMilestonesClaimed: boolean[];
 }
 

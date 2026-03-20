@@ -484,7 +484,8 @@ export class MainScene extends Scene {
     }
 
     private onDailyBonusChanged(): void {
-        this.dailyBonusBtn.updateBadge(this.manager.dailyBonus.hasUnclaimedReward());
+        const db = this.manager.dailyBonus;
+        this.dailyBonusBtn.updateBadge(db.hasUnclaimedReward(), db.pendingDays);
     }
 
     private onCollectionsChanged(): void {
@@ -630,7 +631,8 @@ export class MainScene extends Scene {
         this.centerStage.updatePedestals(topPets);
         this.petThought.setHasPets(topPets.length > 0);
         this.questPanel.updateDisplay(this.manager.quests);
-        this.dailyBonusBtn.updateBadge(this.manager.dailyBonus.hasUnclaimedReward());
+        const db = this.manager.dailyBonus;
+        this.dailyBonusBtn.updateBadge(db.hasUnclaimedReward(), db.pendingDays);
         this.rightPanel.setLocked(this.manager.progression.level < AUTOROLL_TOGGLE.unlockLevel);
         this.nestsBtn.setLocked(this.manager.progression.level < NEST_CONFIG.unlockLevel);
         this.nestsBtn.updateBadge(this.manager.nests.getReadyCount(), this.manager.nests.hasEmptySlot());

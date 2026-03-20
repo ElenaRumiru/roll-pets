@@ -3,7 +3,7 @@ import { PETS } from '../data/pets';
 import { getGradeForChance, getDefaultQuestState, getDefaultDailyBonusState, getDefaultNestState, REBIRTH_CONFIG } from '../core/config';
 
 const SAVE_KEY = 'pets_go_lite_save';
-const CURRENT_VERSION = 21;
+const CURRENT_VERSION = 22;
 const HASH_SALT = 'pG!7kQ#xR2';
 
 const VALID_PET_IDS = new Set(PETS.map(p => p.id));
@@ -43,6 +43,9 @@ function validateData(data: SaveData): void {
         }
     }
     data.eggInventory = validInv;
+    const db = data.dailyBonus;
+    db.totalClaimedDays = Math.max(0, Math.min(30, Math.floor(db.totalClaimedDays) || 0));
+    db.pendingDays = Math.max(0, Math.min(30, Math.floor(db.pendingDays) || 0));
 }
 
 function getDefaults(): SaveData {
@@ -194,6 +197,20 @@ function migrate(data: SaveData): SaveData {
         }
         data.collectionsSeenPets = migrated;
         data.version = 21;
+    }
+    if (data.version === 21) {
+        const oldDb = data.dailyBonus as unknown as {
+            totalLogins: number; weekDay: number;
+            lastLoginDate: string; claimedToday: boolean;
+            monthMilestonesClaimed: boolean[];
+        };
+        data.dailyBonus = {
+            totalClaimedDays: oldDb.totalLogins ?? 0,
+            pendingDays: (!oldDb.claimedToday && oldDb.lastLoginDate) ? 1 : 0,
+            lastLoginDate: oldDb.lastLoginDate ?? '',
+            monthMilestonesClaimed: [...(oldDb.monthMilestonesClaimed ?? [false, false, false, false])],
+        };
+        data.version = 22;
     }
     return data;
 }

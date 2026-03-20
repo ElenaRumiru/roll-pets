@@ -127,7 +127,7 @@ export class GameManager {
     purchaseEgg(tier: number, price: number): boolean { return this.econCoord.purchaseEgg(tier, price); }
     refreshShop(): void { this.econCoord.refreshShop(); }
     addEggs(tier: number, count: number): void { this.econCoord.addEggs(tier, count); }
-    claimDailyBonus(): DailyBonusReward | null { return this.econCoord.claimDailyBonus(); }
+    claimDailyBonus(): DailyBonusReward[] { return this.econCoord.claimDailyBonus(); }
     claimDailyMilestone(index: number): number { return this.econCoord.claimDailyMilestone(index); }
     claimCollection(collId: string): boolean { return this.econCoord.claimCollection(collId); }
     claimQuestReward(q: 'roll' | 'grade' | 'online', useAd: boolean): void { this.econCoord.claimQuestReward(q, useAd); }

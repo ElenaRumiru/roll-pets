@@ -64,13 +64,13 @@ export class EconomyCoordinator {
         });
         this.deps.persistSave();
     }
-    claimDailyBonus(): DailyBonusReward | null {
-        const reward = this.deps.dailyBonus.claimDaily();
-        if (!reward) return null;
-        this.applyDailyBonusReward(reward);
+    claimDailyBonus(): DailyBonusReward[] {
+        const rewards = this.deps.dailyBonus.claimAll();
+        if (rewards.length === 0) return [];
+        for (const reward of rewards) this.applyDailyBonusReward(reward);
         EventBus.emit('daily-bonus-claimed');
         this.deps.persistSave();
-        return reward;
+        return rewards;
     }
 
     claimDailyMilestone(index: number): number {

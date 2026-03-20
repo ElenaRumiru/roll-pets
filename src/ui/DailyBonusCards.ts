@@ -1,7 +1,7 @@
 import { Scene } from 'phaser';
 import { UI, DAILY_BONUS_CONFIG } from '../core/config';
 import { getGameWidth } from '../core/orientation';
-import { DailyBonusSystem } from '../systems/DailyBonusSystem';
+import { DailyBonusSystem, CardState } from '../systems/DailyBonusSystem';
 import { GameManager } from '../core/GameManager';
 import { t } from '../data/locales';
 import { addButtonFeedback } from './components/buttonFeedback';
@@ -47,20 +47,16 @@ export function createCardGrid(scene: Scene, gridTop: number, db: DailyBonusSyst
 
 function drawCard(scene: Scene, cx: number, cy: number, w: number, h: number,
     dayIdx: number, db: DailyBonusSystem): void {
-    const isPast = dayIdx < db.weekDay;
-    const isToday = dayIdx === db.weekDay;
-    const isTomorrow = dayIdx === db.weekDay + 1 && db.claimedToday;
-    const isDone = isPast || (isToday && db.claimedToday);
+    const state: CardState = db.getCardState(dayIdx);
     const reward = db.getRewardForDay(dayIdx);
 
     // Background
     const g = scene.add.graphics();
-    const bgClr = isToday && !db.claimedToday ? 0x1a2a1a : (isDone ? 0x222233 : 0x1a1a2e);
-    const bgAlpha = isDone ? 0.8 : (isToday && !db.claimedToday ? 1 : 0.9);
+    const bgClr = state === 'pending' ? 0x1a2a1a : (state === 'claimed' ? 0x222233 : 0x1a1a2e);
+    const bgAlpha = state === 'claimed' ? 0.8 : (state === 'pending' ? 1 : 0.9);
     g.fillStyle(bgClr, bgAlpha);
     g.fillRoundedRect(cx - w / 2, cy - h / 2, w, h, CARD_R);
-    if (isToday && !db.claimedToday) {
-        // Triple black-yellow-black outline
+    if (state === 'pending') {
         g.lineStyle(1.5, 0x000000, 0.9);
         g.strokeRoundedRect(cx - w / 2 - 4, cy - h / 2 - 4, w + 8, h + 8, CARD_R + 3);
         g.lineStyle(3, 0xFEBF07, 1);
@@ -73,12 +69,8 @@ function drawCard(scene: Scene, cx: number, cy: number, w: number, h: number,
     }
 
     // Day label
-    let dayLabel: string;
-    if (isToday) dayLabel = t('daily_bonus_today');
-    else if (isTomorrow) dayLabel = t('daily_bonus_tomorrow');
-    else dayLabel = t('daily_bonus_day', { day: String(dayIdx + 1) });
-
-    const labelClr = isToday && !db.claimedToday ? '#FEBf07' : (isDone ? '#888899' : '#ffffff');
+    const dayLabel = t('daily_bonus_day', { day: String(dayIdx + 1) });
+    const labelClr = state === 'pending' ? '#FEBf07' : (state === 'claimed' ? '#888899' : '#ffffff');
     scene.add.text(cx, cy - h / 2 + 16, dayLabel, {
         fontFamily: UI.FONT_STROKE, fontSize: '13px', color: labelClr,
         stroke: '#000000', strokeThickness: 1.5,
@@ -88,28 +80,22 @@ function drawCard(scene: Scene, cx: number, cy: number, w: number, h: number,
     const iconY = cy + 2;
     const iconSize = dayIdx === 6 ? 64 : 46;
 
-    if (isDone) {
+    if (state === 'claimed') {
         drawRewardIcon(scene, cx, iconY, iconSize, reward, 0.5);
-        const check = scene.add.image(cx + iconSize / 3, cy - iconSize / 3, 'ui_ok_sm')
+        scene.add.image(cx + iconSize / 3, cy - iconSize / 3, 'ui_ok_sm')
             .setDisplaySize(20, 20);
-        if (isToday) {
-            const targetScale = check.scale;
-            check.setScale(0);
-            scene.tweens.add({ targets: check, scale: targetScale,
-                duration: 350, ease: 'Back.easeOut' });
-        }
-    } else if (isToday && !db.claimedToday) {
+    } else if (state === 'pending') {
         drawRewardIcon(scene, cx, iconY, iconSize, reward, 1);
     } else {
         const giftSize = dayIdx === 6 ? 76 : 50;
-        const gift = scene.add.image(cx, iconY, 'ui_gift_md').setDisplaySize(giftSize, giftSize);
-        if (!isToday) gift.setAlpha(0.7);
+        scene.add.image(cx, iconY, 'ui_gift_md').setDisplaySize(giftSize, giftSize)
+            .setAlpha(0.7);
     }
 
-    // Reward text — fixed for days 1-6, icon-relative for day 7
+    // Reward text
     const textY = dayIdx === 6 ? iconY + 52 : cy + h / 2 - 16;
     const desc = rewardText(reward);
-    const descClr = isDone ? '#666688' : getRewardColor(reward);
+    const descClr = state === 'claimed' ? '#666688' : getRewardColor(reward);
     const descText = scene.add.text(cx, textY, desc, {
         fontFamily: UI.FONT_STROKE, fontSize: '11px', color: descClr,
         stroke: '#000000', strokeThickness: 1,
@@ -155,7 +141,6 @@ export function createMilestoneTrack(scene: Scene, trackY: number, manager: Game
     const trackX = getGameWidth() / 2 - trackW / 2;
     const barY = trackY + 2;
 
-    // Triple outline (black → yellow → black)
     const bg = scene.add.graphics();
     bg.lineStyle(1.5, 0x000000, 0.9);
     bg.strokeRoundedRect(trackX - 4, barY - 4, trackW + 8, TRACK_H + 8, TRACK_R + 3);
@@ -167,7 +152,7 @@ export function createMilestoneTrack(scene: Scene, trackY: number, manager: Game
     bg.fillStyle(0x222244, 0.6);
     bg.fillRoundedRect(trackX, barY, trackW, TRACK_H, TRACK_R);
 
-    const fillW = Math.max(0, trackW * Math.min(1, db.totalLogins / maxVal));
+    const fillW = Math.max(0, trackW * Math.min(1, db.totalClaimedDays / maxVal));
     if (fillW > 0) {
         const fw = Math.min(fillW, trackW - 1);
         const fr = fw >= TRACK_H ? TRACK_R : Math.min(fw / 2, TRACK_R);
@@ -194,7 +179,7 @@ function drawMilestoneGift(scene: Scene, x: number, y: number,
     const cfg = DAILY_BONUS_CONFIG;
     const db = manager.dailyBonus;
     const threshold = cfg.milestoneThresholds[index];
-    const reached = db.totalLogins >= threshold;
+    const reached = db.totalClaimedDays >= threshold;
     const isClaimed = db.monthMilestonesClaimed[index];
     const claimable = reached && !isClaimed;
 
