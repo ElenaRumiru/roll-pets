@@ -1,0 +1,1072 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pets Roll — Animated Thumbnail</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bungee&family=Lilita+One&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #0a0a14;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    overflow: hidden;
+    font-family: sans-serif;
+  }
+  canvas {
+    max-width: 100vmin;
+    max-height: 100vmin;
+    width: 100vmin;
+    height: 100vmin;
+    cursor: pointer;
+    image-rendering: auto;
+  }
+  #loading {
+    position: absolute;
+    color: #fff;
+    font-size: 18px;
+    text-align: center;
+  }
+  #loading .bar {
+    width: 200px;
+    height: 6px;
+    background: #222;
+    border-radius: 3px;
+    margin-top: 12px;
+  }
+  #loading .fill {
+    height: 100%;
+    background: #FEBF07;
+    border-radius: 3px;
+    width: 0%;
+    transition: width 0.2s;
+  }
+  #rec-btn {
+    position: fixed;
+    bottom: 16px;
+    right: 16px;
+    padding: 8px 18px;
+    background: #e33;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    cursor: pointer;
+    z-index: 10;
+  }
+  #rec-btn.recording { background: #888; }
+</style>
+</head>
+<body>
+
+<div id="loading">
+  Loading assets...
+  <div class="bar"><div class="fill" id="load-fill"></div></div>
+</div>
+
+<canvas id="c" width="1080" height="1080"></canvas>
+<button id="rec-btn">Record .webm</button>
+
+<script>
+// ============================================================
+// PETS ROLL — Animated Thumbnail (Standalone Canvas Animation)
+// ============================================================
+
+const W = 1080, H = 1080;
+const canvas = document.getElementById('c');
+const ctx = canvas.getContext('2d');
+const FPS = 60;
+
+// --- Asset paths (relative to server root) ---
+const ASSET_BASE = '../public/assets/';
+const ASSETS = {
+  bg:        ASSET_BASE + 'backgrounds/location_15.webp',
+  roll:      ASSET_BASE + 'ui/roll.png',
+  rollSquare:ASSET_BASE + 'ui/roll_mini_square.png',
+  eggCommon: ASSET_BASE + 'eggs/egg_1.png',
+  eggLeg:    ASSET_BASE + 'eggs/egg_17.png',
+  petCat:    ASSET_BASE + 'pets/0020.webp',
+  petPhoenix:ASSET_BASE + 'pets/0017.webp',
+  petCorgi:  ASSET_BASE + 'pets/0130.webp',
+  petPanda:  ASSET_BASE + 'pets/0011.webp',
+  petHusky:  ASSET_BASE + 'pets/0140.webp',
+  petZebra:  ASSET_BASE + 'pets/0042.webp',
+  petLadybug:ASSET_BASE + 'pets/0025.webp',
+  petMeerkat:ASSET_BASE + 'pets/0050.webp',
+  album:     '../thumbnails/3.webp',
+};
+
+const imgs = {};
+let loaded = 0;
+const totalAssets = Object.keys(ASSETS).length;
+
+// --- Preloader ---
+function loadAll() {
+  return new Promise((resolve) => {
+    const fill = document.getElementById('load-fill');
+    for (const [key, src] of Object.entries(ASSETS)) {
+      const img = new Image();
+      img.onload = () => {
+        loaded++;
+        fill.style.width = (loaded / totalAssets * 100) + '%';
+        if (loaded === totalAssets) {
+          document.getElementById('loading').style.display = 'none';
+          resolve();
+        }
+      };
+      img.onerror = () => {
+        console.warn('Failed to load:', src);
+        loaded++;
+        fill.style.width = (loaded / totalAssets * 100) + '%';
+        if (loaded === totalAssets) {
+          document.getElementById('loading').style.display = 'none';
+          resolve();
+        }
+      };
+      img.src = src;
+      imgs[key] = img;
+    }
+  });
+}
+
+// --- Easing functions ---
+function easeOutBack(t) {
+  const c1 = 1.70158;
+  const c3 = c1 + 1;
+  return 1 + c3 * Math.pow(t - 1, 3) + c1 * Math.pow(t - 1, 2);
+}
+function easeInBack(t) {
+  const c1 = 1.70158;
+  const c3 = c1 + 1;
+  return c3 * t * t * t - c1 * t * t;
+}
+function easeInOutSine(t) {
+  return -(Math.cos(Math.PI * t) - 1) / 2;
+}
+function easeOutCubic(t) {
+  return 1 - Math.pow(1 - t, 3);
+}
+function easeInCubic(t) {
+  return t * t * t;
+}
+function lerp(a, b, t) { return a + (b - a) * t; }
+function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
+
+// --- Particle system ---
+let particles = [];
+
+function spawnParticles(x, y, count, color, speed, size) {
+  for (let i = 0; i < count; i++) {
+    const angle = Math.random() * Math.PI * 2;
+    const spd = speed * (0.5 + Math.random());
+    particles.push({
+      x, y,
+      vx: Math.cos(angle) * spd,
+      vy: Math.sin(angle) * spd,
+      alpha: 1,
+      size: size * (0.5 + Math.random() * 0.5),
+      color,
+      life: 0,
+      maxLife: 40 + Math.random() * 40,
+    });
+  }
+}
+
+function updateParticles() {
+  for (let i = particles.length - 1; i >= 0; i--) {
+    const p = particles[i];
+    p.x += p.vx;
+    p.y += p.vy;
+    p.vy += 0.15; // gravity
+    p.life++;
+    p.alpha = 1 - p.life / p.maxLife;
+    if (p.life >= p.maxLife) {
+      particles.splice(i, 1);
+    }
+  }
+}
+
+function drawParticles() {
+  for (const p of particles) {
+    ctx.save();
+    ctx.globalAlpha = clamp(p.alpha, 0, 1);
+    ctx.fillStyle = p.color;
+    ctx.shadowBlur = p.size * 4;
+    ctx.shadowColor = p.color;
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+  }
+}
+
+// --- Orbiting particles (for legendary egg) ---
+let orbitParticles = [];
+
+function spawnOrbitParticles(cx, cy, count) {
+  orbitParticles = [];
+  for (let i = 0; i < count; i++) {
+    orbitParticles.push({
+      angle: (Math.PI * 2 / count) * i,
+      radius: 180 + Math.random() * 80,
+      speed: 0.04 + Math.random() * 0.03,
+      size: 5 + Math.random() * 7,
+      cx, cy,
+    });
+  }
+}
+
+function drawOrbitParticles(alpha) {
+  for (const p of orbitParticles) {
+    p.angle += p.speed;
+    const x = p.cx + Math.cos(p.angle) * p.radius;
+    const y = p.cy + Math.sin(p.angle) * p.radius;
+    ctx.save();
+    ctx.globalAlpha = alpha * 1.0;
+    ctx.fillStyle = '#ffd700';
+    ctx.shadowBlur = 30;
+    ctx.shadowColor = '#ffd700';
+    ctx.beginPath();
+    ctx.arc(x, y, p.size, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+  }
+}
+
+// --- Tap cursor (fake finger tap indicator) ---
+let tapCursors = [];
+
+function spawnTapCursor(x, y) {
+  tapCursors.push({ x, y, life: 0, maxLife: 18 });
+}
+
+function drawTapCursors() {
+  for (let i = tapCursors.length - 1; i >= 0; i--) {
+    const tc = tapCursors[i];
+    tc.life++;
+    if (tc.life >= tc.maxLife) { tapCursors.splice(i, 1); continue; }
+
+    const t = tc.life / tc.maxLife;
+    // Press down then release
+    const pressT = t < 0.3 ? t / 0.3 : 1;
+    const scale = t < 0.3 ? lerp(1.0, 0.75, pressT) : lerp(0.75, 1.0, (t - 0.3) / 0.7);
+    const alpha = t > 0.6 ? 1 - (t - 0.6) / 0.4 : 1;
+
+    ctx.save();
+    ctx.globalAlpha = clamp(alpha, 0, 1) * 0.9;
+    ctx.translate(tc.x, tc.y);
+    ctx.scale(scale, scale);
+
+    // Outer ring
+    ctx.beginPath();
+    ctx.arc(0, 0, 56, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(255,255,255,0.3)';
+    ctx.fill();
+    ctx.lineWidth = 6;
+    ctx.strokeStyle = 'rgba(255,255,255,0.8)';
+    ctx.stroke();
+
+    // Inner dot
+    ctx.beginPath();
+    ctx.arc(0, 0, 20, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(255,255,255,0.9)';
+    ctx.fill();
+
+    ctx.restore();
+  }
+}
+
+// --- Ripple effect ---
+let ripples = [];
+
+function spawnRipple(x, y) {
+  ripples.push({ x, y, radius: 30, alpha: 1, maxRadius: 300 });
+}
+
+function drawRipples() {
+  for (let i = ripples.length - 1; i >= 0; i--) {
+    const r = ripples[i];
+    r.radius += 9;
+    r.alpha = 1 - r.radius / r.maxRadius;
+    if (r.alpha <= 0) { ripples.splice(i, 1); continue; }
+    ctx.save();
+    ctx.globalAlpha = r.alpha * 0.6;
+    ctx.strokeStyle = '#ffffff';
+    ctx.lineWidth = 7;
+    ctx.beginPath();
+    ctx.arc(r.x, r.y, r.radius, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.restore();
+  }
+}
+
+// --- Draw helpers ---
+function drawBg() {
+  drawBgGradient();
+}
+
+function drawBgGradient() {
+  const grad = ctx.createLinearGradient(0, 0, W, H);
+  grad.addColorStop(0, '#6b5ce7');
+  grad.addColorStop(0.5, '#e87bbd');
+  grad.addColorStop(1, '#5bc0eb');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, W, H);
+}
+
+function drawImageCentered(img, x, y, w, h, rotation, alpha) {
+  if (!img.naturalWidth) return;
+  ctx.save();
+  ctx.globalAlpha = clamp(alpha, 0, 1);
+  ctx.translate(x, y);
+  if (rotation) ctx.rotate(rotation);
+  ctx.drawImage(img, -w / 2, -h / 2, w, h);
+  ctx.restore();
+}
+
+function drawImageCenteredWithGlow(img, x, y, w, h, rotation, alpha, glowColor, glowSize) {
+  if (!img.naturalWidth) return;
+  ctx.save();
+  ctx.globalAlpha = clamp(alpha, 0, 1);
+  ctx.translate(x, y);
+  if (rotation) ctx.rotate(rotation);
+  ctx.shadowBlur = glowSize;
+  ctx.shadowColor = glowColor;
+  ctx.drawImage(img, -w / 2, -h / 2, w, h);
+  ctx.restore();
+}
+
+function drawRollButtonSquare(x, y, scale, alpha) {
+  const img = imgs.rollSquare;
+  if (!img.naturalWidth) return;
+  // Preserve original 400:267 aspect ratio
+  const bw = 900 * scale;
+  const bh = bw * (267 / 400); // ~600
+  ctx.save();
+  ctx.globalAlpha = clamp(alpha, 0, 1);
+  ctx.translate(x, y);
+
+  ctx.shadowBlur = 30;
+  ctx.shadowColor = 'rgba(0,0,0,0.5)';
+  ctx.drawImage(img, -bw / 2, -bh / 2, bw, bh);
+
+  ctx.shadowBlur = 0;
+  ctx.fillStyle = '#ffffff';
+  ctx.font = `${Math.round(160 * scale)}px "Lilita One", "Bungee", sans-serif`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.strokeStyle = '#000000';
+  ctx.lineWidth = 26 * scale;
+  ctx.lineJoin = 'round';
+  ctx.strokeText('ROLL', 0, -10 * scale);
+  ctx.fillText('ROLL', 0, -10 * scale);
+
+  ctx.restore();
+}
+
+function drawRollButton(x, y, scale, alpha) {
+  const img = imgs.roll;
+  if (!img.naturalWidth) return;
+  const bw = 700 * scale;
+  const bh = 210 * scale;
+  ctx.save();
+  ctx.globalAlpha = clamp(alpha, 0, 1);
+  ctx.translate(x, y);
+
+  // Button shadow
+  ctx.shadowBlur = 20;
+  ctx.shadowColor = 'rgba(0,0,0,0.5)';
+  ctx.drawImage(img, -bw / 2, -bh / 2, bw, bh);
+
+  // "ROLL" text on button
+  ctx.shadowBlur = 0;
+  ctx.fillStyle = '#ffffff';
+  ctx.font = `${Math.round(100 * scale)}px "Lilita One", "Bungee", sans-serif`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.strokeStyle = '#000000';
+  ctx.lineWidth = 18 * scale;
+  ctx.lineJoin = 'round';
+  ctx.strokeText('ROLL', 0, -4 * scale);
+  ctx.fillText('ROLL', 0, -4 * scale);
+
+  ctx.restore();
+}
+
+// --- Scene state ---
+let frame = 0;
+let scene = 1;
+let sceneFrame = 0;
+let flashAlpha = 0;
+let loopPauseFrames = 0;
+
+// Scene durations in frames (60fps)
+const SCENE_DUR = {
+  1: 36,    // 0.6s — longer click moment
+  2: 90,    // 1.5s
+  3: 180,   // 3.0s — longer legendary buildup
+  4: 90,    // 1.5s
+  5: 90,    // 1.5s
+};
+
+// --- Scene 4 pet launch data (narrow angle, wide horizontal start offset) ---
+const launchPetsUp = [
+  { img: 'petCorgi',   dx: 0,    dy: -1   }, // up center
+  { img: 'petPanda',   dx: 0.6,  dy: -0.8 }, // diag right-up
+  { img: 'petHusky',   dx: -0.6, dy: -0.8 }, // diag left-up
+];
+const launchPetsDown = [
+  { img: 'petZebra',   dx: 0,    dy: 1    }, // down center
+  { img: 'petLadybug', dx: 0.6,  dy: 0.8  }, // diag right-down
+  { img: 'petMeerkat', dx: -0.6, dy: 0.8  }, // diag left-down
+];
+
+function resetAnimation() {
+  frame = 0;
+  scene = 1;
+  sceneFrame = 0;
+  flashAlpha = 0;
+  loopPauseFrames = 0;
+  particles = [];
+  ripples = [];
+  orbitParticles = [];
+  tapCursors = [];
+}
+
+// --- Main render ---
+function renderScene1() {
+  // Background
+  drawBg();
+
+  const cx = W / 2, cy = H / 2;
+  const t = sceneFrame / SCENE_DUR[1];
+
+  // Button press animation — fast snap press, then hold
+  let btnScale;
+  if (t < 0.12) {
+    btnScale = lerp(1.0, 0.78, t / 0.12);      // quick deep press
+  } else if (t < 0.25) {
+    btnScale = lerp(0.78, 1.0, (t - 0.12) / 0.13); // bounce release
+  } else {
+    btnScale = 1.0;                               // hold visible
+  }
+
+  drawRollButtonSquare(cx, cy, btnScale * 1.1, 1);
+
+  // Tap ripple at start
+  if (sceneFrame === 1) {
+    spawnRipple(cx, cy);
+    spawnTapCursor(cx, cy);
+  }
+  drawRipples();
+  drawTapCursors();
+}
+
+function renderScene2() {
+  drawBg();
+
+  const cx = W / 2, cy = H / 2;
+  const dur = SCENE_DUR[2];
+  const t = sceneFrame / dur;
+
+  // Phase timings (normalized)
+  const dropEnd = 0.18;
+  const wobbleEnd = 0.50;
+  const crackEnd = 0.58;
+  const revealStart = 0.58;
+
+  const egg = imgs.eggCommon;
+  const pet = imgs.petCat;
+  const eggSize = 900;
+  const petSize = 780;
+
+  if (t < dropEnd) {
+    // Egg drops from top
+    const dt = t / dropEnd;
+    const ey = lerp(-150, cy, easeOutCubic(dt));
+    const bounce = dt > 0.8 ? Math.sin((dt - 0.8) / 0.2 * Math.PI) * 15 : 0;
+    drawImageCentered(egg, cx, ey - bounce, eggSize, eggSize, 0, 1);
+
+  } else if (t < wobbleEnd) {
+    // Wobble
+    const dt = (t - dropEnd) / (wobbleEnd - dropEnd);
+    const wobbleAngle = Math.sin(dt * Math.PI * 6) * 0.09 * (1 - dt * 0.5);
+    drawImageCentered(egg, cx, cy, eggSize, eggSize, wobbleAngle, 1);
+
+    // Crack lines appear towards end
+    if (dt > 0.6) {
+      const ca = (dt - 0.6) / 0.4;
+      ctx.save();
+      ctx.globalAlpha = ca;
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = 5;
+      ctx.translate(cx, cy);
+      // Crack pattern
+      ctx.beginPath();
+      ctx.moveTo(-25, -70); ctx.lineTo(12, -12); ctx.lineTo(-35, 35); ctx.lineTo(0, 80);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(35, -60); ctx.lineTo(45, 0); ctx.lineTo(25, 50);
+      ctx.stroke();
+      ctx.restore();
+    }
+
+  } else if (t < crackEnd) {
+    // Egg shrinks and disappears
+    const dt = (t - wobbleEnd) / (crackEnd - wobbleEnd);
+    const s = 1 - easeInCubic(dt);
+    drawImageCentered(egg, cx, cy, eggSize * s, eggSize * s, 0, 1 - dt);
+
+    // Spawn particles on first frame of crack
+    if (sceneFrame === Math.floor(wobbleEnd * dur) + 1) {
+      spawnParticles(cx, cy, 30, '#88cc55', 14, 14);
+      spawnParticles(cx, cy, 20, '#ffffff', 10, 8);
+      spawnParticles(cx, cy, 15, '#ffd700', 8, 10);
+    }
+
+  } else {
+    // Pet reveal — offset up so pet+text are visually centered
+    const petCy = cy - 50;
+    const dt = (t - revealStart) / (1 - revealStart);
+    const revealT = clamp(dt / 0.4, 0, 1);
+    const s = easeOutBack(revealT);
+    const holdAlpha = dt > 0.85 ? 1 - (dt - 0.85) / 0.15 : 1;
+
+    drawImageCenteredWithGlow(pet, cx, petCy, petSize * s, petSize * s, 0,
+      holdAlpha, '#88cc55', 120 * s);
+
+    // Chance text below pet — Uncommon green
+    if (s > 0.8) {
+      const textAlpha = clamp((s - 0.8) / 0.2, 0, 1) * holdAlpha;
+      ctx.save();
+      ctx.globalAlpha = textAlpha;
+      ctx.font = `${Math.round(78)}px "Lilita One", sans-serif`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'top';
+      ctx.fillStyle = '#88cc55';
+      ctx.strokeStyle = '#000000';
+      ctx.lineWidth = 16;
+      ctx.lineJoin = 'round';
+      ctx.strokeText('1 in 8', cx, petCy + petSize * s / 2 + 20);
+      ctx.fillText('1 in 8', cx, petCy + petSize * s / 2 + 20);
+      ctx.restore();
+    }
+  }
+
+  updateParticles();
+  drawParticles();
+}
+
+function renderScene3() {
+  const cx = W / 2, cy = H / 2;
+  const dur = SCENE_DUR[3];
+  const t = sceneFrame / dur;
+
+  // Phase timings
+  const btnFlashEnd = 0.18;
+  const eggAppear = 0.18;
+
+  // Draw bg only when NOT in shake phase (shake phase draws its own)
+  if (t < eggAppear || t >= 0.48) {
+    drawBg();
+  }
+  const wobbleEnd = 0.48;
+  const flashStart = 0.48;
+  const flashEnd = 0.55;
+  const revealStart = 0.53;
+
+  const egg = imgs.eggLeg;
+  const pet = imgs.petPhoenix;
+  const eggSize = 950;
+  const petSize = 850;
+
+  // Button flash at very start
+  if (t < btnFlashEnd) {
+    const dt = t / btnFlashEnd;
+    const btnScale = dt < 0.5 ? lerp(1, 0.85, dt / 0.5) : lerp(0.85, 1, (dt - 0.5) / 0.5);
+    drawRollButton(cx, cy + 200, btnScale, 1 - dt);
+    if (sceneFrame === 1) { spawnRipple(cx, cy + 200); spawnTapCursor(cx, cy + 200); }
+  }
+
+  if (t >= eggAppear && t < wobbleEnd) {
+    const dt = (t - eggAppear) / (wobbleEnd - eggAppear);
+
+    // Screen shake — intensifies over time
+    const shakeIntensity = dt * dt * 18; // 0 → 18px
+    const shakeX = Math.sin(frame * 1.7) * shakeIntensity;
+    const shakeY = Math.cos(frame * 2.3) * shakeIntensity * 0.7;
+    ctx.save();
+    ctx.translate(shakeX, shakeY);
+
+    // Redraw bg inside shake context
+    drawBgGradient();
+
+    // Red/orange vignette that intensifies
+    ctx.save();
+    ctx.globalAlpha = dt * 0.4;
+    const heatVig = ctx.createRadialGradient(cx, cy, eggSize * 0.3, cx, cy, W * 0.7);
+    heatVig.addColorStop(0, 'rgba(255,140,0,0)');
+    heatVig.addColorStop(0.6, 'rgba(255,80,0,0.2)');
+    heatVig.addColorStop(1, 'rgba(255,0,0,0.5)');
+    ctx.fillStyle = heatVig;
+    ctx.fillRect(0, 0, W, H);
+    ctx.restore();
+
+    // Egg wobbles harder, grows more
+    const wobbleAngle = Math.sin(dt * Math.PI * 10) * 0.17 * (0.5 + dt * 0.5);
+    const growScale = 1 + dt * 0.25;
+
+    // Egg glows hotter over time
+    const eggGlow = dt * 80;
+    drawImageCenteredWithGlow(egg, cx, cy, eggSize * growScale, eggSize * growScale,
+      wobbleAngle, 1, '#ff8c00', eggGlow);
+
+    // Orbiting particles
+    if (sceneFrame === Math.floor(eggAppear * dur) + 1) {
+      spawnOrbitParticles(cx, cy, 12);
+    }
+    drawOrbitParticles(dt);
+
+    // Continuous heat sparks during shake
+    if (dt > 0.3 && frame % 3 === 0) {
+      spawnParticles(
+        cx + (Math.random() - 0.5) * eggSize * growScale,
+        cy + (Math.random() - 0.5) * eggSize * growScale,
+        2, '#ffd700', 3, 5
+      );
+    }
+
+    updateParticles();
+    drawParticles();
+
+    ctx.restore(); // end shake
+
+  } else if (t >= flashStart && t < flashEnd) {
+    // Screen flash
+    flashAlpha = 1 - (t - flashStart) / (flashEnd - flashStart);
+
+    // Spawn golden particles on first flash frame
+    if (sceneFrame === Math.floor(flashStart * dur) + 1) {
+      spawnParticles(cx, cy, 80, '#ffd700', 18, 16);
+      spawnParticles(cx, cy, 40, '#ff3333', 14, 12);
+      spawnParticles(cx, cy, 40, '#ffffff', 20, 10);
+      spawnParticles(cx, cy, 25, '#ff8c00', 12, 14);
+      orbitParticles = [];
+    }
+  }
+
+  if (t >= revealStart) {
+    const petCy = cy - 50; // offset up so pet+text centered
+    const dt = (t - revealStart) / (1 - revealStart);
+    const revealT = clamp(dt / 0.35, 0, 1);
+    const s = easeOutBack(revealT);
+    const holdAlpha = dt > 0.85 ? 1 - (dt - 0.85) / 0.15 : 1;
+
+    // Golden glow
+    // Outer glow ring
+    if (s > 0.5) {
+      ctx.save();
+      ctx.globalAlpha = holdAlpha * 0.3;
+      const grad = ctx.createRadialGradient(cx, petCy, petSize * s * 0.2, cx, petCy, petSize * s * 0.7);
+      grad.addColorStop(0, '#ffd700');
+      grad.addColorStop(0.5, '#ff8c00');
+      grad.addColorStop(1, 'rgba(255,51,51,0)');
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, W, H);
+      ctx.restore();
+
+      // Light rays
+      ctx.save();
+      ctx.globalAlpha = holdAlpha * 0.25;
+      ctx.translate(cx, petCy);
+      const rayCount = 12;
+      for (let i = 0; i < rayCount; i++) {
+        const angle = (Math.PI * 2 / rayCount) * i + frame * 0.01;
+        ctx.save();
+        ctx.rotate(angle);
+        ctx.fillStyle = '#ffd700';
+        ctx.beginPath();
+        ctx.moveTo(-8, 0);
+        ctx.lineTo(0, -petSize * s * 0.6);
+        ctx.lineTo(8, 0);
+        ctx.fill();
+        ctx.restore();
+      }
+      ctx.restore();
+
+      // Fire effect behind phoenix
+      const fireTime = frame * 0.08;
+      for (let i = 0; i < 18; i++) {
+        const fa = (Math.PI * 2 / 18) * i + fireTime * (0.5 + i * 0.03);
+        const dist = petSize * s * (0.28 + Math.sin(fireTime + i * 1.3) * 0.08);
+        const fx = cx + Math.cos(fa) * dist;
+        const fy = petCy + Math.sin(fa) * dist - Math.abs(Math.sin(fireTime + i)) * 60;
+        const fSize = 30 + Math.sin(fireTime * 2 + i) * 15;
+
+        ctx.save();
+        ctx.globalAlpha = holdAlpha * (0.35 + Math.sin(fireTime + i * 0.7) * 0.15);
+        const fGrad = ctx.createRadialGradient(fx, fy, 0, fx, fy, fSize);
+        fGrad.addColorStop(0, '#ffffff');
+        fGrad.addColorStop(0.2, '#ffd700');
+        fGrad.addColorStop(0.5, '#ff8c00');
+        fGrad.addColorStop(0.8, '#ff3300');
+        fGrad.addColorStop(1, 'rgba(255,0,0,0)');
+        ctx.fillStyle = fGrad;
+        ctx.beginPath();
+        ctx.arc(fx, fy, fSize, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      }
+
+      // Rising flame tongues
+      for (let i = 0; i < 8; i++) {
+        const tongueX = cx + (i - 3.5) * 50 + Math.sin(fireTime * 3 + i * 2) * 20;
+        const tongueBaseY = petCy + petSize * s * 0.3;
+        const tongueH = 80 + Math.sin(fireTime * 4 + i) * 40;
+        const tongueW = 18 + Math.sin(fireTime * 2.5 + i * 1.5) * 8;
+
+        ctx.save();
+        ctx.globalAlpha = holdAlpha * (0.3 + Math.sin(fireTime * 3 + i) * 0.1);
+        const tGrad = ctx.createLinearGradient(tongueX, tongueBaseY, tongueX, tongueBaseY - tongueH);
+        tGrad.addColorStop(0, '#ff8c00');
+        tGrad.addColorStop(0.4, '#ffd700');
+        tGrad.addColorStop(1, 'rgba(255,255,255,0)');
+        ctx.fillStyle = tGrad;
+        ctx.beginPath();
+        ctx.ellipse(tongueX, tongueBaseY - tongueH / 2, tongueW, tongueH / 2, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      }
+
+      // Bright core glow
+      ctx.save();
+      ctx.globalAlpha = holdAlpha * (0.4 + Math.sin(fireTime * 5) * 0.1);
+      const coreGrad = ctx.createRadialGradient(cx, petCy, 0, cx, petCy, petSize * s * 0.45);
+      coreGrad.addColorStop(0, 'rgba(255,255,255,0.6)');
+      coreGrad.addColorStop(0.3, 'rgba(255,215,0,0.3)');
+      coreGrad.addColorStop(0.7, 'rgba(255,140,0,0.1)');
+      coreGrad.addColorStop(1, 'rgba(255,51,0,0)');
+      ctx.fillStyle = coreGrad;
+      ctx.beginPath();
+      ctx.arc(cx, petCy, petSize * s * 0.45, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+    }
+
+    drawImageCenteredWithGlow(pet, cx, petCy, petSize * s, petSize * s, 0,
+      holdAlpha, '#ffd700', 150 * s);
+
+    // Chance text below pet — Heroic pink
+    if (s > 0.8) {
+      const textAlpha = clamp((s - 0.8) / 0.2, 0, 1) * holdAlpha;
+      ctx.save();
+      ctx.globalAlpha = textAlpha;
+      ctx.font = `${Math.round(82)}px "Lilita One", sans-serif`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'top';
+      ctx.fillStyle = '#e880a0';
+      ctx.strokeStyle = '#000000';
+      ctx.lineWidth = 16;
+      ctx.lineJoin = 'round';
+      ctx.strokeText('1 in 50,000,000', cx, petCy + petSize * s / 2 + 24);
+      ctx.fillText('1 in 50,000,000', cx, petCy + petSize * s / 2 + 24);
+      ctx.restore();
+    }
+  }
+
+  updateParticles();
+  drawParticles();
+  drawRipples();
+  drawTapCursors();
+
+  // Screen flash overlay
+  if (flashAlpha > 0) {
+    ctx.save();
+    ctx.globalAlpha = clamp(flashAlpha, 0, 1);
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, W, H);
+    ctx.restore();
+  }
+}
+
+function renderScene4() {
+  drawBg();
+
+  const cx = W / 2;
+  const btnY = H / 2; // centered
+  const dur = SCENE_DUR[4];
+  const t = sceneFrame / dur;
+
+  // 6 taps total (2x faster = 6 taps in same time)
+  const tapCount = 6;
+  const tapInterval = 1 / tapCount;
+  let btnPulse = 1;
+  for (let i = 0; i < tapCount; i++) {
+    const tapT = i * tapInterval;
+    const dt = t - tapT;
+    if (dt >= 0 && dt < 0.06) {
+      btnPulse = dt < 0.03 ? lerp(1, 0.82, dt / 0.03) : lerp(0.82, 1, (dt - 0.03) / 0.03);
+      break;
+    }
+  }
+
+  drawRollButton(cx, btnY, btnPulse * 0.9, 1);
+
+  // Spawn ripples + tap cursors on each tap
+  for (let i = 0; i < tapCount; i++) {
+    const tapFrame = Math.floor(i * tapInterval * dur);
+    if (sceneFrame === tapFrame + 1) {
+      spawnRipple(cx, btnY);
+      spawnTapCursor(cx, btnY);
+    }
+  }
+
+  // Button edge positions
+  const btnHalfH = 210 * 0.9 / 2;
+  const btnTopEdge = btnY - btnHalfH;
+  const btnBotEdge = btnY + btnHalfH;
+  const petDrawBase = 340; // 25% smaller than original
+  const travelDist = 400; // shorter so they stay on screen
+
+  // First 3 taps: pets fly UP from top edge
+  for (let i = 0; i < 3; i++) {
+    const startT = i * tapInterval;
+    const petDur = 1.2;
+    const dt = (t - startT) / petDur;
+
+    if (dt >= 0 && dt <= 1) {
+      const lp = launchPetsUp[i];
+      const img = imgs[lp.img];
+      // Start offset — wide horizontal spread, higher origin
+      const startOffX = lp.dx * 320;
+      const startOffY = lp.dy * 50;
+      const px = cx + startOffX + lp.dx * travelDist * easeOutCubic(dt);
+      const py = (btnTopEdge - 60) + startOffY + lp.dy * travelDist * easeOutCubic(dt);
+
+      const s = dt < 0.12 ? easeOutCubic(dt / 0.12) * 1.0 :
+                dt < 0.45 ? 1.0 :
+                1.0 * (1 - easeInCubic((dt - 0.45) / 0.55));
+      const a = dt < 0.08 ? dt / 0.08 :
+                dt > 0.45 ? 1 - (dt - 0.45) / 0.55 : 1;
+
+      const petSz = petDrawBase * s;
+      drawImageCenteredWithGlow(img, px, py, petSz, petSz, 0, a, '#FEBF07', 40 * a);
+    }
+  }
+
+  // Next 3 taps: pets fly DOWN from bottom edge
+  for (let i = 0; i < 3; i++) {
+    const startT = (i + 3) * tapInterval;
+    const petDur = 1.2;
+    const dt = (t - startT) / petDur;
+
+    if (dt >= 0 && dt <= 1) {
+      const lp = launchPetsDown[i];
+      const img = imgs[lp.img];
+      const startOffX = lp.dx * 320;
+      const startOffY = lp.dy * 50;
+      const px = cx + startOffX + lp.dx * travelDist * easeOutCubic(dt);
+      const py = (btnBotEdge + 60) + startOffY + lp.dy * travelDist * easeOutCubic(dt);
+
+      const s = dt < 0.12 ? easeOutCubic(dt / 0.12) * 1.0 :
+                dt < 0.45 ? 1.0 :
+                1.0 * (1 - easeInCubic((dt - 0.45) / 0.55));
+      const a = dt < 0.08 ? dt / 0.08 :
+                dt > 0.45 ? 1 - (dt - 0.45) / 0.55 : 1;
+
+      const petSz = petDrawBase * s;
+      drawImageCenteredWithGlow(img, px, py, petSz, petSz, 0, a, '#FEBF07', 40 * a);
+    }
+  }
+
+  drawRipples();
+  drawTapCursors();
+  updateParticles();
+  drawParticles();
+}
+
+function renderScene5() {
+  const dur = SCENE_DUR[5];
+  const t = sceneFrame / dur;
+
+  const flipDur = 0.18; // normalized flip half-duration
+
+  if (t < flipDur) {
+    // First half: squish current content (bg)
+    const dt = t / flipDur;
+    const scaleX = 1 - easeInCubic(dt);
+    ctx.save();
+    ctx.translate(W / 2, 0);
+    ctx.scale(Math.max(0.01, scaleX), 1);
+    ctx.translate(-W / 2, 0);
+    drawBg();
+    ctx.restore();
+
+  } else if (t < flipDur * 2) {
+    // Second half: expand album
+    const dt = (t - flipDur) / flipDur;
+    const scaleX = easeOutCubic(dt);
+    ctx.save();
+    ctx.translate(W / 2, 0);
+    ctx.scale(Math.max(0.01, scaleX), 1);
+    ctx.translate(-W / 2, 0);
+    drawAlbum(t);
+    ctx.restore();
+
+  } else {
+    // Album with diagonal pan
+    drawAlbum(t);
+  }
+}
+
+function drawAlbum(t) {
+  const album = imgs.album;
+  if (!album.naturalWidth) return;
+
+  // Gradient background
+  const grad = ctx.createLinearGradient(0, 0, W, H);
+  grad.addColorStop(0, '#6b5ce7');
+  grad.addColorStop(0.5, '#e87bbd');
+  grad.addColorStop(1, '#5bc0eb');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, W, H);
+
+  // Album image with slight angle and diagonal pan
+  const panX = -80 + t * 200;
+  const panY = -50 + t * 140;
+
+  ctx.save();
+  ctx.translate(W / 2 + panX, H / 2 + panY);
+  ctx.rotate(-0.08); // slight tilt
+
+  // Draw album scaled to fill + margin
+  const scale = 2.5;
+  const aw = album.naturalWidth * scale;
+  const ah = album.naturalHeight * scale;
+  ctx.drawImage(album, -aw / 2, -ah / 2, aw, ah);
+  ctx.restore();
+
+  // Vignette overlay for depth
+  const vignette = ctx.createRadialGradient(W / 2, H / 2, W * 0.25, W / 2, H / 2, W * 0.7);
+  vignette.addColorStop(0, 'rgba(0,0,0,0)');
+  vignette.addColorStop(1, 'rgba(0,0,0,0.4)');
+  ctx.fillStyle = vignette;
+  ctx.fillRect(0, 0, W, H);
+}
+
+// --- Main animation loop ---
+let running = false;
+
+function tick() {
+  if (!running) return;
+
+  // Clear
+  ctx.clearRect(0, 0, W, H);
+
+  // Render current scene
+  switch (scene) {
+    case 1: renderScene1(); break;
+    case 2: renderScene2(); break;
+    case 3: renderScene3(); break;
+    case 4: renderScene4(); break;
+    case 5: renderScene5(); break;
+    case 0:
+      // Loop pause — black fade
+      ctx.fillStyle = '#0a0a14';
+      ctx.fillRect(0, 0, W, H);
+      loopPauseFrames++;
+      if (loopPauseFrames >= 12) { // 0.2s
+        resetAnimation();
+      }
+      break;
+  }
+
+  // Advance scene
+  if (scene >= 1 && scene <= 5) {
+    sceneFrame++;
+    if (sceneFrame >= SCENE_DUR[scene]) {
+      scene++;
+      sceneFrame = 0;
+      particles = [];
+      ripples = [];
+      orbitParticles = [];
+      tapCursors = [];
+      flashAlpha = 0;
+      if (scene > 5) {
+        scene = 0; // enter loop pause
+        loopPauseFrames = 0;
+      }
+    }
+  }
+
+  frame++;
+  requestAnimationFrame(tick);
+}
+
+// --- Click to restart ---
+canvas.addEventListener('click', () => {
+  resetAnimation();
+});
+
+// --- Recording ---
+const recBtn = document.getElementById('rec-btn');
+let mediaRecorder = null;
+let recordedChunks = [];
+
+recBtn.addEventListener('click', (e) => {
+  e.stopPropagation();
+  if (mediaRecorder && mediaRecorder.state === 'recording') {
+    mediaRecorder.stop();
+    return;
+  }
+  recordedChunks = [];
+  resetAnimation();
+
+  const stream = canvas.captureStream(60);
+  const mimeType = MediaRecorder.isTypeSupported('video/webm;codecs=vp9')
+    ? 'video/webm;codecs=vp9'
+    : 'video/webm';
+  mediaRecorder = new MediaRecorder(stream, { mimeType, videoBitsPerSecond: 8000000 });
+
+  mediaRecorder.ondataavailable = (e) => {
+    if (e.data.size > 0) recordedChunks.push(e.data);
+  };
+
+  mediaRecorder.onstop = () => {
+    const blob = new Blob(recordedChunks, { type: mimeType });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'pets-roll-thumbnail.webm';
+    a.click();
+    URL.revokeObjectURL(url);
+    recBtn.textContent = 'Record .webm';
+    recBtn.classList.remove('recording');
+  };
+
+  mediaRecorder.start();
+  recBtn.textContent = 'Stop Recording';
+  recBtn.classList.add('recording');
+
+  // Auto-stop after one full loop + pause
+  const totalFrames = Object.values(SCENE_DUR).reduce((a, b) => a + b, 0) + 12;
+  setTimeout(() => {
+    if (mediaRecorder && mediaRecorder.state === 'recording') {
+      mediaRecorder.stop();
+    }
+  }, (totalFrames / FPS) * 1000 + 200);
+});
+
+// --- Start ---
+loadAll().then(() => {
+  running = true;
+  tick();
+});
+</script>
+</body>
+</html>
