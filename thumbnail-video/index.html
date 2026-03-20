@@ -98,6 +98,10 @@ const ASSETS = {
   petZebra:  ASSET_BASE + 'pets/0042.webp',
   petLadybug:ASSET_BASE + 'pets/0025.webp',
   petMeerkat:ASSET_BASE + 'pets/0050.webp',
+  petLion:   ASSET_BASE + 'pets/0005.webp',
+  petMouse:  ASSET_BASE + 'pets/0045.webp',
+  petChamel: ASSET_BASE + 'pets/0015.webp',
+  petPelican:ASSET_BASE + 'pets/0070.webp',
   album:     '../thumbnails/3.webp',
 };
 
@@ -414,16 +418,20 @@ const SCENE_DUR = {
   5: 90,    // 1.5s
 };
 
-// --- Scene 4 pet launch data (narrow angle, wide horizontal start offset) ---
+// --- Scene 4 pet launch data (5 up + 5 down = 10 total) ---
 const launchPetsUp = [
-  { img: 'petCorgi',   dx: 0,    dy: -1   }, // up center
-  { img: 'petPanda',   dx: 0.6,  dy: -0.8 }, // diag right-up
-  { img: 'petHusky',   dx: -0.6, dy: -0.8 }, // diag left-up
+  { img: 'petCorgi',   dx: 0,    dy: -1   },
+  { img: 'petPanda',   dx: 0.5,  dy: -0.85},
+  { img: 'petHusky',   dx: -0.5, dy: -0.85},
+  { img: 'petLion',    dx: 0.85, dy: -0.5 },
+  { img: 'petMouse',   dx: -0.85,dy: -0.5 },
 ];
 const launchPetsDown = [
-  { img: 'petZebra',   dx: 0,    dy: 1    }, // down center
-  { img: 'petLadybug', dx: 0.6,  dy: 0.8  }, // diag right-down
-  { img: 'petMeerkat', dx: -0.6, dy: 0.8  }, // diag left-down
+  { img: 'petZebra',   dx: 0,    dy: 1    },
+  { img: 'petLadybug', dx: 0.5,  dy: 0.85 },
+  { img: 'petMeerkat', dx: -0.5, dy: 0.85 },
+  { img: 'petChamel',  dx: 0.85, dy: 0.5  },
+  { img: 'petPelican', dx: -0.85,dy: 0.5  },
 ];
 
 function resetAnimation() {
@@ -802,8 +810,8 @@ function renderScene4() {
   const dur = SCENE_DUR[4];
   const t = sceneFrame / dur;
 
-  // 6 taps total (2x faster = 6 taps in same time)
-  const tapCount = 6;
+  // 10 taps total (5 up + 5 down)
+  const tapCount = 10;
   const tapInterval = 1 / tapCount;
   let btnPulse = 1;
   for (let i = 0; i < tapCount; i++) {
@@ -830,13 +838,13 @@ function renderScene4() {
   const btnHalfH = 210 * 0.9 / 2;
   const btnTopEdge = btnY - btnHalfH;
   const btnBotEdge = btnY + btnHalfH;
-  const petDrawBase = 340; // 25% smaller than original
-  const travelDist = 400; // shorter so they stay on screen
+  const petDrawBase = 340;
+  const travelDist = 200; // short — pets stay mostly on screen
 
-  // First 3 taps: pets fly UP from top edge
-  for (let i = 0; i < 3; i++) {
+  // First 5 taps: pets fly UP from top edge
+  for (let i = 0; i < 5; i++) {
     const startT = i * tapInterval;
-    const petDur = 1.2;
+    const petDur = 1.5;
     const dt = (t - startT) / petDur;
 
     if (dt >= 0 && dt <= 1) {
@@ -848,21 +856,19 @@ function renderScene4() {
       const px = cx + startOffX + lp.dx * travelDist * easeOutCubic(dt);
       const py = (btnTopEdge - 60) + startOffY + lp.dy * travelDist * easeOutCubic(dt);
 
-      const s = dt < 0.12 ? easeOutCubic(dt / 0.12) * 1.0 :
-                dt < 0.45 ? 1.0 :
-                1.0 * (1 - easeInCubic((dt - 0.45) / 0.55));
-      const a = dt < 0.08 ? dt / 0.08 :
-                dt > 0.45 ? 1 - (dt - 0.45) / 0.55 : 1;
+      const s = dt < 0.2 ? easeOutBack(dt / 0.2) * 1.0 : 1.0;
+      const a = dt < 0.1 ? dt / 0.1 :
+                dt > 0.75 ? 1 - (dt - 0.75) / 0.25 : 1.0;
 
       const petSz = petDrawBase * s;
       drawImageCenteredWithGlow(img, px, py, petSz, petSz, 0, a, '#FEBF07', 40 * a);
     }
   }
 
-  // Next 3 taps: pets fly DOWN from bottom edge
-  for (let i = 0; i < 3; i++) {
-    const startT = (i + 3) * tapInterval;
-    const petDur = 1.2;
+  // Next 5 taps: pets fly DOWN from bottom edge
+  for (let i = 0; i < 5; i++) {
+    const startT = (i + 5) * tapInterval;
+    const petDur = 1.5;
     const dt = (t - startT) / petDur;
 
     if (dt >= 0 && dt <= 1) {
@@ -873,11 +879,9 @@ function renderScene4() {
       const px = cx + startOffX + lp.dx * travelDist * easeOutCubic(dt);
       const py = (btnBotEdge + 60) + startOffY + lp.dy * travelDist * easeOutCubic(dt);
 
-      const s = dt < 0.12 ? easeOutCubic(dt / 0.12) * 1.0 :
-                dt < 0.45 ? 1.0 :
-                1.0 * (1 - easeInCubic((dt - 0.45) / 0.55));
-      const a = dt < 0.08 ? dt / 0.08 :
-                dt > 0.45 ? 1 - (dt - 0.45) / 0.55 : 1;
+      const s = dt < 0.2 ? easeOutBack(dt / 0.2) * 1.0 : 1.0;
+      const a = dt < 0.1 ? dt / 0.1 :
+                dt > 0.75 ? 1 - (dt - 0.75) / 0.25 : 1.0;
 
       const petSz = petDrawBase * s;
       drawImageCenteredWithGlow(img, px, py, petSz, petSz, 0, a, '#FEBF07', 40 * a);
