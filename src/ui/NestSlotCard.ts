@@ -5,6 +5,7 @@ import { NestSystem } from '../systems/NestSystem';
 import { Button } from './components/Button';
 import { fitText } from './components/fitText';
 import { addAdIcon } from './components/ChoiceCard';
+import { addShineEffect } from './components/shineEffect';
 import { t } from '../data/locales';
 import { formatCoins } from '../core/formatCoins';
 
@@ -91,6 +92,7 @@ export function renderIncubatingSlot(
         btn = new Button(scene, x, layout.btnY, layout.btnW, layout.btnH,
             t('nests_speed_up'), 0x7B2FBE, onSpeedUp);
         addAdIcon(scene, btn);
+        addShineEffect(scene, btn, layout.btnW, layout.btnH - 2, Math.min(15, (layout.btnH - 2) / 2));
         const lbl = btn.list.find(c => c.type === 'Text') as Phaser.GameObjects.Text | undefined;
         if (lbl) fitText(lbl, layout.btnW - 26, Math.max(12, Math.floor(layout.btnH * 0.38)));
     }
@@ -155,6 +157,7 @@ export function renderReadySlot(
     }).setOrigin(0.5));
     container.add(c);
     const btn = new Button(scene, x, layout.btnY, layout.btnW, layout.btnH, t('nests_collect'), 0x78C828, onCollect);
+    addShineEffect(scene, btn, layout.btnW, layout.btnH - 2, Math.min(15, (layout.btnH - 2) / 2));
     container.add(btn);
     applyScale(layout, c, btn);
 }

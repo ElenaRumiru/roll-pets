@@ -12,6 +12,7 @@ import { getEggNameKey } from '../data/eggs';
 import { createSceneHeader } from '../ui/SceneHeader';
 import { CoinDisplay } from '../ui/CoinDisplay';
 import { addAdIcon } from '../ui/components/ChoiceCard';
+import { addShineEffect } from '../ui/components/shineEffect';
 import { EventBus } from '../core/EventBus';
 
 const HEADER_H = 74;
@@ -65,6 +66,7 @@ export class ShopScene extends Scene {
         this.refreshBtn = new Button(this, gw / 2, gh - 50, 222, 52,
             t('shop_refresh'), 0x7b42c9, () => this.onRefresh());
         addAdIcon(this, this.refreshBtn);
+        addShineEffect(this, this.refreshBtn, 222, 50, 15);
         const hintSize = isPortrait() ? '18px' : '14px';
         this.hintText = this.add.text(gw / 2, TIMER_Y, '', {
             fontFamily: UI.FONT_BODY, fontSize: hintSize, color: '#666688',
