@@ -102,6 +102,7 @@ const ASSETS = {
   petMouse:  ASSET_BASE + 'pets/0045.webp',
   petChamel: ASSET_BASE + 'pets/0015.webp',
   petPelican:ASSET_BASE + 'pets/0070.webp',
+  luckx100:  ASSET_BASE + 'ui/Luck_x100.png',
   album:     '../thumbnails/3.webp',
 };
 
@@ -411,11 +412,12 @@ let loopPauseFrames = 0;
 
 // Scene durations in frames (60fps)
 const SCENE_DUR = {
-  1: 36,    // 0.6s — longer click moment
-  2: 90,    // 1.5s
-  3: 180,   // 3.0s — longer legendary buildup
-  4: 90,    // 1.5s
-  5: 90,    // 1.5s
+  1: 36,    // 0.6s — click ROLL
+  2: 90,    // 1.5s — common hatch (hamster)
+  3: 100,   // 1.67s — buff drag onto roll + click
+  4: 180,   // 3.0s — legendary hatch (phoenix)
+  5: 90,    // 1.5s — pet burst
+  6: 90,    // 1.5s — album
 };
 
 // --- Scene 4 pet launch data (5 up + 5 down = 10 total) ---
@@ -444,6 +446,8 @@ function resetAnimation() {
   ripples = [];
   orbitParticles = [];
   tapCursors = [];
+  swipeActive = false;
+  swipeFrame = 0;
 }
 
 // --- Main render ---
@@ -571,35 +575,164 @@ function renderScene2() {
 }
 
 function renderScene3() {
+  // Buff x100 drag onto ROLL button, button powers up, then click
+  drawBg();
+
   const cx = W / 2, cy = H / 2;
   const dur = SCENE_DUR[3];
   const t = sceneFrame / dur;
 
-  // Phase timings
-  const btnFlashEnd = 0.18;
-  const eggAppear = 0.18;
+  const icon = imgs.luckx100;
+  const iconSize = 640; // big drag icon
 
-  // Draw bg only when NOT in shake phase (shake phase draws its own)
-  if (t < eggAppear || t >= 0.48) {
+  // Phases:
+  const dragEnd = 0.30;
+  const absorbEnd = 0.37;
+  const wobbleStart = 0.42;
+  const wobbleEnd = 0.70;
+  const pauseEnd = 0.72;
+  const clickT = 0.72;
+
+  // Is button powered up?
+  const powered = t >= absorbEnd;
+
+  // Button scale — grows slightly after buff, then click
+  let btnScale = 0.9;
+  let btnRotation = 0;
+
+  // Grow after buff absorbed
+  if (powered) {
+    const growT = clamp((t - absorbEnd) / 0.25, 0, 1);
+    btnScale = lerp(0.9, 1.26, easeOutCubic(growT));
+  }
+
+  // Click press — slow deliberate press
+  if (t >= clickT && t < clickT + 0.14) {
+    const dt = (t - clickT) / 0.14;
+    btnScale *= dt < 0.4 ? lerp(1, 0.78, easeInCubic(dt / 0.4)) : lerp(0.78, 1, easeOutCubic((dt - 0.4) / 0.6));
+  }
+
+  // Button wide green glow when powered (elliptical, matching button shape)
+  if (powered) {
+    const glowAlpha = clamp((t - absorbEnd) / 0.1, 0, 1);
+    const bw = 700 * btnScale;
+    const bh = 210 * btnScale;
+
+    // Wide elliptical glow matching button proportions
+    ctx.save();
+    ctx.globalAlpha = glowAlpha * 0.5;
+    ctx.translate(cx, cy);
+    ctx.scale(bw / bh, 1); // stretch horizontally
+    const gGrad = ctx.createRadialGradient(0, 0, bh * 0.3, 0, 0, bh * 1.8);
+    gGrad.addColorStop(0, '#88ff44');
+    gGrad.addColorStop(0.3, '#00ff66');
+    gGrad.addColorStop(0.6, 'rgba(0,200,50,0.2)');
+    gGrad.addColorStop(1, 'rgba(0,200,50,0)');
+    ctx.fillStyle = gGrad;
+    ctx.beginPath();
+    ctx.arc(0, 0, bh * 1.8, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+  }
+
+  // Draw button (with green shadow when powered, with rotation)
+  ctx.save();
+  ctx.translate(cx, cy);
+  ctx.rotate(btnRotation);
+  ctx.translate(-cx, -cy);
+  if (powered) {
+    ctx.shadowBlur = 80;
+    ctx.shadowColor = '#00ff66';
+  }
+  drawRollButton(cx, cy, btnScale, 1);
+  ctx.restore();
+
+  // Buff badge above button — icon only, 3x bigger, no text
+  if (powered && icon.naturalWidth) {
+    const badgeAlpha = clamp((t - absorbEnd) / 0.1, 0, 1);
+    const badgeIconSz = 130;
+    const badgeH = badgeIconSz + 20;
+    const badgeW = badgeIconSz + 80; // wider horizontal padding
+    const bx = cx;
+    const by = cy - 210 * btnScale / 2 - badgeH / 2 - 20;
+
+    ctx.save();
+    ctx.globalAlpha = badgeAlpha;
+
+    // Pill background (orange #F5A623)
+    ctx.fillStyle = 'rgba(245,166,35,0.9)';
+    ctx.strokeStyle = 'rgba(0,0,0,0.3)';
+    ctx.lineWidth = 4;
+    ctx.beginPath();
+    ctx.roundRect(bx - badgeW/2, by - badgeH/2, badgeW, badgeH, badgeH/2);
+    ctx.fill();
+    ctx.stroke();
+
+    // Icon centered in badge
+    ctx.drawImage(icon, bx - badgeIconSz/2, by - badgeIconSz/2, badgeIconSz, badgeIconSz);
+
+    ctx.restore();
+  }
+
+  // Drag icon animation
+  if (t < dragEnd) {
+    const dt = t / dragEnd;
+    const startX = W - 150, startY = 150;
+    const easedt = 1 - Math.pow(1 - dt, 4); // easeOutQuart — very fast start, slow landing
+    const ix = lerp(startX, cx, easedt);
+    const iy = lerp(startY, cy, easedt);
+    // Icon shrinks slightly as it approaches
+    const iScale = lerp(1.2, 0.8, dt);
+    drawImageCenteredWithGlow(icon, ix, iy, iconSize * iScale, iconSize * iScale, 0, 1, '#00ff66', 30);
+
+    // No tap cursor during drag — only on click
+
+  } else if (t < absorbEnd) {
+    // Absorb — icon shrinks into button, no flash
+    const dt = (t - dragEnd) / (absorbEnd - dragEnd);
+    const shrink = 1 - easeInCubic(dt);
+    drawImageCentered(icon, cx, cy, iconSize * shrink * 0.5, iconSize * shrink * 0.5, 0, 1 - dt);
+
+    // Green particles only
+    if (sceneFrame === Math.floor(dragEnd * dur) + 1) {
+      spawnParticles(cx, cy, 25, '#00ff66', 10, 10);
+      spawnParticles(cx, cy, 15, '#ffffff', 8, 6);
+    }
+  }
+
+  // Click ripple + cursor
+  if (sceneFrame === Math.floor(clickT * dur) + 1) {
+    spawnRipple(cx, cy);
+    spawnTapCursor(cx, cy);
+  }
+
+  drawRipples();
+  drawTapCursors();
+  updateParticles();
+  drawParticles();
+}
+
+function renderScene4() {
+  const cx = W / 2, cy = H / 2;
+  const dur = SCENE_DUR[4];
+  const t = sceneFrame / dur;
+
+  // Phase timings — egg appears immediately (click was in scene 3)
+  const eggAppear = 0.0;
+  const wobbleEnd = 0.40;
+  const flashStart = 0.40;
+  const flashEnd = 0.47;
+  const revealStart = 0.45;
+
+  // Draw bg only when NOT in shake phase
+  if (t >= wobbleEnd) {
     drawBg();
   }
-  const wobbleEnd = 0.48;
-  const flashStart = 0.48;
-  const flashEnd = 0.55;
-  const revealStart = 0.53;
 
   const egg = imgs.eggLeg;
   const pet = imgs.petPhoenix;
   const eggSize = 950;
   const petSize = 850;
-
-  // Button flash at very start
-  if (t < btnFlashEnd) {
-    const dt = t / btnFlashEnd;
-    const btnScale = dt < 0.5 ? lerp(1, 0.85, dt / 0.5) : lerp(0.85, 1, (dt - 0.5) / 0.5);
-    drawRollButton(cx, cy + 200, btnScale, 1 - dt);
-    if (sceneFrame === 1) { spawnRipple(cx, cy + 200); spawnTapCursor(cx, cy + 200); }
-  }
 
   if (t >= eggAppear && t < wobbleEnd) {
     const dt = (t - eggAppear) / (wobbleEnd - eggAppear);
@@ -792,6 +925,8 @@ function renderScene3() {
   drawRipples();
   drawTapCursors();
 
+  // Badge removed — buff was shown in scene 3
+
   // Screen flash overlay
   if (flashAlpha > 0) {
     ctx.save();
@@ -802,12 +937,12 @@ function renderScene3() {
   }
 }
 
-function renderScene4() {
+function renderScene5() {
   drawBg();
 
   const cx = W / 2;
   const btnY = H / 2; // centered
-  const dur = SCENE_DUR[4];
+  const dur = SCENE_DUR[5];
   const t = sceneFrame / dur;
 
   // 10 taps total (5 up + 5 down)
@@ -894,38 +1029,12 @@ function renderScene4() {
   drawParticles();
 }
 
-function renderScene5() {
-  const dur = SCENE_DUR[5];
+function renderScene6() {
+  const dur = SCENE_DUR[6];
   const t = sceneFrame / dur;
 
-  const flipDur = 0.18; // normalized flip half-duration
-
-  if (t < flipDur) {
-    // First half: squish current content (bg)
-    const dt = t / flipDur;
-    const scaleX = 1 - easeInCubic(dt);
-    ctx.save();
-    ctx.translate(W / 2, 0);
-    ctx.scale(Math.max(0.01, scaleX), 1);
-    ctx.translate(-W / 2, 0);
-    drawBg();
-    ctx.restore();
-
-  } else if (t < flipDur * 2) {
-    // Second half: expand album
-    const dt = (t - flipDur) / flipDur;
-    const scaleX = easeOutCubic(dt);
-    ctx.save();
-    ctx.translate(W / 2, 0);
-    ctx.scale(Math.max(0.01, scaleX), 1);
-    ctx.translate(-W / 2, 0);
-    drawAlbum(t);
-    ctx.restore();
-
-  } else {
-    // Album with diagonal pan
-    drawAlbum(t);
-  }
+  // Album with diagonal pan (swipe transition handled by system)
+  drawAlbum(t);
 }
 
 function drawAlbum(t) {
@@ -941,15 +1050,15 @@ function drawAlbum(t) {
   ctx.fillRect(0, 0, W, H);
 
   // Album image with slight angle and diagonal pan
-  const panX = -80 + t * 200;
-  const panY = -50 + t * 140;
+  const panX = 600 - t * 1200;
+  const panY = 0;
 
   ctx.save();
   ctx.translate(W / 2 + panX, H / 2 + panY);
   ctx.rotate(-0.08); // slight tilt
 
   // Draw album scaled to fill + margin
-  const scale = 2.5;
+  const scale = 3.2;
   const aw = album.naturalWidth * scale;
   const ah = album.naturalHeight * scale;
   ctx.drawImage(album, -aw / 2, -ah / 2, aw, ah);
@@ -961,6 +1070,58 @@ function drawAlbum(t) {
   vignette.addColorStop(1, 'rgba(0,0,0,0.4)');
   ctx.fillStyle = vignette;
   ctx.fillRect(0, 0, W, H);
+}
+
+// --- Swipe transition system (motion blur rush) ---
+const SWIPE_FRAMES = 10; // ~0.17s fast swipe
+let swipeFrame = 0;
+let swipeActive = false;
+let prevSceneCanvas = null;
+
+const SWIPE_SCENES = new Set([4, 5, 6]);
+
+function captureCurrentFrame() {
+  if (!prevSceneCanvas) {
+    prevSceneCanvas = document.createElement('canvas');
+    prevSceneCanvas.width = W;
+    prevSceneCanvas.height = H;
+  }
+  prevSceneCanvas.getContext('2d').drawImage(canvas, 0, 0);
+}
+
+function renderSwipeOverlay() {
+  // Called AFTER the new scene has rendered normally
+  const raw = swipeFrame / SWIPE_FRAMES;
+  const fadeOut = 1 - easeOutCubic(raw); // 1→0
+
+  // Draw old scene sliding out to the left, fading
+  if (prevSceneCanvas && fadeOut > 0.01) {
+    const slideX = -W * easeInCubic(raw) * 0.3; // slide left
+    ctx.save();
+    ctx.globalAlpha = fadeOut;
+    ctx.drawImage(prevSceneCanvas, slideX, 0);
+    ctx.restore();
+  }
+
+  // Horizontal motion blur streaks — strongest in the middle
+  const blurStrength = Math.sin(raw * Math.PI);
+  if (blurStrength > 0.05) {
+    ctx.save();
+    for (let i = 1; i <= 6; i++) {
+      const offset = i * 25 * blurStrength;
+      ctx.globalAlpha = 0.08 * (1 - i / 7) * blurStrength;
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, W, H);
+    }
+    ctx.restore();
+
+    // White flash
+    ctx.save();
+    ctx.globalAlpha = 0.2 * blurStrength;
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, W, H);
+    ctx.restore();
+  }
 }
 
 // --- Main animation loop ---
@@ -979,6 +1140,7 @@ function tick() {
     case 3: renderScene3(); break;
     case 4: renderScene4(); break;
     case 5: renderScene5(); break;
+    case 6: renderScene6(); break;
     case 0:
       // Loop pause — black fade
       ctx.fillStyle = '#0a0a14';
@@ -990,18 +1152,40 @@ function tick() {
       break;
   }
 
+  // Swipe overlay (draws on top of current scene)
+  if (swipeActive) {
+    swipeFrame++;
+    renderSwipeOverlay();
+    if (swipeFrame >= SWIPE_FRAMES) {
+      swipeActive = false;
+      swipeFrame = 0;
+    }
+  }
+
   // Advance scene
-  if (scene >= 1 && scene <= 5) {
+  if (scene >= 1 && scene <= 6) {
     sceneFrame++;
     if (sceneFrame >= SCENE_DUR[scene]) {
-      scene++;
+      const nextScene = scene + 1;
+      const needsSwipe = SWIPE_SCENES.has(nextScene) && nextScene <= 6;
+
+      // Capture BEFORE clearing
+      if (needsSwipe) captureCurrentFrame();
+
+      scene = nextScene;
       sceneFrame = 0;
       particles = [];
       ripples = [];
       orbitParticles = [];
       tapCursors = [];
       flashAlpha = 0;
-      if (scene > 5) {
+
+      // Start swipe overlay on new scene
+      if (needsSwipe) {
+        swipeActive = true;
+        swipeFrame = 0;
+      }
+      if (scene > 6) {
         scene = 0; // enter loop pause
         loopPauseFrames = 0;
       }
