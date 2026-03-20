@@ -17,6 +17,15 @@ export class AudioSystem {
         this._volume = volume;
         this._sfxOn = sfxOn;
         this._sfxVolume = sfxVolume;
+
+        // Prevent volume spike when returning to tab
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden) {
+                this.sound.mute = true;
+            } else {
+                this.sound.mute = false;
+            }
+        });
     }
 
     startBGM(): void {
